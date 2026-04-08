@@ -39,9 +39,11 @@
     "image": "https://nfcbulgaria.com/assets/og-image.png",
     "@id": "https://nfcbulgaria.com",
     "url": "https://nfcbulgaria.com",
-    "telephone": "+359",
+    "telephone": "+359876141826",
+    "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
+      "streetAddress": "гр. Плевен",
       "addressLocality": "Плевен",
       "addressCountry": "BG"
     },
@@ -66,19 +68,56 @@
       "name": "NFC Продукти",
       "itemListElement": [
         {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Product",
-            "name": "Смарт NFC Визитка",
-            "description": "Персонализирана дигитална визитка с NTAG215 чип."
+          "@type": "Product",
+          "name": "Смарт NFC Визитка",
+          "description": "Персонализирана дигитална визитка с NTAG215 чип. Поддържа споделяне на контакти, социални мрежи и автоматизации.",
+          "image": "https://nfcbulgaria.com/assets/card_full%20copy.png",
+          "brand": {
+            "@type": "Brand",
+            "name": "NFC Bulgaria"
+          },
+          "offers": {
+            "@type": "AggregateOffer",
+            "priceCurrency": "EUR",
+            "lowPrice": "0.80",
+            "highPrice": "1.30",
+            "offerCount": "3",
+            "availability": "https://schema.org/InStock"
           }
         },
         {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Product",
-            "name": "NFC Табела за Google Отзиви",
-            "description": "Смарт PVC табела за лесно събиране на отзиви."
+          "@type": "Product",
+          "name": "NFC Табела за Google Отзиви",
+          "description": "Смарт PVC табела за лесно събиране на отзиви. Двуканална технология с NFC чип и QR код.",
+          "image": "https://nfcbulgaria.com/assets/business_sign.png",
+          "brand": {
+            "@type": "Brand",
+            "name": "NFC Bulgaria"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": "5.00",
+            "priceCurrency": "EUR",
+            "availability": "https://schema.org/InStock",
+            "url": "https://nfcbulgaria.com#business-signs"
+          }
+        },
+        {
+          "@type": "Product",
+          "name": "NFC Стикери / Тагове",
+          "description": "Висококачествени самозалепващи NFC стикери с NTAG215 чип за всякакви повърхности.",
+          "image": "https://nfcbulgaria.com/assets/stickers.png",
+          "brand": {
+            "@type": "Brand",
+            "name": "NFC Bulgaria"
+          },
+          "offers": {
+            "@type": "AggregateOffer",
+            "priceCurrency": "EUR",
+            "lowPrice": "0.40",
+            "highPrice": "0.80",
+            "offerCount": "3",
+            "availability": "https://schema.org/InStock"
           }
         }
       ]
