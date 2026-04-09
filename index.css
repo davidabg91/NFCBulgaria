@@ -686,3 +686,16 @@ footer {
   image-rendering: -webkit-optimize-contrast;
   will-change: transform;
 }
+
+/* Policy Info Grid */
+.policy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .policy-grid {
+    grid-template-columns: 1fr;
+  }
+}
