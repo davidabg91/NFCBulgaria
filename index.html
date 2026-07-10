@@ -14,23 +14,30 @@
   <!-- Preload LCP hero image -->
   <link rel="preload" as="image" href="assets/card_full_copy.webp" fetchpriority="high">
 
+  <!-- Google Analytics (library deferred until after load to keep initial render fast) -->
   <script>
     // GDPR/ePrivacy Consent Check
-    const cookieConsent = localStorage.getItem('cookieConsent');
-    if (cookieConsent !== 'accepted') {
+    if (localStorage.getItem('cookieConsent') !== 'accepted') {
       window['ga-disable-G-YC72W34LWM'] = true;
     }
-  </script>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC72W34LWM"></script>
-  <script>
+    // gtag() is defined immediately so the consent flow can queue commands
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     if (localStorage.getItem('cookieConsent') === 'accepted') {
       gtag('config', 'G-YC72W34LWM');
     }
+    // Load the heavy gtag.js library only after the page has finished loading
+    function loadGtag() {
+      if (window.__gtagLoaded) return;
+      window.__gtagLoaded = true;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YC72W34LWM';
+      document.head.appendChild(s);
+    }
+    if (document.readyState === 'complete') { loadGtag(); }
+    else { window.addEventListener('load', loadGtag); }
   </script>
 
   <!-- Google Search Console Verification Placeholder -->
@@ -351,9 +358,10 @@
   }
   </script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <!-- Self-hosted fonts (no render-blocking external Google request) -->
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/spacegrotesk-400-latin.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-800-latin.woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
   <link rel="stylesheet" href="index.css">
 </head>
 <body>
