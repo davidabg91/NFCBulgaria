@@ -11,6 +11,13 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/favicon.png">
 
+  <script>
+    // GDPR/ePrivacy Consent Check
+    const cookieConsent = localStorage.getItem('cookieConsent');
+    if (cookieConsent !== 'accepted') {
+      window['ga-disable-G-YC72W34LWM'] = true;
+    }
+  </script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC72W34LWM"></script>
   <script>
@@ -18,7 +25,9 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-YC72W34LWM');
+    if (localStorage.getItem('cookieConsent') === 'accepted') {
+      gtag('config', 'G-YC72W34LWM');
+    }
   </script>
 
   <!-- Google Search Console Verification Placeholder -->
@@ -680,6 +689,20 @@
       <p>&copy; 2026 NFC Bulgaria. Всички права запазени. Партньор на DavidaX.org</p>
     </div>
   </footer>
+
+  <!-- Cookie Consent Banner -->
+  <div id="cookieConsentBanner" class="cookie-banner">
+    <div class="cookie-banner-content">
+      <div class="cookie-icon">🍪</div>
+      <p class="cookie-text">
+        Този уебсайт използва бисквитки (cookies) с цел подобряване на функционалността и анализиране на посещенията чрез Google Analytics.
+      </p>
+    </div>
+    <div class="cookie-banner-actions">
+      <button id="btnAcceptCookies" class="cookie-btn cookie-btn-accept">Приемам</button>
+      <button id="btnDeclineCookies" class="cookie-btn cookie-btn-decline">Отказвам</button>
+    </div>
+  </div>
 
   <script src="index.js"></script>
 </body>

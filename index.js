@@ -146,4 +146,39 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Cookie Consent logic
+  const consentBanner = document.getElementById('cookieConsentBanner');
+  const acceptBtn = document.getElementById('btnAcceptCookies');
+  const declineBtn = document.getElementById('btnDeclineCookies');
+  
+  if (consentBanner && acceptBtn && declineBtn) {
+    const consent = localStorage.getItem('cookieConsent');
+    
+    // Show the banner if consent hasn't been set yet
+    if (!consent) {
+      setTimeout(() => {
+        consentBanner.classList.add('show');
+      }, 1000); // Small delay for better UX
+    }
+    
+    acceptBtn.addEventListener('click', () => {
+      localStorage.setItem('cookieConsent', 'accepted');
+      // Enable GA
+      window['ga-disable-G-YC72W34LWM'] = false;
+      if (typeof gtag === 'function') {
+        gtag('config', 'G-YC72W34LWM');
+      }
+      // Hide banner
+      consentBanner.classList.remove('show');
+    });
+    
+    declineBtn.addEventListener('click', () => {
+      localStorage.setItem('cookieConsent', 'declined');
+      // Explicitly keep GA disabled
+      window['ga-disable-G-YC72W34LWM'] = true;
+      // Hide banner
+      consentBanner.classList.remove('show');
+    });
+  }
 });
