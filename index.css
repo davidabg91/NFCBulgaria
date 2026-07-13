@@ -517,19 +517,43 @@ label {
   font-weight: 500;
 }
 
-input, textarea {
+input, select, textarea {
   width: 100%;
   padding: 1rem;
   background: rgba(15, 23, 42, 0.5);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   color: white;
+  font-family: var(--font-main);
   transition: border-color 0.3s ease;
 }
 
-input:focus, textarea:focus {
+input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary);
+}
+
+select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A1E8AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2rem;
+  padding-right: 2.5rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus {
+  box-shadow: 0 0 10px rgba(161, 232, 175, 0.25);
+}
+
+select option {
+  background-color: #0f172a; /* matches var(--dark) */
+  color: white;
+  padding: 1rem;
 }
 
 /* Footer */

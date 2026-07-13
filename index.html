@@ -926,16 +926,15 @@
         </div>
         <div class="form-group">
           <label for="service">Интересувам се от:</label>
-          <select id="service" style="width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--glass-border); border-radius: 12px; color: white;">
-            <option>Дигитална Визитка (само кодиране)</option>
-            <option>Карта с Персонален Дизайн / Печат</option>
-            <option>Комплексно решение (Печат + Кодиране)</option>
-            <option>Кодирани NFC карти (Bulk)</option>
-            <option>Празни NFC карти (Bulk)</option>
-            <option>NFC Стикери / Тагове</option>
-            <option>NFC Карти за Google Отзиви</option>
-            <option>Софтуерно Решение (DavidaX)</option>
-            <option>Друго</option>
+          <select id="service" required>
+            <option value="" disabled selected hidden>Изберете опция...</option>
+            <option value="Дигитална NFC Визитка (Персонален Дизайн и Печат)">Дигитална NFC Визитка (с Ваш Дизайн и Печат)</option>
+            <option value="Смарт NFC Табела за Отзиви и Социални Мрежи (Google, Instagram и др.)">Смарт NFC Табела за Отзиви и Социални Мрежи (Google, Instagram и др.)</option>
+            <option value="Самозалепващи NFC Стикери / Тагове">Самозалепващи NFC Стикери и Тагове</option>
+            <option value="Базови NFC Карти без Печат (Черни / Бели)">Базови NFC Карти без Печат (Черни / Бели)</option>
+            <option value="Кодиране и изработка на карти на едро (Bulk)">Кодиране и изработка на карти на едро (Bulk)</option>
+            <option value="Софтуерно решение / Бизнес Автоматизация (с DavidaX)">Софтуерно решение и Бизнес Автоматизация (с DavidaX)</option>
+            <option value="Друг индивидуален проект">Друг индивидуален проект / Друго</option>
           </select>
         </div>
         <div class="form-group">
