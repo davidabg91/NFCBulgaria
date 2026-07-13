@@ -120,7 +120,7 @@ nav {
   top: 0;
   left: 0;
   width: 100%;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(15px);
   z-index: 1000;
@@ -136,12 +136,14 @@ nav {
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-family: var(--font-main); /* Space Grotesk for better legibility */
-  font-size: 1.2rem;
+  gap: 8px;
+  font-family: var(--font-main);
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .logo-svg {
@@ -182,14 +184,18 @@ nav {
 
 .nav-links {
   display: flex;
-  gap: 2.5rem;
+  gap: 1rem;
   list-style: none;
+  flex-wrap: nowrap;
+  align-items: center;
 }
 
 .nav-links a {
   text-decoration: none;
   color: var(--text-muted);
   font-weight: 500;
+  font-size: 0.82rem;
+  white-space: nowrap;
   transition: all 0.3s ease;
 }
 
@@ -563,7 +569,7 @@ footer {
 }
 
 /* Mobile Responsiveness */
-@media (max-width: 968px) {
+@media (max-width: 1150px) {
   .menu-toggle {
     display: flex;
   }
@@ -684,6 +690,12 @@ footer {
 
   .mobile-only {
     display: block !important;
+  }
+}
+
+@media (max-width: 968px) {
+  .hero {
+    padding-top: 8rem;
   }
 }
 
