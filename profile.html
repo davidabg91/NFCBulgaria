@@ -12,18 +12,6 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://nfcbulgaria.com/profile.html">
   
-  <!-- Google Translate Integration -->
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'bg',
-        includedLanguages: 'bg,en,de,ru,ro,tr,el,fr,es,it',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false
-      }, 'google_translate_element');
-    }
-  </script>
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <!-- Favicon -->
   <link rel="icon" type="image/webp" href="assets/favicon.webp">
@@ -418,45 +406,39 @@
       white-space: nowrap;
     }
 
-    /* Custom Google Translate Stylings */
-    .translate-select-wrapper {
-      display: inline-flex;
-      align-items: center;
+    /* Custom Language Switcher Styles */
+    .lang-selector {
+      display: flex;
+      gap: 0.3rem;
+      background: rgba(17, 24, 39, 0.65);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 0.25rem;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
 
-    #google_translate_element select.goog-te-combo {
-      background: rgba(17, 24, 39, 0.8) !important;
-      border: 1px solid var(--glass-border) !important;
-      color: var(--text) !important;
-      border-radius: 10px !important;
-      padding: 0.4rem 0.8rem !important;
-      font-family: inherit !important;
-      font-size: 0.82rem !important;
-      font-weight: 600 !important;
-      outline: none !important;
-      cursor: pointer !important;
-      transition: all 0.3s ease !important;
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.28rem 0.6rem;
+      font-size: 0.76rem;
+      font-weight: 800;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: 'Space Grotesk', sans-serif;
     }
 
-    #google_translate_element select.goog-te-combo:hover {
-      border-color: var(--primary) !important;
-      box-shadow: 0 0 10px rgba(0, 242, 255, 0.25) !important;
+    .lang-btn.active {
+      background: var(--primary);
+      color: #0b0f19;
+      box-shadow: 0 0 10px rgba(0, 242, 255, 0.35);
     }
 
-    /* Hide Google branding nodes */
-    .goog-logo-link, .goog-te-gadget span {
-      display: none !important;
-    }
-    .goog-te-gadget {
-      color: transparent !important;
-      font-size: 0 !important;
-      line-height: 0 !important;
-    }
-    .goog-te-banner-frame {
-      display: none !important;
-    }
-    body {
-      top: 0 !important;
+    .lang-btn:hover:not(.active) {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
     }
   </style>
 </head>
@@ -466,7 +448,12 @@
 
     <!-- Utilities Row (Language translation + Saves count) -->
     <div class="profile-header-utils">
-      <div id="google_translate_element" class="translate-select-wrapper"></div>
+      <div class="lang-selector">
+        <button class="lang-btn active" onclick="setLanguage('bg')">BG</button>
+        <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="setLanguage('de')">DE</button>
+        <button class="lang-btn" onclick="setLanguage('ro')">RO</button>
+      </div>
       <div class="saves-count-pill" id="savesCountPill" style="display: none;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         <span id="savesCountText">0 изтегляния</span>
@@ -491,7 +478,7 @@
       <!-- Primary Save Button -->
       <button class="btn-save" onclick="downloadVCard()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-        Запази Контакта
+        <span id="saveContactBtnText">Запази Контакта</span>
       </button>
     </div>
 
@@ -502,7 +489,7 @@
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
         </div>
-        <div class="link-label">Телефон</div>
+        <div class="link-label" id="phoneLabel">Телефон</div>
         <div class="link-value" id="phoneVal">+359 88 123 4567</div>
       </a>
 
@@ -510,7 +497,7 @@
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
         </div>
-        <div class="link-label">Имейл</div>
+        <div class="link-label" id="emailLabel">Имейл</div>
         <div class="link-value" id="emailVal">a.petrov@arhproekt.bg</div>
       </a>
 
@@ -518,39 +505,39 @@
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         </div>
-        <div class="link-label">Viber</div>
-        <div class="link-value">Свържи се</div>
+        <div class="link-label" id="viberLabel">Viber</div>
+        <div class="link-value" id="viberVal">Свържи се</div>
       </a>
 
       <a href="https://linkedin.com" target="_blank" class="link-item" id="linkedinLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
         </div>
-        <div class="link-label">LinkedIn</div>
-        <div class="link-value">Профил</div>
+        <div class="link-label" id="linkedinLabel">LinkedIn</div>
+        <div class="link-value" id="linkedinVal">Профил</div>
       </a>
 
       <a href="#" target="_blank" class="link-item" id="facebookLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
         </div>
-        <div class="link-label">Facebook</div>
-        <div class="link-value">Профил</div>
+        <div class="link-label" id="facebookLabel">Facebook</div>
+        <div class="link-value" id="facebookVal">Профил</div>
       </a>
 
       <a href="#" target="_blank" class="link-item" id="instagramLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
         </div>
-        <div class="link-label">Instagram</div>
-        <div class="link-value">Профил</div>
+        <div class="link-label" id="instagramLabel">Instagram</div>
+        <div class="link-value" id="instagramVal">Профил</div>
       </a>
 
       <a href="https://nfcbulgaria.com" target="_blank" class="link-item" style="grid-column: span 2;" id="websiteLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         </div>
-        <div class="link-label">Уебсайт на Компанията</div>
+        <div class="link-label" id="websiteLabel">Уебсайт на Компанията</div>
         <div class="link-value" id="websiteVal">www.arhproekt.bg</div>
       </a>
 
@@ -558,7 +545,7 @@
 
     <!-- Lead Capture Section -->
     <div class="lead-section">
-      <h3 class="lead-title">Изпрати ми твоите контакти</h3>
+      <h3 class="lead-title" id="leadTitle">Изпрати ми твоите контакти</h3>
       <form id="leadForm" onsubmit="submitLead(event)">
         <div class="form-group">
           <input type="text" id="clientName" class="form-input" placeholder="Твоето име" required>
@@ -566,13 +553,13 @@
         <div class="form-group">
           <input type="tel" id="clientPhone" class="form-input" placeholder="Твоят телефон" required>
         </div>
-        <button type="submit" class="btn-submit">Изпрати Обратно</button>
+        <button type="submit" class="btn-submit" id="leadSubmitBtn">Изпрати Обратно</button>
       </form>
     </div>
 
     <!-- Mini Footer -->
     <div class="brand-footer">
-      <a href="index.html" class="brand-link">
+      <a href="index.html" class="brand-link" id="brandFooterLink">
         Създай своята с <div class="logo-mini"></div> <span>NFC Bulgaria</span>
       </a>
     </div>
@@ -616,6 +603,10 @@
       if (queryId) {
         profileId = queryId;
       }
+
+      // Auto-detect browser language and apply it
+      const initialLang = detectLanguage();
+      setLanguage(initialLang);
 
       if (supabaseClient) {
         fetchProfileData();
@@ -674,7 +665,7 @@
         const savesCountText = document.getElementById('savesCountText');
         if (savesCountPill && savesCountText) {
           const count = data.saves_count || 0;
-          savesCountText.innerText = `${count} изтегляния`;
+          savesCountText.innerText = `${count} ${translations[activeLang].downloads}`;
           savesCountPill.style.display = 'inline-flex';
         }
       }
@@ -704,7 +695,7 @@
           }]);
 
         if (error) {
-          showToast("Грешка при изпращане. Опитайте отново.");
+          showToast(activeLang === 'bg' ? "Грешка при изпращане. Опитайте отново." : "Error sending contact. Please try again.");
           return;
         }
 
@@ -717,7 +708,7 @@
         fetch(webhookUrl).catch(err => console.error("Error sending email notification:", err));
       }
 
-      showToast("Контакта Ви е изпратен успешно! 👍");
+      showToast(translations[activeLang].leadSuccess);
       document.getElementById('leadForm').reset();
     }
 
@@ -731,7 +722,7 @@
             if (savesCountText) {
               const currentText = savesCountText.innerText;
               const currentVal = parseInt(currentText) || 0;
-              savesCountText.innerText = `${currentVal + 1} изтегляния`;
+              savesCountText.innerText = `${currentVal + 1} ${translations[activeLang].downloads}`;
             }
           })
           .catch(err => console.error("Error incrementing saves count:", err));
@@ -757,7 +748,7 @@ END:VCARD`;
       link.click();
       document.body.removeChild(link);
       
-      showToast("Контакта е изтеглен!");
+      showToast(translations[activeLang].contactDownloaded);
     }
 
     function showToast(msg) {
@@ -790,6 +781,175 @@ END:VCARD`;
           el.style.display = 'none';
         }
       }
+    }
+
+    // --- CUSTOM LOCALIZATION SYSTEM ---
+    let activeLang = 'bg';
+
+    const translations = {
+      bg: {
+        saveContact: "Запази Контакта",
+        phone: "Телефон",
+        email: "Имейл",
+        viber: "Viber",
+        linkedin: "LinkedIn",
+        facebook: "Facebook",
+        instagram: "Instagram",
+        website: "Уебсайт",
+        sendLeads: "Изпрати ми твоите контакти",
+        yourName: "Твоето име",
+        yourPhone: "Твоят телефон",
+        sendBack: "Изпрати Обратно",
+        downloads: "изтегляния",
+        createYours: "Създай своята с NFC Bulgaria",
+        leadSuccess: "Контакта Ви е изпратен успешно! 👍",
+        contactDownloaded: "Контакта е изтеглен!",
+        titleDemo: "Главен Архитект",
+        companyDemo: "АРХПРОЕКТ"
+      },
+      en: {
+        saveContact: "Save Contact",
+        phone: "Phone",
+        email: "Email",
+        viber: "Viber",
+        linkedin: "LinkedIn",
+        facebook: "Facebook",
+        instagram: "Instagram",
+        website: "Website",
+        sendLeads: "Send me your contacts",
+        yourName: "Your name",
+        yourPhone: "Your phone",
+        sendBack: "Send Back",
+        downloads: "downloads",
+        createYours: "Create yours with NFC Bulgaria",
+        leadSuccess: "Your contact has been sent successfully! 👍",
+        contactDownloaded: "Contact downloaded!",
+        titleDemo: "Chief Architect",
+        companyDemo: "ARCHPROJECT"
+      },
+      de: {
+        saveContact: "Kontakt speichern",
+        phone: "Telefon",
+        email: "E-Mail",
+        viber: "Viber",
+        linkedin: "LinkedIn",
+        facebook: "Facebook",
+        instagram: "Instagram",
+        website: "Webseite",
+        sendLeads: "Senden Sie mir Ihre Kontakte",
+        yourName: "Ihr Name",
+        yourPhone: "Ihre Telefonnummer",
+        sendBack: "Zurücksenden",
+        downloads: "Downloads",
+        createYours: "Erstellen Sie Ihre mit NFC Bulgaria",
+        leadSuccess: "Ihr Kontakt wurde erfolgreich gesendet! 👍",
+        contactDownloaded: "Kontakt heruntergeladen!",
+        titleDemo: "Chefarchitekt",
+        companyDemo: "ARCHPROJECT"
+      },
+      ro: {
+        saveContact: "Salvare contact",
+        phone: "Telefon",
+        email: "Email",
+        viber: "Viber",
+        linkedin: "LinkedIn",
+        facebook: "Facebook",
+        instagram: "Instagram",
+        website: "Website",
+        sendLeads: "Trimite-mi contactele tale",
+        yourName: "Numele tău",
+        yourPhone: "Telefonul tău",
+        sendBack: "Trimite înapoi",
+        downloads: "descărcări",
+        createYours: "Creează-ți propria cu NFC Bulgaria",
+        leadSuccess: "Contactul dvs. a fost trimis cu succes! 👍",
+        contactDownloaded: "Contact descărcat!",
+        titleDemo: "Arhitect Şef",
+        companyDemo: "ARCHPROJECT"
+      }
+    };
+
+    function setLanguage(lang) {
+      if (!translations[lang]) return;
+      activeLang = lang;
+
+      // Update active state in language buttons
+      const buttons = document.querySelectorAll('.lang-btn');
+      buttons.forEach(btn => {
+        if (btn.innerText.toLowerCase() === lang) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Update UI elements texts
+      const t = translations[lang];
+      
+      const saveBtn = document.getElementById('saveContactBtnText');
+      if (saveBtn) saveBtn.innerText = t.saveContact;
+
+      const phoneLabel = document.getElementById('phoneLabel');
+      if (phoneLabel) phoneLabel.innerText = t.phone;
+
+      const emailLabel = document.getElementById('emailLabel');
+      if (emailLabel) emailLabel.innerText = t.email;
+
+      const viberLabel = document.getElementById('viberLabel');
+      if (viberLabel) viberLabel.innerText = t.viber;
+
+      const linkedinLabel = document.getElementById('linkedinLabel');
+      if (linkedinLabel) linkedinLabel.innerText = t.linkedin;
+
+      const facebookLabel = document.getElementById('facebookLabel');
+      if (facebookLabel) facebookLabel.innerText = t.facebook;
+
+      const instagramLabel = document.getElementById('instagramLabel');
+      if (instagramLabel) instagramLabel.innerText = t.instagram;
+
+      const websiteLabel = document.getElementById('websiteLabel');
+      if (websiteLabel) websiteLabel.innerText = t.website;
+
+      const leadTitle = document.getElementById('leadTitle');
+      if (leadTitle) leadTitle.innerText = t.sendLeads;
+
+      const clientNameInput = document.getElementById('clientName');
+      if (clientNameInput) clientNameInput.placeholder = t.yourName;
+
+      const clientPhoneInput = document.getElementById('clientPhone');
+      if (clientPhoneInput) clientPhoneInput.placeholder = t.yourPhone;
+
+      const leadSubmitBtn = document.getElementById('leadSubmitBtn');
+      if (leadSubmitBtn) leadSubmitBtn.innerText = t.sendBack;
+
+      const savesCountText = document.getElementById('savesCountText');
+      if (savesCountText) {
+        const count = parseInt(savesCountText.innerText) || 0;
+        savesCountText.innerText = `${count} ${t.downloads}`;
+      }
+
+      const brandLink = document.getElementById('brandFooterLink');
+      if (brandLink) {
+        brandLink.innerHTML = `${t.createYours.split('NFC Bulgaria')[0]} <div class="logo-mini"></div> <span>NFC Bulgaria</span>`;
+      }
+
+      // Handle translation of demo data (Alexander Petrov)
+      const profileName = document.getElementById('profileName');
+      if (profileName && (profileName.innerText === 'Александър Petrov' || profileName.innerText === 'Александър Петров' || profileName.innerText === 'Alexandar Petrov')) {
+        // translate title/company for demo profile
+        const titleEl = document.getElementById('profileTitle');
+        if (titleEl) titleEl.innerText = t.titleDemo;
+        const companyEl = document.getElementById('profileCompany');
+        if (companyEl) companyEl.innerText = t.companyDemo;
+      }
+    }
+
+    function detectLanguage() {
+      const browserLang = (navigator.language || navigator.userLanguage).toLowerCase();
+      if (browserLang.startsWith('de')) return 'de';
+      if (browserLang.startsWith('ro')) return 'ro';
+      if (browserLang.startsWith('bg')) return 'bg';
+      return 'en'; // default to English for foreign visitors
     }
   </script>
 </body>
