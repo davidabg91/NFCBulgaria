@@ -339,9 +339,15 @@
             <input type="text" id="websiteInput" class="form-input" placeholder="www.arhproekt.bg">
           </div>
 
-          <div class="form-group full-width">
-            <label for="avatarInput">Линк към снимка / аватар</label>
-            <input type="text" id="avatarInput" class="form-input" placeholder="assets/avatar-alexandar.png">
+          <div class="form-group full-width" style="display: flex; align-items: center; gap: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.2rem;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; background: #1f2937; flex-shrink: 0;">
+              <img id="avatarPreview" src="assets/avatar-alexandar.png" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="flex-grow: 1;">
+              <label for="avatarFileInput" style="margin-bottom: 0.5rem; display: block;">Качете профилна снимка</label>
+              <input type="file" id="avatarFileInput" accept="image/*" class="form-input" style="font-size: 0.8rem; padding: 0.5rem;">
+              <input type="hidden" id="avatarInput">
+            </div>
           </div>
 
         </div>
@@ -449,6 +455,7 @@
       document.getElementById('linkedinInput').value = "https://linkedin.com";
       document.getElementById('websiteInput').value = "www.arhproekt.bg";
       document.getElementById('avatarInput').value = "assets/avatar-alexandar.png";
+      document.getElementById('avatarPreview').src = "assets/avatar-alexandar.png";
       
       initChart([15, 25, 18, 30, 42, 22, 18]);
     }
@@ -473,6 +480,11 @@
         document.getElementById('linkedinInput').value = profile.linkedin || '';
         document.getElementById('websiteInput').value = profile.website || '';
         document.getElementById('avatarInput').value = profile.avatar_url || '';
+        if (profile.avatar_url) {
+          document.getElementById('avatarPreview').src = profile.avatar_url;
+        } else {
+          document.getElementById('avatarPreview').src = "assets/avatar-alexandar.png";
+        }
 
         // Load stats & leads for this profile
         loadStatsAndLeads(profile.id);
@@ -612,6 +624,31 @@
 
       initChart(counts);
     }
+
+    // FileReader logic to handle file uploads as base64 strings
+    const fileInput = document.getElementById('avatarFileInput');
+    const hiddenInput = document.getElementById('avatarInput');
+    const previewImg = document.getElementById('avatarPreview');
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Limit file size to 1.5MB to prevent database bloat
+        if (file.size > 1.5 * 1024 * 1024) {
+          alert("Снимката е твърде голяма! Моля, изберете снимка до 1.5MB.");
+          fileInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const base64Str = evt.target.result;
+          previewImg.src = base64Str;
+          hiddenInput.value = base64Str;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
   </script>
 </body>
 </html>
