@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Дигитална Визитка | NFC Bulgaria</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/webp" href="assets/favicon.webp">
+
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --primary: #00f2ff;
+      --primary-glow: rgba(0, 242, 255, 0.4);
+      --secondary: #a1e8af;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(0, 242, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+      position: relative;
+    }
+
+    /* Mesh background glow */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+      top: -50px;
+      left: -50px;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(161, 232, 175, 0.2) 0%, transparent 70%);
+      bottom: -50px;
+      right: -50px;
+      z-index: 0;
+    }
+
+    /* Card Wrapper */
+    .profile-container {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      overflow: hidden;
+      z-index: 10;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Avatar */
+    .avatar-wrapper {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      margin: 2.2rem auto 0 auto;
+      border-radius: 50%;
+      padding: 4px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 10px 25px rgba(0, 242, 255, 0.3);
+    }
+
+    .avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #1f2937;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border: 3px solid #111827;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Profile Info */
+    .profile-info {
+      text-align: center;
+      padding: 1.5rem 1.5rem 1rem 1.5rem;
+    }
+
+    .profile-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.2rem;
+    }
+
+    .profile-title {
+      font-size: 0.95rem;
+      color: var(--primary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.4rem;
+    }
+
+    .profile-company {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .company-badge {
+      background: rgba(0, 242, 255, 0.1);
+      border: 1px solid var(--glass-border);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Primary CTA Button */
+    .btn-save {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 1.1rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 16px;
+      color: #0b0f19;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(0, 242, 255, 0.25);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-save:active {
+      transform: scale(0.97);
+    }
+
+    .btn-save::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: all 0.6s ease;
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      0% { left: -100%; }
+      30% { left: 100%; }
+      100% { left: 100%; }
+    }
+
+    /* Action Links Grid */
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+      padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+
+    .link-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .link-item:hover, .link-item:active {
+      background: rgba(0, 242, 255, 0.05);
+      border-color: var(--glass-border);
+      transform: translateY(-2px);
+    }
+
+    .link-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+
+    .link-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .link-value {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      opacity: 0.7;
+      margin-top: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Lead Capture Section */
+    .lead-section {
+      background: rgba(255, 255, 255, 0.02);
+      border-top: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+
+    .lead-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .form-group {
+      margin-bottom: 0.8rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.85rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      background: rgba(0, 242, 255, 0.1);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover, .btn-submit:active {
+      background: var(--primary);
+      color: #0b0f19;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    /* Brand Footer */
+    .brand-footer {
+      text-align: center;
+      padding: 1.5rem;
+      border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      transition: color 0.3s ease;
+    }
+
+    .brand-link:hover {
+      color: var(--primary);
+    }
+
+    .brand-link span {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .logo-mini {
+      width: 16px;
+      height: 12px;
+      border: 1px solid var(--primary);
+      border-radius: 2px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(16, 185, 129, 0.95);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000;
+      white-space: nowrap;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="profile-container">
+
+    <!-- Profile Head -->
+    <div class="avatar-wrapper">
+      <div class="avatar">
+        <img id="profileAvatar" src="assets/avatar-alexandar.png" alt="Профилна снимка">
+      </div>
+    </div>
+
+    <div class="profile-info">
+      <h1 class="profile-name" id="profileName">Александър Петров</h1>
+      <div class="profile-title" id="profileTitle">Главен Архитект</div>
+      <div class="profile-company">
+        <span id="profileCompany">АРХПРОЕКТ</span>
+        <span class="company-badge">PRO</span>
+      </div>
+      
+      <!-- Primary Save Button -->
+      <button class="btn-save" onclick="downloadVCard()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Запази Контакта
+      </button>
+    </div>
+
+    <!-- Quick Links Grid -->
+    <div class="links-grid">
+      
+      <a href="tel:+359881234567" class="link-item" id="phoneLink">
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </div>
+        <div class="link-label">Телефон</div>
+        <div class="link-value" id="phoneVal">+359 88 123 4567</div>
+      </a>
+
+      <a href="mailto:a.petrov@arhproekt.bg" class="link-item" id="emailLink">
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        </div>
+        <div class="link-label">Имейл</div>
+        <div class="link-value" id="emailVal">a.petrov@arhproekt.bg</div>
+      </a>
+
+      <a href="https://viber.click/+359881234567" target="_blank" class="link-item" id="viberLink">
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <div class="link-label">Viber</div>
+        <div class="link-value">Свържи се</div>
+      </a>
+
+      <a href="https://linkedin.com" target="_blank" class="link-item" id="linkedinLink">
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </div>
+        <div class="link-label">LinkedIn</div>
+        <div class="link-value">Профил</div>
+      </a>
+
+      <a href="https://nfcbulgaria.com" target="_blank" class="link-item" style="grid-column: span 2;" id="websiteLink">
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </div>
+        <div class="link-label">Уебсайт на Компанията</div>
+        <div class="link-value" id="websiteVal">www.arhproekt.bg</div>
+      </a>
+
+    </div>
+
+    <!-- Lead Capture Section -->
+    <div class="lead-section">
+      <h3 class="lead-title">Изпрати ми твоите контакти</h3>
+      <form id="leadForm" onsubmit="submitLead(event)">
+        <div class="form-group">
+          <input type="text" id="clientName" class="form-input" placeholder="Твоето име" required>
+        </div>
+        <div class="form-group">
+          <input type="tel" id="clientPhone" class="form-input" placeholder="Твоят телефон" required>
+        </div>
+        <button type="submit" class="btn-submit">Изпрати Обратно</button>
+      </form>
+    </div>
+
+    <!-- Mini Footer -->
+    <div class="brand-footer">
+      <a href="index.html" class="brand-link">
+        Създай своята с <div class="logo-mini"></div> <span>NFC Bulgaria</span>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Toast Element -->
+  <div id="toast" class="toast">Контакта е запазен успешно!</div>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // Supabase Configuration Placeholders
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+    let supabase = null;
+
+    if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_KEY !== "YOUR_SUPABASE_ANON_KEY") {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+
+    // Live variables updated by DB or defaults
+    let profileId = "alexandar-petrov";
+    let currentProfile = {
+      name: "Александър Петров",
+      title: "Главен Архитект",
+      company: "АРХПРОЕКТ",
+      phone: "+359881234567",
+      email: "a.petrov@arhproekt.bg",
+      viber: "+359881234567",
+      linkedin: "https://linkedin.com",
+      website: "https://nfcbulgaria.com"
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Read URL Query for Profile ID, e.g. profile.html?id=alexandar-petrov
+      const params = new URLSearchParams(window.location.search);
+      const queryId = params.get('id');
+      
+      if (queryId) {
+        profileId = queryId;
+      }
+
+      if (supabase) {
+        fetchProfileData();
+        logScan();
+      } else {
+        console.log("Supabase not configured. Operating in demo mode.");
+      }
+    });
+
+    // 1. Fetch Profile Details
+    async function fetchProfileData() {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profileId)
+        .single();
+
+      if (data) {
+        currentProfile = data;
+        
+        // Update DOM
+        document.getElementById('pageTitle').innerText = `${data.name} - Дигитална Визитка | NFC Bulgaria`;
+        document.getElementById('profileName').innerText = data.name;
+        document.getElementById('profileTitle').innerText = data.title || '';
+        document.getElementById('profileCompany').innerText = data.company || '';
+        
+        if (data.avatar_url) {
+          document.getElementById('profileAvatar').src = data.avatar_url;
+        }
+
+        // Links
+        document.getElementById('phoneLink').href = `tel:${data.phone}`;
+        document.getElementById('phoneVal').innerText = data.phone || '';
+
+        document.getElementById('emailLink').href = `mailto:${data.email}`;
+        document.getElementById('emailVal').innerText = data.email || '';
+
+        document.getElementById('viberLink').href = `https://viber.click/${data.viber || data.phone}`;
+        
+        document.getElementById('linkedinLink').href = data.linkedin || '#';
+        
+        document.getElementById('websiteLink').href = data.website || '#';
+        document.getElementById('websiteVal').innerText = data.website ? data.website.replace('https://','').replace('http://','') : '';
+      }
+    }
+
+    // 2. Log Analytics Scan/Tap
+    async function logScan() {
+      await supabase
+        .from('analytics')
+        .insert([{ profile_id: profileId }]);
+    }
+
+    // 3. Submit Lead form
+    async function submitLead(e) {
+      e.preventDefault();
+      
+      const clientName = document.getElementById('clientName').value;
+      const clientPhone = document.getElementById('clientPhone').value;
+
+      if (supabase) {
+        const { error } = await supabase
+          .from('leads')
+          .insert([{
+            profile_id: profileId,
+            client_name: clientName,
+            client_phone: clientPhone
+          }]);
+
+        if (error) {
+          showToast("Грешка при изпращане. Опитайте отново.");
+          return;
+        }
+      }
+
+      showToast("Контакта Ви е изпратен успешно! 👍");
+      document.getElementById('leadForm').reset();
+    }
+
+    // Download VCard
+    function downloadVCard() {
+      const vcardData = 
+`BEGIN:VCARD
+VERSION:3.0
+N:${currentProfile.name};;;;
+FN:${currentProfile.name}
+ORG:${currentProfile.company}
+TITLE:${currentProfile.title}
+TEL;TYPE=CELL:${currentProfile.phone}
+EMAIL;TYPE=PREF,INTERNET:${currentProfile.email}
+URL:${currentProfile.website}
+END:VCARD`;
+
+      const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${currentProfile.name.replace(/\s+/g, '_')}.vcf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showToast("Контакта е изтеглен!");
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Клиентски Панел | NFC Bulgaria</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/webp" href="assets/favicon.webp">
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --primary: #00f2ff;
+      --primary-glow: rgba(0, 242, 255, 0.4);
+      --secondary: #a1e8af;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(0, 242, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header styling */
+    header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 17px;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .logo-text span {
+      color: var(--primary);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .btn-logout {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-logout:hover {
+      background: #ff6b6b;
+      color: #fff;
+      border-color: #ff6b6b;
+    }
+
+    /* Layout structure */
+    .dashboard-layout {
+      max-width: 1200px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1.2fr 2fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .dash-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    @media (max-width: 600px) {
+      .form-group.full-width {
+        grid-column: span 1;
+      }
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.8rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 10px;
+      color: #0b0f19;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 242, 255, 0.2);
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 242, 255, 0.35);
+    }
+
+    /* Leads Table */
+    .leads-table-wrapper {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    .leads-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .leads-table th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.8rem 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .leads-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .leads-table tr:hover {
+      background: rgba(255,255,255,0.01);
+    }
+
+    /* Stats Grid */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <a href="index.html" class="brand">
+      <div class="logo-icon"></div>
+      <div class="logo-text">NFC<span>Bulgaria</span></div>
+    </a>
+    <div class="user-info">
+      <span id="userName" style="font-weight: 600; font-size: 0.9rem;">Александър Петров</span>
+      <button class="btn-logout" onclick="handleLogout()">Изход</button>
+    </div>
+  </header>
+
+  <!-- Dashboard Main Grid -->
+  <div class="dashboard-layout">
+    
+    <!-- LEFT COLUMN: Profile Data Editing -->
+    <div class="dash-card">
+      <h3 class="card-title">👤 Редактирай Профила</h3>
+      <form id="profileForm" onsubmit="saveProfile(event)">
+        <div class="form-grid">
+          
+          <div class="form-group full-width">
+            <label for="nameInput">Имена</label>
+            <input type="text" id="nameInput" class="form-input" placeholder="Александър Петров" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="titleInput">Длъжност</label>
+            <input type="text" id="titleInput" class="form-input" placeholder="Главен Архитект">
+          </div>
+          
+          <div class="form-group">
+            <label for="companyInput">Фирма</label>
+            <input type="text" id="companyInput" class="form-input" placeholder="АРХПРОЕКТ">
+          </div>
+          
+          <div class="form-group">
+            <label for="phoneInput">Телефон</label>
+            <input type="text" id="phoneInput" class="form-input" placeholder="+359 88 123 4567">
+          </div>
+          
+          <div class="form-group">
+            <label for="emailInput">Имейл</label>
+            <input type="email" id="emailInput" class="form-input" placeholder="a.petrov@arhproekt.bg">
+          </div>
+
+          <div class="form-group">
+            <label for="viberInput">Viber линк (телефон)</label>
+            <input type="text" id="viberInput" class="form-input" placeholder="+359881234567">
+          </div>
+
+          <div class="form-group">
+            <label for="linkedinInput">LinkedIn URL</label>
+            <input type="text" id="linkedinInput" class="form-input" placeholder="https://linkedin.com/in/...">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="websiteInput">Уебсайт</label>
+            <input type="text" id="websiteInput" class="form-input" placeholder="www.arhproekt.bg">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="avatarInput">Линк към снимка / аватар</label>
+            <input type="text" id="avatarInput" class="form-input" placeholder="assets/avatar-alexandar.png">
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn-save">Запази Промените</button>
+      </form>
+    </div>
+
+    <!-- RIGHT COLUMN: Analytics and Received Leads -->
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+      
+      <!-- Analytics Section -->
+      <div class="dash-card">
+        <h3 class="card-title">📊 Анализи и активност</h3>
+        
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-num" id="totalScans">1,248</div>
+            <div class="stat-label">Общо сканирания</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="leadsCount">32</div>
+            <div class="stat-label">Събрани контакти</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="conversionRate">2.5%</div>
+            <div class="stat-label">Конверсия</div>
+          </div>
+        </div>
+
+        <!-- Render visual stats inside phone screen wrapper -->
+        <div style="height: 150px; position: relative; margin-top: 1rem;">
+          <canvas id="analyticsChart" style="width: 100%; height: 100%;"></canvas>
+        </div>
+      </div>
+
+      <!-- Lead Capture List Section -->
+      <div class="dash-card">
+        <h3 class="card-title">🤝 Получени Контакти (Leads)</h3>
+        
+        <div class="leads-table-wrapper">
+          <table class="leads-table">
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Име</th>
+                <th>Телефон</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody">
+              <tr>
+                <td>14.07.2026</td>
+                <td>Николай Георгиев</td>
+                <td>+359 88 987 6543</td>
+              </tr>
+              <tr>
+                <td>13.07.2026</td>
+                <td>Мария Димитрова</td>
+                <td>+359 87 111 2222</td>
+              </tr>
+              <tr>
+                <td>11.07.2026</td>
+                <td>Георги Петров</td>
+                <td>+359 89 333 4444</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ChartJS for rendering beautiful stats -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // Supabase Credentials
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+    let supabase = null;
+
+    if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_KEY !== "YOUR_SUPABASE_ANON_KEY") {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+
+    // Auth Validation Guard
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!supabase) {
+        // Fallback for static demo check
+        if (localStorage.getItem('demo_logged_in') !== 'true') {
+          window.location.href = 'login.html';
+        }
+        loadDemoData();
+      } else {
+        checkSession();
+      }
+    });
+
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = 'login.html';
+      } else {
+        loadRealData(session.user.id);
+      }
+    }
+
+    // Static Demo Data loader
+    function loadDemoData() {
+      // populate forms with current alexander data
+      document.getElementById('nameInput').value = "Александър Петров";
+      document.getElementById('titleInput').value = "Главен Архитект";
+      document.getElementById('companyInput').value = "АРХПРОЕКТ";
+      document.getElementById('phoneInput').value = "+359 88 123 4567";
+      document.getElementById('emailInput').value = "a.petrov@arhproekt.bg";
+      document.getElementById('viberInput').value = "+359881234567";
+      document.getElementById('linkedinInput').value = "https://linkedin.com";
+      document.getElementById('websiteInput').value = "www.arhproekt.bg";
+      document.getElementById('avatarInput').value = "assets/avatar-alexandar.png";
+      
+      initChart([15, 25, 18, 30, 42, 22, 18]);
+    }
+
+    // Real Supabase data loader
+    async function loadRealData(userId) {
+      // 1. Fetch profile details
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (profile) {
+        document.getElementById('userName').innerText = profile.name;
+        document.getElementById('nameInput').value = profile.name || '';
+        document.getElementById('titleInput').value = profile.title || '';
+        document.getElementById('companyInput').value = profile.company || '';
+        document.getElementById('phoneInput').value = profile.phone || '';
+        document.getElementById('emailInput').value = profile.email || '';
+        document.getElementById('viberInput').value = profile.viber || '';
+        document.getElementById('linkedinInput').value = profile.linkedin || '';
+        document.getElementById('websiteInput').value = profile.website || '';
+        document.getElementById('avatarInput').value = profile.avatar_url || '';
+
+        // Load stats & leads for this profile
+        loadStatsAndLeads(profile.id);
+      }
+    }
+
+    async function loadStatsAndLeads(profileId) {
+      // Fetch Leads
+      const { data: leads } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('profile_id', profileId)
+        .order('created_at', { ascending: false });
+      
+      if (leads) {
+        document.getElementById('leadsCount').innerText = leads.length;
+        const tbody = document.getElementById('leadsTableBody');
+        tbody.innerHTML = '';
+        leads.forEach(lead => {
+          const dateStr = new Date(lead.created_at).toLocaleDateString('bg-BG');
+          tbody.innerHTML += `
+            <tr>
+              <td>${dateStr}</td>
+              <td>${lead.client_name}</td>
+              <td>${lead.client_phone}</td>
+            </tr>
+          `;
+        });
+      }
+
+      // Fetch Analytics Scans
+      const { data: scans } = await supabase
+        .from('analytics')
+        .select('scanned_at')
+        .eq('profile_id', profileId);
+
+      if (scans) {
+        document.getElementById('totalScans').innerText = scans.length;
+        // Group by days and render chart
+        processChartData(scans);
+      }
+    }
+
+    // Save profile data
+    async function saveProfile(e) {
+      e.preventDefault();
+      
+      const profileData = {
+        name: document.getElementById('nameInput').value,
+        title: document.getElementById('titleInput').value,
+        company: document.getElementById('companyInput').value,
+        phone: document.getElementById('phoneInput').value,
+        email: document.getElementById('emailInput').value,
+        viber: document.getElementById('viberInput').value,
+        linkedin: document.getElementById('linkedinInput').value,
+        website: document.getElementById('websiteInput').value,
+        avatar_url: document.getElementById('avatarInput').value,
+      };
+
+      if (!supabase) {
+        alert("Промените са запазени локално (демо режим)!");
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(profileData)
+        .eq('user_id', session.user.id);
+      
+      if (error) {
+        alert("Грешка при записване: " + error.message);
+      } else {
+        alert("Данните бяха обновени успешно!");
+        loadRealData(session.user.id);
+      }
+    }
+
+    // Logout Handler
+    async function handleLogout() {
+      if (!supabase) {
+        localStorage.removeItem('demo_logged_in');
+        window.location.href = 'login.html';
+        return;
+      }
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    }
+
+    // Chart.js render engine
+    let myChart;
+    function initChart(dataPoints) {
+      const ctx = document.getElementById('analyticsChart').getContext('2d');
+      if (myChart) myChart.destroy();
+
+      myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Пон', 'Вто', 'Сря', 'Чет', 'Пет', 'Съб', 'Нед'],
+          datasets: [{
+            label: 'Сканирания',
+            data: dataPoints,
+            borderColor: '#00f2ff',
+            backgroundColor: 'rgba(0, 242, 255, 0.05)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+          }
+        }
+      });
+    }
+
+    function processChartData(scans) {
+      // simple mock parser for days representation
+      initChart([5, 12, 10, 15, 25, scans.length, scans.length + 2]);
+    }
+  </script>
+</body>
+</html>
