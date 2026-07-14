@@ -557,12 +557,12 @@
         document.getElementById('emailLink').href = `mailto:${data.email || ''}`;
         document.getElementById('emailVal').innerText = data.email || '';
 
-        document.getElementById('viberLink').href = data.viber ? `https://viber.click/${data.viber}` : '#';
-        document.getElementById('linkedinLink').href = data.linkedin || '#';
-        document.getElementById('facebookLink').href = data.facebook || '#';
-        document.getElementById('instagramLink').href = data.instagram || '#';
-        document.getElementById('websiteLink').href = data.website || '#';
-        document.getElementById('websiteVal').innerText = data.website ? data.website.replace('https://','').replace('http://','') : '';
+        document.getElementById('viberLink').href = data.viber ? `https://viber.click/${data.viber.replace('+', '')}` : '#';
+        document.getElementById('linkedinLink').href = formatExternalUrl(data.linkedin);
+        document.getElementById('facebookLink').href = formatExternalUrl(data.facebook);
+        document.getElementById('instagramLink').href = formatExternalUrl(data.instagram);
+        document.getElementById('websiteLink').href = formatExternalUrl(data.website);
+        document.getElementById('websiteVal').innerText = data.website ? data.website.replace('https://','').replace('http://','').replace('www.','') : '';
 
         // Dynamic visibility - only show links that are filled in!
         toggleLinkVisibility('phoneLink', data.phone);
@@ -640,6 +640,17 @@ END:VCARD`;
       setTimeout(() => {
         toast.classList.remove('show');
       }, 3000);
+    }
+
+    // Helper to format external URLs safely with protocol checks
+    function formatExternalUrl(url) {
+      if (!url) return '#';
+      let cleanUrl = url.trim();
+      if (cleanUrl === '') return '#';
+      if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+        cleanUrl = 'https://' + cleanUrl;
+      }
+      return cleanUrl;
     }
 
     // Helper to dynamically show/hide buttons based on content presence
