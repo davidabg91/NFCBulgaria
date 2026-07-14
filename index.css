@@ -1040,3 +1040,10 @@ footer {
 .mockup-slide.active .chart-bar-4 { height: 60px; }
 .mockup-slide.active .chart-bar-5 { height: 80px; background: var(--secondary); }
 
+@media (max-width: 768px) {
+  .visual-connector {
+    flex-direction: column;
+    gap: 1.5rem !important;
+  }
+}
+
