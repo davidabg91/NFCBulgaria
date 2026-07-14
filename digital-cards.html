@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="index.css">
   <style>
     .features-page-content {
-      padding: 4rem 0 8rem;
+      padding: 7.5rem 0 8rem;
     }
     .features-header {
       text-align: center;
@@ -320,24 +320,6 @@
     </div>
   </div>
 
-  <script>
-    const cookieBanner = document.getElementById('cookieConsentBanner');
-    const btnAccept = document.getElementById('btnAcceptCookies');
-    const btnDecline = document.getElementById('btnDeclineCookies');
-
-    if (!localStorage.getItem('cookieConsent')) {
-      cookieBanner.classList.add('active');
-    }
-
-    btnAccept.addEventListener('click', () => {
-      localStorage.setItem('cookieConsent', 'accepted');
-      cookieBanner.classList.remove('active');
-    });
-
-    btnDecline.addEventListener('click', () => {
-      localStorage.setItem('cookieConsent', 'declined');
-      cookieBanner.classList.remove('active');
-    });
-  </script>
+  <script src="index.js"></script>
 </body>
 </html>
