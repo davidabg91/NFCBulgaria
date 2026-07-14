@@ -124,12 +124,15 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 3rem;
       overflow: hidden;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      color: var(--primary);
       border: 3px solid #111827;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     /* Profile Info */
@@ -395,7 +398,9 @@
 
     <!-- Profile Head -->
     <div class="avatar-wrapper">
-      <div class="avatar">АП</div>
+      <div class="avatar">
+        <img src="assets/avatar-alexandar.png" alt="Александър Петров - Главен Архитект">
+      </div>
     </div>
 
     <div class="profile-info">
@@ -417,31 +422,41 @@
     <div class="links-grid">
       
       <a href="tel:+359881234567" class="link-item">
-        <div class="link-icon">📞</div>
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </div>
         <div class="link-label">Телефон</div>
         <div class="link-value">+359 88 123 4567</div>
       </a>
 
       <a href="mailto:a.petrov@arhproekt.bg" class="link-item">
-        <div class="link-icon">✉️</div>
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        </div>
         <div class="link-label">Имейл</div>
         <div class="link-value">a.petrov@arhproekt.bg</div>
       </a>
 
       <a href="https://viber.click/+359881234567" target="_blank" class="link-item">
-        <div class="link-icon">💬</div>
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
         <div class="link-label">Viber</div>
         <div class="link-value">Свържи се</div>
       </a>
 
       <a href="https://linkedin.com" target="_blank" class="link-item">
-        <div class="link-icon">💼</div>
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </div>
         <div class="link-label">LinkedIn</div>
         <div class="link-value">Профил</div>
       </a>
 
       <a href="https://nfcbulgaria.com" target="_blank" class="link-item" style="grid-column: span 2;">
-        <div class="link-icon">🌐</div>
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </div>
         <div class="link-label">Уебсайт на Компанията</div>
         <div class="link-value">www.arhproekt.bg</div>
       </a>
