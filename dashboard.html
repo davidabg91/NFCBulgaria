@@ -295,7 +295,10 @@
     
     <!-- LEFT COLUMN: Profile Data Editing -->
     <div class="dash-card">
-      <h3 class="card-title">👤 Редактирай Профила</h3>
+      <h3 class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <span>👤 Редактирай Профила</span>
+        <a id="myProfileLink" href="profile.html" target="_blank" class="btn-logout" style="color: var(--primary); border-color: var(--glass-border); text-decoration: none; font-size: 0.75rem; padding: 0.4rem 0.8rem; background: rgba(0, 242, 255, 0.05); display: inline-flex; align-items: center; gap: 4px;">Виж моята визитка 📱</a>
+      </h3>
       <form id="profileForm" onsubmit="saveProfile(event)">
         <div class="form-grid">
           
@@ -456,6 +459,7 @@
       document.getElementById('websiteInput').value = "www.arhproekt.bg";
       document.getElementById('avatarInput').value = "assets/avatar-alexandar.png";
       document.getElementById('avatarPreview').src = "assets/avatar-alexandar.png";
+      document.getElementById('myProfileLink').href = "profile.html?id=demo-profile";
       
       initChart([15, 25, 18, 30, 42, 22, 18]);
     }
@@ -471,6 +475,7 @@
       
       if (profile) {
         document.getElementById('userName').innerText = profile.name;
+        document.getElementById('myProfileLink').href = `profile.html?id=${profile.id}`;
         document.getElementById('nameInput').value = profile.name || '';
         document.getElementById('titleInput').value = profile.title || '';
         document.getElementById('companyInput').value = profile.company || '';
