@@ -443,20 +443,15 @@
 
   <div class="profile-container">
 
-    <!-- Utilities Row (Language translation + Saves count) -->
-    <div class="profile-header-utils">
+    <!-- Utilities Row (Language translation) -->
+    <div class="profile-header-utils" style="justify-content: flex-start;">
       <div class="lang-selector">
         <button class="lang-btn active" onclick="setLanguage('bg')">BG</button>
         <button class="lang-btn" onclick="setLanguage('en')">EN</button>
         <button class="lang-btn" onclick="setLanguage('de')">DE</button>
         <button class="lang-btn" onclick="setLanguage('ro')">RO</button>
       </div>
-      <div class="saves-count-pill" id="savesCountPill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        <span id="savesCountText">142 изтегляния</span>
-      </div>
     </div>
-    <!-- Profile Head -->
     <div class="avatar-wrapper">
       <div class="avatar">
         <img src="assets/avatar-alexandar.png" alt="Александър Петров - Главен Архитект">
@@ -677,11 +672,6 @@
       const leadSubmitBtn = document.getElementById('leadSubmitBtn');
       if (leadSubmitBtn) leadSubmitBtn.innerText = t.sendBack;
 
-      const savesCountText = document.getElementById('savesCountText');
-      if (savesCountText) {
-        const count = parseInt(savesCountText.innerText) || 0;
-        savesCountText.innerText = `${count} ${t.downloads}`;
-      }
 
       const brandLink = document.getElementById('brandFooterLink');
       if (brandLink) {
@@ -714,7 +704,6 @@
         saves = Math.floor(Math.random() * 40) + 120; // random default between 120 and 160
         localStorage.setItem('demoSaves', saves);
       }
-      document.getElementById('savesCountText').innerText = `${saves} ${translations[activeLang].downloads}`;
     });
 
     // Dynamic vCard Generation
@@ -723,7 +712,6 @@
       let saves = parseInt(localStorage.getItem('demoSaves')) || 142;
       saves += 1;
       localStorage.setItem('demoSaves', saves);
-      document.getElementById('savesCountText').innerText = `${saves} ${translations[activeLang].downloads}`;
 
       const vcard = `BEGIN:VCARD
 VERSION:3.0

@@ -447,16 +447,13 @@
   <div class="profile-container">
 
     <!-- Utilities Row (Language translation + Saves count) -->
-    <div class="profile-header-utils">
+    <!-- Utilities Row (Language translation) -->
+    <div class="profile-header-utils" style="justify-content: flex-start;">
       <div class="lang-selector">
         <button class="lang-btn active" onclick="setLanguage('bg')">BG</button>
         <button class="lang-btn" onclick="setLanguage('en')">EN</button>
         <button class="lang-btn" onclick="setLanguage('de')">DE</button>
         <button class="lang-btn" onclick="setLanguage('ro')">RO</button>
-      </div>
-      <div class="saves-count-pill" id="savesCountPill" style="display: none;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        <span id="savesCountText">0 изтегляния</span>
       </div>
     </div>
 
@@ -660,14 +657,7 @@
         toggleLinkVisibility('instagramLink', data.instagram);
         toggleLinkVisibility('websiteLink', data.website);
 
-        // Display saves count
-        const savesCountPill = document.getElementById('savesCountPill');
-        const savesCountText = document.getElementById('savesCountText');
-        if (savesCountPill && savesCountText) {
-          const count = data.saves_count || 0;
-          savesCountText.innerText = `${count} ${translations[activeLang].downloads}`;
-          savesCountPill.style.display = 'inline-flex';
-        }
+
       }
     }
 
@@ -718,12 +708,7 @@
       if (supabaseClient && profileId) {
         supabaseClient.rpc('increment_saves', { profile_id: profileId })
           .then(() => {
-            const savesCountText = document.getElementById('savesCountText');
-            if (savesCountText) {
-              const currentText = savesCountText.innerText;
-              const currentVal = parseInt(currentText) || 0;
-              savesCountText.innerText = `${currentVal + 1} ${translations[activeLang].downloads}`;
-            }
+            console.log("Saves count incremented in DB.");
           })
           .catch(err => console.error("Error incrementing saves count:", err));
       }
@@ -922,11 +907,6 @@ END:VCARD`;
       const leadSubmitBtn = document.getElementById('leadSubmitBtn');
       if (leadSubmitBtn) leadSubmitBtn.innerText = t.sendBack;
 
-      const savesCountText = document.getElementById('savesCountText');
-      if (savesCountText) {
-        const count = parseInt(savesCountText.innerText) || 0;
-        savesCountText.innerText = `${count} ${t.downloads}`;
-      }
 
       const brandLink = document.getElementById('brandFooterLink');
       if (brandLink) {

@@ -250,7 +250,7 @@
     /* Stats Grid */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
@@ -382,6 +382,10 @@
             <div class="stat-label">Общо сканирания</div>
           </div>
           <div class="stat-box">
+            <div class="stat-num" id="savesCount">0</div>
+            <div class="stat-label">Запазвания на контакта</div>
+          </div>
+          <div class="stat-box">
             <div class="stat-num" id="leadsCount">0</div>
             <div class="stat-label">Събрани контакти</div>
           </div>
@@ -473,6 +477,12 @@
       document.getElementById('avatarPreview').src = "assets/avatar-alexandar.png";
       document.getElementById('myProfileLink').href = "profile.html?id=demo-profile";
       
+      // Populate demo stats
+      document.getElementById('totalScans').innerText = "165";
+      document.getElementById('savesCount').innerText = localStorage.getItem('demoSaves') || "142";
+      document.getElementById('leadsCount').innerText = "12";
+      document.getElementById('conversionRate').innerText = "7.2%";
+      
       initChart([15, 25, 18, 30, 42, 22, 18]);
     }
 
@@ -506,11 +516,13 @@
         }
 
         // Load stats & leads for this profile
-        loadStatsAndLeads(profile.id);
+        loadStatsAndLeads(profile.id, profile.saves_count);
       }
     }
 
-    async function loadStatsAndLeads(profileId) {
+    async function loadStatsAndLeads(profileId, savesCount) {
+      document.getElementById('savesCount').innerText = savesCount || 0;
+
       // Fetch Leads
       const { data: leads } = await supabaseClient
         .from('leads')
@@ -545,6 +557,17 @@
         // Group by days and render chart
         processChartData(scans);
       }
+
+      // Calculate dynamic conversion rate
+      const totalScansVal = scans ? scans.length : 0;
+      const leadsCountVal = leads ? leads.length : 0;
+      const savesCountVal = savesCount || 0;
+      
+      let convRate = 0;
+      if (totalScansVal > 0) {
+        convRate = ((leadsCountVal + savesCountVal) / totalScansVal) * 100;
+      }
+      document.getElementById('conversionRate').innerText = `${convRate.toFixed(1)}%`;
     }
 
     // Save profile data
