@@ -448,19 +448,19 @@
       }
     }
 
-    // Delete profile (and optionally cascade auth user manually or let RLS trigger it)
+    // Delete profile (deletes from profiles and cleans up auth.users)
     async function handleDeleteProfile(profileId, userId) {
       if (!confirm(`Сигурни ли сте, че искате да изтриете профил '${profileId}'?`)) {
         return;
       }
 
-      const { error } = await supabaseClient
-        .from('profiles')
-        .delete()
-        .eq('id', profileId);
+      const { error } = await supabaseClient.rpc('delete_client', {
+        target_profile_id: profileId,
+        target_user_id: userId || null
+      });
 
       if (error) {
-        alert("Грешка при изтриване: " + error.message);
+        alert("Грешка при изтриване: " + error.message + "\n(Уверете се, че сте инсталирали SQL функцията delete_client в Supabase!)");
       } else {
         alert("Профилът беше изтрит успешно.");
         loadProfilesList();
