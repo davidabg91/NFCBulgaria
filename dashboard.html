@@ -337,6 +337,16 @@
             <input type="text" id="linkedinInput" class="form-input" placeholder="https://linkedin.com/in/...">
           </div>
 
+          <div class="form-group">
+            <label for="facebookInput">Facebook Профил</label>
+            <input type="text" id="facebookInput" class="form-input" placeholder="https://facebook.com/...">
+          </div>
+
+          <div class="form-group">
+            <label for="instagramInput">Instagram Профил</label>
+            <input type="text" id="instagramInput" class="form-input" placeholder="https://instagram.com/...">
+          </div>
+
           <div class="form-group full-width">
             <label for="websiteInput">Уебсайт</label>
             <input type="text" id="websiteInput" class="form-input" placeholder="www.arhproekt.bg">
@@ -456,6 +466,8 @@
       document.getElementById('emailInput').value = "a.petrov@arhproekt.bg";
       document.getElementById('viberInput').value = "+359881234567";
       document.getElementById('linkedinInput').value = "https://linkedin.com";
+      document.getElementById('facebookInput').value = "";
+      document.getElementById('instagramInput').value = "";
       document.getElementById('websiteInput').value = "www.arhproekt.bg";
       document.getElementById('avatarInput').value = "assets/avatar-alexandar.png";
       document.getElementById('avatarPreview').src = "assets/avatar-alexandar.png";
@@ -483,6 +495,8 @@
         document.getElementById('emailInput').value = profile.email || '';
         document.getElementById('viberInput').value = profile.viber || '';
         document.getElementById('linkedinInput').value = profile.linkedin || '';
+        document.getElementById('facebookInput').value = profile.facebook || '';
+        document.getElementById('instagramInput').value = profile.instagram || '';
         document.getElementById('websiteInput').value = profile.website || '';
         document.getElementById('avatarInput').value = profile.avatar_url || '';
         if (profile.avatar_url) {
@@ -545,6 +559,8 @@
         email: document.getElementById('emailInput').value,
         viber: document.getElementById('viberInput').value,
         linkedin: document.getElementById('linkedinInput').value,
+        facebook: document.getElementById('facebookInput').value,
+        instagram: document.getElementById('instagramInput').value,
         website: document.getElementById('websiteInput').value,
         avatar_url: document.getElementById('avatarInput').value,
       };

@@ -434,6 +434,22 @@
         <div class="link-value">Профил</div>
       </a>
 
+      <a href="#" target="_blank" class="link-item" id="facebookLink">
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+        </div>
+        <div class="link-label">Facebook</div>
+        <div class="link-value">Профил</div>
+      </a>
+
+      <a href="#" target="_blank" class="link-item" id="instagramLink">
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        </div>
+        <div class="link-label">Instagram</div>
+        <div class="link-value">Профил</div>
+      </a>
+
       <a href="https://nfcbulgaria.com" target="_blank" class="link-item" style="grid-column: span 2;" id="websiteLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
@@ -534,19 +550,28 @@
           document.getElementById('profileAvatar').src = data.avatar_url;
         }
 
-        // Links
-        document.getElementById('phoneLink').href = `tel:${data.phone}`;
+        // Links values setting
+        document.getElementById('phoneLink').href = `tel:${data.phone || ''}`;
         document.getElementById('phoneVal').innerText = data.phone || '';
 
-        document.getElementById('emailLink').href = `mailto:${data.email}`;
+        document.getElementById('emailLink').href = `mailto:${data.email || ''}`;
         document.getElementById('emailVal').innerText = data.email || '';
 
-        document.getElementById('viberLink').href = `https://viber.click/${data.viber || data.phone}`;
-        
+        document.getElementById('viberLink').href = data.viber ? `https://viber.click/${data.viber}` : '#';
         document.getElementById('linkedinLink').href = data.linkedin || '#';
-        
+        document.getElementById('facebookLink').href = data.facebook || '#';
+        document.getElementById('instagramLink').href = data.instagram || '#';
         document.getElementById('websiteLink').href = data.website || '#';
         document.getElementById('websiteVal').innerText = data.website ? data.website.replace('https://','').replace('http://','') : '';
+
+        // Dynamic visibility - only show links that are filled in!
+        toggleLinkVisibility('phoneLink', data.phone);
+        toggleLinkVisibility('emailLink', data.email);
+        toggleLinkVisibility('viberLink', data.viber);
+        toggleLinkVisibility('linkedinLink', data.linkedin);
+        toggleLinkVisibility('facebookLink', data.facebook);
+        toggleLinkVisibility('instagramLink', data.instagram);
+        toggleLinkVisibility('websiteLink', data.website);
       }
     }
 
@@ -615,6 +640,18 @@ END:VCARD`;
       setTimeout(() => {
         toast.classList.remove('show');
       }, 3000);
+    }
+
+    // Helper to dynamically show/hide buttons based on content presence
+    function toggleLinkVisibility(elementId, value) {
+      const el = document.getElementById(elementId);
+      if (el) {
+        if (value && value.trim() !== '') {
+          el.style.display = 'flex';
+        } else {
+          el.style.display = 'none';
+        }
+      }
     }
   </script>
 </body>
