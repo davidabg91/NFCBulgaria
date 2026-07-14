@@ -131,6 +131,8 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: 95% !important;
+  width: 100%;
 }
 
 .logo {
