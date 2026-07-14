@@ -610,18 +610,13 @@
           return;
         }
 
-        // Send email notification to Make.com directly from the browser (100% reliable)
-        fetch('https://hook.eu1.make.com/37nc5kpk2bfwzo3c6nyaqqt4synyhhaa', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          mode: 'no-cors',
-          body: JSON.stringify({
-            owner_email: currentProfile.email,
-            client_name: clientName,
-            client_phone: clientPhone,
-            created_at: new Date().toISOString()
-          })
-        }).catch(err => console.error("Error sending email notification:", err));
+        // Send email notification to Make.com directly from the browser via GET query string (avoids CORS and parses fields automatically)
+        const email = currentProfile.email || '';
+        const name = clientName || '';
+        const phone = clientPhone || '';
+        const webhookUrl = `https://hook.eu1.make.com/37nc5kpk2bfwzo3c6nyaqqt4synyhhaa?owner_email=${encodeURIComponent(email)}&client_name=${encodeURIComponent(name)}&client_phone=${encodeURIComponent(phone)}`;
+        
+        fetch(webhookUrl).catch(err => console.error("Error sending email notification:", err));
       }
 
       showToast("Контакта Ви е изпратен успешно! 👍");
