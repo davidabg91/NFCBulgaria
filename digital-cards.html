@@ -53,11 +53,20 @@
       transform: translateY(-5px);
       box-shadow: 0 15px 35px rgba(0, 242, 255, 0.08);
     }
-    .feature-icon-badge {
-      font-size: 2.5rem;
+    .feature-icon-svg {
+      width: 44px;
+      height: 44px;
       margin-bottom: 1.5rem;
-      display: inline-block;
-      filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2));
+      color: var(--primary);
+      filter: drop-shadow(0 0 8px var(--primary-glow));
+      stroke-width: 1.75;
+      display: block;
+      transition: all 0.3s ease;
+    }
+    .feature-detail-card:hover .feature-icon-svg {
+      color: var(--secondary);
+      filter: drop-shadow(0 0 12px rgba(161, 232, 175, 0.4));
+      transform: scale(1.1);
     }
     .feature-detail-card h3 {
       font-family: var(--font-heading);
@@ -152,7 +161,10 @@
       
       <!-- Card 1: Branding -->
       <div class="feature-detail-card" data-aos>
-        <span class="feature-icon-badge">👤</span>
+        <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
         <h3>Персонален Брандинг</h3>
         <p>Вашата визитка е огледало на Вашия бранд. Профилът Ви съдържа:</p>
         <ul>
@@ -164,7 +176,11 @@
 
       <!-- Card 2: Automatic Translation -->
       <div class="feature-detail-card" data-aos>
-        <span class="feature-icon-badge">🌍</span>
+        <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
         <h3>Автоматичен Превод и Езици</h3>
         <p>Интелигентно локализиране при работа с чуждестранни клиенти и партньори:</p>
         <ul>
@@ -176,7 +192,11 @@
 
       <!-- Card 3: Saves Counter -->
       <div class="feature-detail-card" data-aos>
-        <span class="feature-icon-badge">📥</span>
+        <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
         <h3>Свалени Контакти (Saves Count)</h3>
         <p>Виждате точно колко клиенти са запазили данните Ви директно в телефона си:</p>
         <ul>
@@ -188,7 +208,12 @@
 
       <!-- Card 4: Lead Capture -->
       <div class="feature-detail-card" data-aos>
-        <span class="feature-icon-badge">🤝</span>
+        <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
         <h3>Форма за Размяна на Контакти</h3>
         <p>Позволява на хората да Ви изпратят своите контакти обратно на момента:</p>
         <ul>
@@ -200,7 +225,11 @@
 
       <!-- Card 5: Scan Analytics -->
       <div class="feature-detail-card" data-aos>
-        <span class="feature-icon-badge">📊</span>
+        <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
         <h3>Прегледи и Сканирания на Профила</h3>
         <p>Пълен одит на ефективността на Вашата физическа визитка:</p>
         <ul>
@@ -212,7 +241,11 @@
 
       <!-- Card 6: Click Tracking -->
       <div class="feature-detail-card" data-aos>
-        <span class="feature-icon-badge">🎯</span>
+        <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="6"></circle>
+          <circle cx="12" cy="12" r="2"></circle>
+        </svg>
         <h3>Следене на Кликове (Click Audit)</h3>
         <p>Разберете кои действия и връзки са най-интересни за клиентите Ви:</p>
         <ul>
@@ -224,7 +257,10 @@
 
       <!-- Card 7: Team Dashboard -->
       <div class="feature-detail-card" data-aos style="grid-column: span 1;">
-        <span class="feature-icon-badge">👥</span>
+        <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
         <h3>Фирмен Портал (HubSpot Lite)</h3>
         <p>Пълна CRM система за проследяване и контрол на търговските екипи:</p>
         <ul>
@@ -237,7 +273,10 @@
 
       <!-- Card 8: Email Webhook Integration -->
       <div class="feature-detail-card" data-aos>
-        <span class="feature-icon-badge">✉️</span>
+        <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
         <h3>Имейл Известия при Нов Контакт</h3>
         <p>Никога не изпускайте потенциален клиент, благодарение на मेक (Make.com):</p>
         <ul>
@@ -251,26 +290,38 @@
 
     <!-- Advantages Section -->
     <div class="advantages-section" data-aos>
-      <h2 style="font-family: var(--font-heading); font-size: 1.8rem; text-align: center;">Основни Предимства на Нашата Платформа</h2>
+      <h2 style="font-family: var(--font-heading); font-size: 1.8rem; text-align: center; margin-bottom: 2rem;">Основни Предимства на Нашата Платформа</h2>
       <div class="advantages-grid">
         
         <div class="adv-item">
-          <h4>❌ Без Месечни Абонаменти</h4>
+          <h4 style="display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-size: 1.2rem; color: var(--primary); margin-bottom: 0.5rem;">
+            <svg style="width: 20px; height: 20px; color: var(--secondary); filter: drop-shadow(0 0 5px rgba(161, 232, 175, 0.4));" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Без Месечни Абонаменти
+          </h4>
           <p>Повечето платформи изискват месечна такса. При NFC Bulgaria софтуерната платформа е напълно <strong>безплатна за ползване</strong>. Плащате само веднъж за физическата NFC карта.</p>
         </div>
 
         <div class="adv-item">
-          <h4>🔄 Динамична Актуализация</h4>
+          <h4 style="display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-size: 1.2rem; color: var(--primary); margin-bottom: 0.5rem;">
+            <svg style="width: 20px; height: 20px; color: var(--primary); filter: drop-shadow(0 0 5px var(--primary-glow));" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+            Динамична Актуализация
+          </h4>
           <p>Сменили сте си телефона, имейла или длъжността? Променяте ги за секунди през Вашето табло. Физическата Ви визитка продължава да работи с новата информация.</p>
         </div>
 
         <div class="adv-item">
-          <h4>🌲 Екологичност и Устойчивост</h4>
+          <h4 style="display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-size: 1.2rem; color: var(--primary); margin-bottom: 0.5rem;">
+            <svg style="width: 20px; height: 20px; color: var(--secondary); filter: drop-shadow(0 0 5px rgba(161, 232, 175, 0.4));" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 2 5.5a7 7 0 0 1-7 7h-3z"></path><path d="M9 22v-6"></path></svg>
+            Екологичност и Устойчивост
+          </h4>
           <p>Спестете отпечатването на хиляди хартиени визитки, които често биват изхвърляни. Една смарт NFC визитка е достатъчна за цял живот.</p>
         </div>
 
         <div class="adv-item">
-          <h4>⚡ Двуканално Споделяне</h4>
+          <h4 style="display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-size: 1.2rem; color: var(--primary); margin-bottom: 0.5rem;">
+            <svg style="width: 20px; height: 20px; color: var(--primary); filter: drop-shadow(0 0 5px var(--primary-glow));" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            Двуканално Споделяне
+          </h4>
           <p>Картата работи с вграден безконтактен NFC чип за новите телефони и индивидуален QR код за по-старите модели, гарантирайки 100% съвместимост.</p>
         </div>
 
