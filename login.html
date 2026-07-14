@@ -263,7 +263,7 @@
         // Fallback for static demo testing before DB setup
         if (email === "demo@nfcbulgaria.com" && password === "demo123") {
           localStorage.setItem('demo_logged_in', 'true');
-          window.location.href = 'dashboard.html';
+          window.location.href = 'admin.html';
           return;
         } else {
           errorBox.innerText = "Системата не е конфигурирана. Използвайте демо поща: demo@nfcbulgaria.com с парола demo123 за тест.";
@@ -282,8 +282,13 @@
         errorBox.innerText = "Грешна парола или несъществуващ имейл адрес.";
         errorBox.style.display = 'block';
       } else {
-        // Successful login, Supabase sets token automatically in cookies/localStorage
-        window.location.href = 'dashboard.html';
+        // Successful login - redirect admins to admin.html, clients to dashboard.html
+        const ADMIN_EMAILS = ["office@nfcbulgaria.com", "sjv_gold@abv.bg", "demo@nfcbulgaria.com"];
+        if (ADMIN_EMAILS.includes(email)) {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
       }
     });
   </script>
