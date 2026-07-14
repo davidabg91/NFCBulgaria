@@ -688,47 +688,108 @@
       <p>Мини-сайт за всеки служител. Модерно софтуерно решение, което превръща визитката в мощен инструмент за продажби.</p>
     </div>
 
-    <div class="service-item">
-      <div class="service-info" data-aos>
+    <div class="service-item" style="gap: 4rem;">
+      <div class="service-info" data-aos style="flex: 1.2;">
         <h3>Функции, които <span class="gradient-text">впечатляват</span></h3>
-        <p>Нашите дигитални профили са разработени по модел на световните лидери в сферата. Те са изцяло оптимизирани за мобилни телефони и предлагат функции от следващо поколение:</p>
+        <p style="margin-bottom: 2rem;">Нашите дигитални профили са разработени по модел на световните лидери в сферата. Кликнете на някоя от функциите, за да видите как изглежда на телефона вдясно:</p>
         
-        <ul style="margin-top: 1.5rem; color: var(--text-muted); list-style: none;">
-          <li style="margin-bottom: 1rem;">
-            <strong style="color: var(--primary);">👤 Персонален Брандинг:</strong>
-            Снимка на служителя, лого на компанията, длъжност и контакти, оформени в луксозен дизайн.
-          </li>
-          <li style="margin-bottom: 1rem;">
-            <strong style="color: var(--primary);">📥 Бързо записване (vCard):</strong>
-            Клиентът изтегля и записва целия контакт (име, телефон, имейл) в телефона си с натискането на един голям бутон.
-          </li>
-          <li style="margin-bottom: 1rem;">
-            <strong style="color: var(--primary);">🤝 Форма за Лийдове (Lead Capture):</strong>
-            Клиентът може да изпрати своите контакти обратно към Вас директно от Вашия дигитален профил.
-          </li>
-          <li style="margin-bottom: 1rem;">
-            <strong style="color: var(--primary);">⚡ Динамична промяна:</strong>
-            Ако промените телефона или позицията си, информацията се обновява в реално време, без да се налага препечатване на визитката.
-          </li>
-          <li style="margin-bottom: 1rem;">
-            <strong style="color: var(--primary);">📊 Административен Панел (За Екипи):</strong>
-            Управлявайте профилите на всички Ваши служители от едно централизирано място — бързо, лесно и сигурно.
-          </li>
-        </ul>
+        <!-- Interactive Slide Triggers -->
+        <div style="display: flex; flex-direction: column;">
+          <div class="mockup-trigger active" data-slide="0">
+            <h4>👤 Персонален Брандинг</h4>
+            <p>Снимка на служителя, лого на компанията, длъжност и интерактивни бутони за връзка, оформени в луксозен дизайн.</p>
+          </div>
+          <div class="mockup-trigger" data-slide="1">
+            <h4>📥 Бързо записване с 1 клик (vCard)</h4>
+            <p>Клиентът вижда голям, пулсиращ бутон, който изтегля и записва целия контакт директно в телефона му.</p>
+          </div>
+          <div class="mockup-trigger" data-slide="2">
+            <h4>🤝 Форма за Лийдове (Lead Capture)</h4>
+            <p>Вашите клиенти могат лесно да изпратят своите данни обратно към Вас директно през уеб страницата.</p>
+          </div>
+          <div class="mockup-trigger" data-slide="3">
+            <h4>📊 Контрол на Екипи (Team Dashboard)</h4>
+            <p>Административен панел за лесно управление и статистика на всички служители от едно централизирано място.</p>
+          </div>
+        </div>
 
         <div style="margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-          <a href="demo-profile.html" target="_blank" class="btn-primary" style="box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);">Виж Демо Профил 📱</a>
+          <a href="demo-profile.html" target="_blank" class="btn-primary" style="box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);">Отвори Демо Профил 📱</a>
           <a href="#contact" class="btn-primary" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff;">Запитване за Екип</a>
         </div>
       </div>
       
-      <div class="service-img" data-aos style="display: flex; justify-content: center; align-items: center; position: relative;">
-        <!-- Phone Mockup Container representing the profile page -->
+      <!-- Animated Phone Bezel Mockup -->
+      <div class="service-img" data-aos style="flex: 0.8; display: flex; justify-content: center; align-items: center; position: relative;">
         <div style="width: 280px; height: 500px; border: 8px solid #2d3748; border-radius: 36px; background: #0b0f19; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); position: relative; border-color: rgba(0, 242, 255, 0.25);">
-          <!-- Top notch -->
+          <!-- Phone Notch -->
           <div style="width: 120px; height: 18px; background: #2d3748; position: absolute; top: 0; left: 50%; transform: translateX(-50%); border-bottom-left-radius: 12px; z-index: 100;"></div>
-          <!-- Screen preview -->
-          <iframe src="demo-profile.html" style="width: 100%; height: 100%; border: none; overflow: hidden; transform: scale(0.98); transform-origin: top center; border-radius: 28px;" scrolling="no"></iframe>
+          
+          <!-- Slide 1: Personal Branding -->
+          <div class="mockup-slide active">
+            <div class="slide-header"></div>
+            <div class="slide-avatar">АП</div>
+            <div class="slide-title-area">
+              <div class="slide-name">Александър Петров</div>
+              <div class="slide-role">Главен Архитект</div>
+            </div>
+            <div class="slide-grid" style="opacity: 0.85;">
+              <div class="slide-grid-item"><div class="slide-grid-icon">📞</div><div class="slide-grid-label">Телефон</div></div>
+              <div class="slide-grid-item"><div class="slide-grid-icon">✉️</div><div class="slide-grid-label">Имейл</div></div>
+              <div class="slide-grid-item"><div class="slide-grid-icon">💬</div><div class="slide-grid-label">Viber</div></div>
+              <div class="slide-grid-item"><div class="slide-grid-icon">💼</div><div class="slide-grid-label">LinkedIn</div></div>
+            </div>
+            <div style="font-size: 0.65rem; text-align: center; color: var(--text-muted); margin-top: 1.5rem; letter-spacing: 1px; text-transform: uppercase;">www.arhproekt.bg</div>
+          </div>
+
+          <!-- Slide 2: vCard Saving -->
+          <div class="mockup-slide">
+            <div style="text-align: center; margin: auto 0;">
+              <div style="font-size: 2.5rem; margin-bottom: 1rem;">📥</div>
+              <h4 style="font-size: 0.95rem; margin-bottom: 1rem;">Запази Контакта</h4>
+              <div class="slide-vcard-btn pulse-btn" style="padding: 0.8rem; font-size: 0.85rem; border-radius: 12px;">Запази в Телефон</div>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1.5rem; line-height: 1.4;">Сваля VCF файл с имената, длъжността, номерата и имейла директно в телефона на клиента с 1 докосване.</p>
+            </div>
+          </div>
+
+          <!-- Slide 3: Lead Capture -->
+          <div class="mockup-slide">
+            <div style="margin: auto 0;">
+              <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 1rem;">Изпрати ми твоите контакти</h4>
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.8rem; border-radius: 12px; margin-bottom: 0.5rem;">
+                <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Име</div>
+                <div class="typing-text" style="font-size: 0.8rem; font-weight: 600;">Николай Георгиев</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.8rem; border-radius: 12px; margin-bottom: 1rem;">
+                <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Телефон</div>
+                <div style="font-size: 0.8rem; font-weight: 600;">+359 88 987 6543</div>
+              </div>
+              <div style="background: var(--primary); color: #0b0f19; text-align: center; padding: 0.6rem; font-weight: 700; font-size: 0.8rem; border-radius: 8px;">Изпрати Обратно</div>
+            </div>
+          </div>
+
+          <!-- Slide 4: Teams Dashboard -->
+          <div class="mockup-slide">
+            <div>
+              <h4 style="font-size: 0.85rem; text-align: center; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 4px;">📈 Статистика на екипа</h4>
+              <div style="display: flex; justify-content: space-around; font-size: 0.65rem; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                <div>Сканирания: <strong style="color: var(--primary);">482</strong></div>
+                <div>Лийдове: <strong style="color: var(--secondary);">38</strong></div>
+              </div>
+              
+              <!-- Simulated Chart -->
+              <div class="bar-chart">
+                <div class="chart-bar chart-bar-1"></div>
+                <div class="chart-bar chart-bar-2"></div>
+                <div class="chart-bar chart-bar-3"></div>
+                <div class="chart-bar chart-bar-4"></div>
+                <div class="chart-bar chart-bar-5"></div>
+              </div>
+              
+              <div style="font-size: 0.65rem; text-align: center; color: var(--text-muted);">Активност за последните 5 дни</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

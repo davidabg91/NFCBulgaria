@@ -181,4 +181,47 @@ document.addEventListener('DOMContentLoaded', () => {
       consentBanner.classList.remove('show');
     });
   }
+
+  // Interactive Phone Slideshow logic
+  const slides = document.querySelectorAll('.mockup-slide');
+  const triggers = document.querySelectorAll('.mockup-trigger');
+  
+  if (slides.length > 0 && triggers.length > 0) {
+    let currentSlide = 0;
+    let slideInterval;
+
+    function showSlide(index) {
+      slides.forEach(s => s.classList.remove('active'));
+      triggers.forEach(t => t.classList.remove('active'));
+      
+      slides[index].classList.add('active');
+      triggers[index].classList.add('active');
+      currentSlide = index;
+    }
+
+    function nextSlide() {
+      let next = (currentSlide + 1) % slides.length;
+      showSlide(next);
+    }
+
+    function startSlideShow() {
+      slideInterval = setInterval(nextSlide, 4000);
+    }
+
+    function stopSlideShow() {
+      clearInterval(slideInterval);
+    }
+
+    triggers.forEach((trigger, idx) => {
+      trigger.addEventListener('click', () => {
+        stopSlideShow();
+        showSlide(idx);
+        startSlideShow(); // restart interval
+      });
+    });
+
+    // Initialize
+    showSlide(0);
+    startSlideShow();
+  }
 });
