@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Александър Петров - Дигитална Визитка | NFC Bulgaria</title>
   
+  <!-- Google Translate Integration -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'bg',
+        includedLanguages: 'bg,en,de,ru,ro,tr,el,fr,es,it',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
   <!-- Favicon -->
   <link rel="icon" type="image/webp" href="assets/favicon.webp">
 
@@ -375,15 +388,87 @@
     .toast.show {
       transform: translateX(-50%) translateY(0);
     }
+
+    /* Utilities Header Row */
+    .profile-header-utils {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 1.5rem;
+      padding: 0 0.5rem;
+      box-sizing: border-box;
+      gap: 1rem;
+    }
+
+    .saves-count-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(0, 242, 255, 0.08);
+      border: 1px solid rgba(0, 242, 255, 0.15);
+      border-radius: 20px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.82rem;
+      color: var(--primary);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Custom Google Translate Stylings */
+    .translate-select-wrapper {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    #google_translate_element select.goog-te-combo {
+      background: rgba(17, 24, 39, 0.8) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text) !important;
+      border-radius: 10px !important;
+      padding: 0.4rem 0.8rem !important;
+      font-family: inherit !important;
+      font-size: 0.82rem !important;
+      font-weight: 600 !important;
+      outline: none !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+    }
+
+    #google_translate_element select.goog-te-combo:hover {
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 10px rgba(0, 242, 255, 0.25) !important;
+    }
+
+    /* Hide Google branding nodes */
+    .goog-logo-link, .goog-te-gadget span {
+      display: none !important;
+    }
+    .goog-te-gadget {
+      color: transparent !important;
+      font-size: 0 !important;
+      line-height: 0 !important;
+    }
+    .goog-te-banner-frame {
+      display: none !important;
+    }
+    body {
+      top: 0 !important;
+    }
   </style>
 </head>
 <body>
 
   <div class="profile-container">
-    
 
-
-    <!-- Profile Head -->
+    <!-- Utilities Row (Language translation + Saves count) -->
+    <div class="profile-header-utils">
+      <div id="google_translate_element" class="translate-select-wrapper"></div>
+      <div class="saves-count-pill" id="savesCountPill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span id="savesCountText">142 изтегляния</span>
+      </div>
+    </div>    <!-- Profile Head -->
     <div class="avatar-wrapper">
       <div class="avatar">
         <img src="assets/avatar-alexandar.png" alt="Александър Петров - Главен Архитект">
@@ -479,8 +564,24 @@
   <div id="toast" class="toast">Контакта е записан успешно!</div>
 
   <script>
+    // Load and Display Saves Count from localStorage or defaults
+    document.addEventListener('DOMContentLoaded', () => {
+      let saves = localStorage.getItem('demoSaves');
+      if (!saves) {
+        saves = Math.floor(Math.random() * 40) + 120; // random default between 120 and 160
+        localStorage.setItem('demoSaves', saves);
+      }
+      document.getElementById('savesCountText').innerText = `${saves} изтегляния`;
+    });
+
     // Dynamic vCard Generation
     function downloadVCard() {
+      // Local demo increment
+      let saves = parseInt(localStorage.getItem('demoSaves')) || 142;
+      saves += 1;
+      localStorage.setItem('demoSaves', saves);
+      document.getElementById('savesCountText').innerText = `${saves} изтегляния`;
+
       const vcard = `BEGIN:VCARD
 VERSION:3.0
 FN:Александър Петров
@@ -502,14 +603,14 @@ END:VCARD`;
       link.click();
       document.body.removeChild(link);
 
-      showToast("VCF файла се изтегля...");
+      showToast("Контакта е изтеглен!");
     }
 
     // Lead Submission Mock
     function submitLead(event) {
       event.preventDefault();
       document.getElementById('leadForm').reset();
-      showToast("Контакта Ви е изпратен успешно!");
+      showToast("Контакта Ви е изпратен успешно! 👍");
     }
 
     // Custom Toast Alert
