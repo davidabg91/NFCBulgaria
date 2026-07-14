@@ -276,34 +276,67 @@
 
   <div class="admin-layout">
     
-    <!-- LEFT: Create Profile Form -->
-    <div class="dash-card">
-      <h3 class="card-title">🆕 Създай нов клиент</h3>
-      <form id="createClientForm" onsubmit="handleCreateClient(event)">
-        
-        <div class="form-group">
-          <label for="clientEmail">Имейл адрес на клиента</label>
-          <input type="email" id="clientEmail" class="form-input" placeholder="client@company.com" required autocomplete="username">
-        </div>
+    <!-- LEFT COLUMN: Forms -->
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+      
+      <!-- Create Profile Form -->
+      <div class="dash-card">
+        <h3 class="card-title">🆕 Създай нов клиент</h3>
+        <form id="createClientForm" onsubmit="handleCreateClient(event)">
+          
+          <div class="form-group">
+            <label for="clientEmail">Имейл адрес на клиента</label>
+            <input type="email" id="clientEmail" class="form-input" placeholder="client@company.com" required autocomplete="username">
+          </div>
 
-        <div class="form-group">
-          <label for="clientPassword">Парола</label>
-          <input type="text" id="clientPassword" class="form-input" placeholder="Въведете парола (мин. 6 знака)" required>
-        </div>
+          <div class="form-group">
+            <label for="clientPassword">Парола</label>
+            <input type="text" id="clientPassword" class="form-input" placeholder="Въведете парола (мин. 6 знака)" required>
+          </div>
 
-        <div class="form-group">
-          <label for="clientName">Три имена</label>
-          <input type="text" id="clientName" class="form-input" placeholder="Деян Димитров" required>
-        </div>
+          <div class="form-group">
+            <label for="clientName">Три имена</label>
+            <input type="text" id="clientName" class="form-input" placeholder="Деян Димитров" required>
+          </div>
 
-        <div class="form-group">
-          <label for="profileId">Уникално ID за линк (profile ID)</label>
-          <input type="text" id="profileId" class="form-input" placeholder="DeividDimitrov" required>
-          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Например: `DeividDimitrov` ще води до `profile.html?id=DeividDimitrov`</p>
-        </div>
+          <div class="form-group">
+            <label for="profileId">Уникално ID за линк (profile ID)</label>
+            <input type="text" id="profileId" class="form-input" placeholder="DeividDimitrov" required>
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Например: `DeividDimitrov` ще води до `profile.html?id=DeividDimitrov`</p>
+          </div>
 
-        <button type="submit" class="btn-create">Създай Клиент</button>
-      </form>
+          <button type="submit" class="btn-create">Създай Клиент</button>
+        </form>
+      </div>
+
+      <!-- HubSpot Lite Team Linker Card -->
+      <div class="dash-card">
+        <h3 class="card-title">🏢 Управление на екипи (HubSpot Lite)</h3>
+        <form id="teamLinkerForm" onsubmit="handleLinkTeam(event)">
+          
+          <div class="form-group">
+            <label for="employeeSelect">Изберете профил (служител)</label>
+            <select id="employeeSelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;" required>
+              <option value="">-- Изберете профил --</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="bossSelect">Изберете шеф на фирмата (мениджър)</label>
+            <select id="bossSelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;">
+              <option value="">-- Никой / Премахни мениджъра --</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
+            <input type="checkbox" id="isBossCheckbox" style="width: 18px; height: 18px; cursor: pointer;">
+            <label for="isBossCheckbox" style="margin-bottom: 0; cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;">Направи избрания профил Шеф (Мениджър)</label>
+          </div>
+
+          <button type="submit" class="btn-create">Запази връзката / ролята</button>
+        </form>
+      </div>
+
     </div>
 
     <!-- RIGHT: Active Profiles Table -->
@@ -316,7 +349,8 @@
             <tr>
               <th>Профил ID</th>
               <th>Име</th>
-              <th>Длъжност</th>
+              <th>Роля</th>
+              <th>Мениджър (Шеф)</th>
               <th>Действия</th>
             </tr>
           </thead>
@@ -366,6 +400,8 @@
       }
     }
 
+    let allProfilesList = [];
+
     // Load active profile rows
     async function loadProfilesList() {
       const { data: profiles, error } = await supabaseClient
@@ -378,6 +414,9 @@
         return;
       }
 
+      allProfilesList = profiles || [];
+      populateDropdowns();
+
       const tbody = document.getElementById('profilesTableBody');
       tbody.innerHTML = '';
 
@@ -386,6 +425,7 @@
         
         tr.innerHTML = `
           <td style="font-weight:600; color: var(--primary);"></td>
+          <td></td>
           <td></td>
           <td></td>
           <td>
@@ -398,10 +438,19 @@
         tr.cells[0].textContent = profile.id;
         tr.cells[1].textContent = profile.name;
         
-        if (profile.title) {
-          tr.cells[2].textContent = profile.title;
+        // Role badge
+        if (profile.is_boss) {
+          tr.cells[2].innerHTML = `<span class="company-badge" style="background:rgba(0, 242, 255, 0.15); border:1px solid var(--primary); color:var(--primary); padding: 0.2rem 0.5rem; border-radius: 6px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Шеф</span>`;
         } else {
-          tr.cells[2].innerHTML = '<em style="color:var(--text-muted)">Няма въведена</em>';
+          tr.cells[2].innerHTML = `<span class="company-badge" style="background:rgba(255,255,255,0.03); border:1px solid var(--border); color:var(--text-muted); padding: 0.2rem 0.5rem; border-radius: 6px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Служител</span>`;
+        }
+
+        // Manager / Boss
+        if (profile.parent_boss_id) {
+          const boss = profiles.find(p => p.user_id === profile.parent_boss_id);
+          tr.cells[3].textContent = boss ? boss.name : 'Неизвестен';
+        } else {
+          tr.cells[3].innerHTML = '<em style="color:var(--text-muted)">Няма</em>';
         }
 
         // Action elements
@@ -416,6 +465,53 @@
         tbody.appendChild(tr);
       });
     }
+
+    // Populate dropdowns for HubSpot Lite linker card
+    function populateDropdowns() {
+      const empSelect = document.getElementById('employeeSelect');
+      const bossSelect = document.getElementById('bossSelect');
+      
+      const currentEmpVal = empSelect.value;
+      const currentBossVal = bossSelect.value;
+
+      empSelect.innerHTML = '<option value="">-- Изберете профил --</option>';
+      bossSelect.innerHTML = '<option value="">-- Никой / Премахни мениджъра --</option>';
+
+      allProfilesList.forEach(p => {
+        // Add to employee select list
+        const empOpt = document.createElement('option');
+        empOpt.value = p.id;
+        empOpt.textContent = `${p.name} (${p.id})`;
+        empSelect.appendChild(empOpt);
+
+        // Add to boss select list if they are flagged as boss
+        if (p.is_boss) {
+          const bossOpt = document.createElement('option');
+          bossOpt.value = p.user_id;
+          bossOpt.textContent = `${p.name} (Шеф)`;
+          bossSelect.appendChild(bossOpt);
+        }
+      });
+
+      // Restore selections if valid
+      empSelect.value = currentEmpVal;
+      bossSelect.value = currentBossVal;
+    }
+
+    // Add employee select change listener
+    document.getElementById('employeeSelect').addEventListener('change', (e) => {
+      const selectedId = e.target.value;
+      if (!selectedId) {
+        document.getElementById('isBossCheckbox').checked = false;
+        document.getElementById('bossSelect').value = "";
+        return;
+      }
+      const emp = allProfilesList.find(p => p.id === selectedId);
+      if (emp) {
+        document.getElementById('isBossCheckbox').checked = emp.is_boss || false;
+        document.getElementById('bossSelect').value = emp.parent_boss_id || "";
+      }
+    });
 
     // Create client handler calling Supabase RPC function
     async function handleCreateClient(e) {
@@ -463,6 +559,34 @@
         alert("Грешка при изтриване: " + error.message + "\n(Уверете се, че сте инсталирали SQL функцията delete_client в Supabase!)");
       } else {
         alert("Профилът беше изтрит успешно.");
+        loadProfilesList();
+      }
+    }
+
+    // Link Team (Boss / Employee) relationship handler
+    async function handleLinkTeam(e) {
+      e.preventDefault();
+
+      const employeeId = document.getElementById('employeeSelect').value;
+      const bossUserId = document.getElementById('bossSelect').value || null;
+      const isBoss = document.getElementById('isBossCheckbox').checked;
+
+      if (!employeeId) {
+        alert("Моля, изберете служител!");
+        return;
+      }
+
+      // Call secure security-definer relation updater
+      const { error } = await supabaseClient.rpc('admin_update_profile_relation', {
+        target_id: employeeId,
+        is_boss_val: isBoss,
+        boss_user_id_val: bossUserId
+      });
+
+      if (error) {
+        alert("Грешка при запис на връзката: " + error.message);
+      } else {
+        alert("Връзката / ролята беше записана успешно!");
         loadProfilesList();
       }
     }

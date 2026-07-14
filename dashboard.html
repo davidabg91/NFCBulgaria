@@ -427,6 +427,76 @@
 
   </div>
 
+  <!-- Company Portal Section (HubSpot Lite) -->
+  <div class="company-portal-container container" id="companyPortalSection" style="display: none; margin-bottom: 4rem;">
+    <div class="dash-card" style="border-color: rgba(0, 242, 255, 0.25); box-shadow: 0 0 30px rgba(0, 242, 255, 0.08); background: var(--card-bg); border-radius: 20px; padding: 2rem;">
+      <h3 class="card-title" style="color: var(--primary); border-color: rgba(0, 242, 255, 0.15); margin-bottom: 1.5rem; padding-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">🏢 Фирмен Портал — HubSpot Lite</h3>
+      
+      <!-- Team Stats KPI Cards -->
+      <div class="stats-row" style="margin-bottom: 2rem;">
+        <div class="stat-box" style="background: rgba(0, 242, 255, 0.03);">
+          <div class="stat-num" id="teamMembersCount">0</div>
+          <div class="stat-label">Служители в екипа</div>
+        </div>
+        <div class="stat-box" style="background: rgba(0, 242, 255, 0.03);">
+          <div class="stat-num" id="teamTotalScans">0</div>
+          <div class="stat-label">Общо сканирания на екипа</div>
+        </div>
+        <div class="stat-box" style="background: rgba(0, 242, 255, 0.03);">
+          <div class="stat-num" id="teamTotalSaves">0</div>
+          <div class="stat-label">Сваляния на контакти</div>
+        </div>
+        <div class="stat-box" style="background: rgba(0, 242, 255, 0.03);">
+          <div class="stat-num" id="teamTotalLeads">0</div>
+          <div class="stat-label">Общо събрани контакти</div>
+        </div>
+      </div>
+
+      <!-- Sales Leaderboard Table -->
+      <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; color: #fff; margin-bottom: 1rem;">📊 Резултати на служителите (Leaderboard)</h4>
+      <div class="leads-table-wrapper" style="margin-bottom: 2rem; overflow-x: auto;">
+        <table class="leads-table" style="min-width: 700px; width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: left;">Служител</th>
+              <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: left;">Длъжност</th>
+              <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Сканирания</th>
+              <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Сваляния</th>
+              <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Събрани контакти</th>
+              <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Действие</th>
+            </tr>
+          </thead>
+          <tbody id="teamLeaderboardBody">
+            <!-- Populated dynamically via get_boss_team_summary -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Detail Leads list for selected Employee -->
+      <div id="employeeLeadsDetailSection" style="display: none; background: rgba(15, 23, 42, 0.5); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); margin-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; color: var(--secondary);" id="detailEmployeeName">Събрани контакти на служителя</h4>
+          <button class="btn-logout" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="closeEmployeeDetails()">Затвори</button>
+        </div>
+        <div class="leads-table-wrapper" style="overflow-x: auto;">
+          <table class="leads-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: left;">Дата</th>
+                <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: left;">Име</th>
+                <th style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: left;">Телефон</th>
+              </tr>
+            </thead>
+            <tbody id="detailEmployeeLeadsBody">
+              <!-- Loaded dynamically via get_employee_leads_for_boss -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ChartJS for rendering beautiful stats -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Supabase JS CDN -->
@@ -460,6 +530,8 @@
       }
     }
 
+    let currentBossUserId = null;
+
     // Static Demo Data loader
     function loadDemoData() {
       // populate forms with current alexander data
@@ -483,11 +555,16 @@
       document.getElementById('leadsCount').innerText = "12";
       document.getElementById('conversionRate').innerText = "7.2%";
       
+      // Render demo company portal
+      loadDemoCompanyPortal();
+
       initChart([15, 25, 18, 30, 42, 22, 18]);
     }
 
     // Real Supabase data loader
     async function loadRealData(userId) {
+      currentBossUserId = userId;
+
       // 1. Fetch profile details
       const { data: profile, error } = await supabaseClient
         .from('profiles')
@@ -513,6 +590,14 @@
           document.getElementById('avatarPreview').src = profile.avatar_url;
         } else {
           document.getElementById('avatarPreview').src = "assets/avatar-alexandar.png";
+        }
+
+        // Check if user is Boss (Company portal manager)
+        if (profile.is_boss) {
+          document.getElementById('companyPortalSection').style.display = 'block';
+          loadCompanyPortalData(profile.user_id);
+        } else {
+          document.getElementById('companyPortalSection').style.display = 'none';
         }
 
         // Load stats & leads for this profile
@@ -723,6 +808,193 @@
         reader.readAsDataURL(file);
       }
     });
+
+    // --- HUBSPOT LITE CORPORATE PORTAL LOGIC ---
+    async function loadCompanyPortalData(bossUserId) {
+      const { data: teamSummary, error } = await supabaseClient.rpc('get_boss_team_summary', {
+        boss_user_id: bossUserId
+      });
+
+      if (error) {
+        console.error("Error loading team summary: ", error.message);
+        return;
+      }
+
+      const tbody = document.getElementById('teamLeaderboardBody');
+      tbody.innerHTML = '';
+
+      if (!teamSummary || teamSummary.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Няма свързани служители към този акаунт.</td></tr>`;
+        return;
+      }
+
+      // Calculate totals
+      let totalMembers = teamSummary.length;
+      let totalScans = 0;
+      let totalSaves = 0;
+      let totalLeads = 0;
+
+      teamSummary.forEach(emp => {
+        totalScans += parseInt(emp.scans_count) || 0;
+        totalSaves += parseInt(emp.employee_saves) || 0;
+        totalLeads += parseInt(emp.leads_count) || 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem;">
+            <img src="${emp.employee_avatar || 'assets/avatar-alexandar.png'}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <span style="font-weight: 600;">${emp.employee_name}</span>
+          </td>
+          <td style="padding: 0.8rem 1rem;">${emp.employee_title || '<em style="color:var(--text-muted)">Няма</em>'}</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: var(--primary); font-weight: 700;">${emp.scans_count}</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: var(--secondary); font-weight: 700;">${emp.employee_saves}</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: #fff; font-weight: 700;">${emp.leads_count}</td>
+          <td style="padding: 0.8rem 1rem; text-align: center;">
+            <button class="btn-logout" style="background: rgba(0, 242, 255, 0.1); border-color: rgba(0, 242, 255, 0.2); color: var(--primary); font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="viewEmployeeLeads('${emp.employee_id}', '${emp.employee_name}')">Преглед на лийдове</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('teamMembersCount').innerText = totalMembers;
+      document.getElementById('teamTotalScans').innerText = totalScans;
+      document.getElementById('teamTotalSaves').innerText = totalSaves;
+      document.getElementById('teamTotalLeads').innerText = totalLeads;
+    }
+
+    async function viewEmployeeLeads(employeeId, employeeName) {
+      if (!currentBossUserId) return;
+      
+      document.getElementById('detailEmployeeName').innerText = `Събрани контакти от ${employeeName}`;
+      
+      const { data: leads, error } = await supabaseClient.rpc('get_employee_leads_for_boss', {
+        boss_user_id: currentBossUserId,
+        target_employee_id: employeeId
+      });
+
+      if (error) {
+        alert("Грешка при извличане на контакти: " + error.message);
+        return;
+      }
+
+      const tbody = document.getElementById('detailEmployeeLeadsBody');
+      tbody.innerHTML = '';
+
+      if (leads && leads.length > 0) {
+        leads.forEach(lead => {
+          const dateStr = new Date(lead.created_at).toLocaleDateString('bg-BG');
+          tbody.innerHTML += `
+            <tr>
+              <td style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);">${dateStr}</td>
+              <td style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);">${lead.client_name}</td>
+              <td style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);">${lead.client_phone}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Служителят няма събрани контакти все още.</td></tr>`;
+      }
+
+      document.getElementById('employeeLeadsDetailSection').style.display = 'block';
+      document.getElementById('employeeLeadsDetailSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function closeEmployeeDetails() {
+      document.getElementById('employeeLeadsDetailSection').style.display = 'none';
+    }
+
+    // --- MOCKED PORTAL LOGIC FOR DEMO MODE ---
+    function loadDemoCompanyPortal() {
+      document.getElementById('companyPortalSection').style.display = 'block';
+      
+      document.getElementById('teamMembersCount').innerText = "3";
+      document.getElementById('teamTotalScans').innerText = "410";
+      document.getElementById('teamTotalSaves').innerText = "147";
+      document.getElementById('teamTotalLeads').innerText = "125";
+
+      const tbody = document.getElementById('teamLeaderboardBody');
+      tbody.innerHTML = `
+        <tr>
+          <td style="display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem;">
+            <img src="assets/avatar-alexandar.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <span style="font-weight: 600;">Петър Тодоров</span>
+          </td>
+          <td style="padding: 0.8rem 1rem;">Акаунт мениджър</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: var(--primary); font-weight: 700;">200</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: var(--secondary); font-weight: 700;">80</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: #fff; font-weight: 700;">70</td>
+          <td style="padding: 0.8rem 1rem; text-align: center;">
+            <button class="btn-logout" style="background: rgba(0, 242, 255, 0.1); border-color: rgba(0, 242, 255, 0.2); color: var(--primary); font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="viewDemoEmployeeLeads('peter', 'Петър Тодоров')">Преглед на лийдове</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem;">
+            <img src="assets/avatar-alexandar.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <span style="font-weight: 600;">Иван Георгиев</span>
+          </td>
+          <td style="padding: 0.8rem 1rem;">Търговски директор</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: var(--primary); font-weight: 700;">120</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: var(--secondary); font-weight: 700;">45</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: #fff; font-weight: 700;">35</td>
+          <td style="padding: 0.8rem 1rem; text-align: center;">
+            <button class="btn-logout" style="background: rgba(0, 242, 255, 0.1); border-color: rgba(0, 242, 255, 0.2); color: var(--primary); font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="viewDemoEmployeeLeads('ivan', 'Иван Георгиев')">Преглед на лийдове</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem;">
+            <img src="assets/avatar-alexandar.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <span style="font-weight: 600;">Мария Петрова</span>
+          </td>
+          <td style="padding: 0.8rem 1rem;">Продавач-консултант</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: var(--primary); font-weight: 700;">90</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: var(--secondary); font-weight: 700;">22</td>
+          <td style="padding: 0.8rem 1rem; text-align: center; color: #fff; font-weight: 700;">20</td>
+          <td style="padding: 0.8rem 1rem; text-align: center;">
+            <button class="btn-logout" style="background: rgba(0, 242, 255, 0.1); border-color: rgba(0, 242, 255, 0.2); color: var(--primary); font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="viewDemoEmployeeLeads('maria', 'Мария Петрова')">Преглед на лийдове</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function viewDemoEmployeeLeads(empId, empName) {
+      document.getElementById('detailEmployeeName').innerText = `Събрани контакти от ${empName} (Демо)`;
+      const tbody = document.getElementById('detailEmployeeLeadsBody');
+      
+      const mockLeads = {
+        peter: [
+          { name: "Стефан Каменов", phone: "+359 87 612 3456", date: "14.07.2026" },
+          { name: "Елена Драгова", phone: "+359 88 567 8901", date: "13.07.2026" },
+          { name: "Виктор Попов", phone: "+359 89 234 5678", date: "10.07.2026" }
+        ],
+        ivan: [
+          { name: "Николай Костов", phone: "+359 88 333 4444", date: "14.07.2026" },
+          { name: "Гергана Василева", phone: "+359 87 111 2222", date: "12.07.2026" }
+        ],
+        maria: [
+          { name: "Йордан Христов", phone: "+359 89 777 8888", date: "15.07.2026" }
+        ]
+      };
+
+      const leadsList = mockLeads[empId] || [];
+      tbody.innerHTML = '';
+
+      if (leadsList.length > 0) {
+        leadsList.forEach(lead => {
+          tbody.innerHTML += `
+            <tr>
+              <td style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);">${lead.date}</td>
+              <td style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);">${lead.name}</td>
+              <td style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);">${lead.phone}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0;">Няма събрани контакти все още.</td></tr>`;
+      }
+
+      document.getElementById('employeeLeadsDetailSection').style.display = 'block';
+      document.getElementById('employeeLeadsDetailSection').scrollIntoView({ behavior: 'smooth' });
+    }
   </script>
 </body>
 </html>
