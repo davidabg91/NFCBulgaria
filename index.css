@@ -912,22 +912,13 @@ footer {
   line-height: 1.4;
 }
 
-/* Slide Specific Styles */
-.slide-header {
-  height: 50px;
-  background: linear-gradient(135deg, #09203f 0%, #537895 100%);
-  border-radius: 8px;
-  position: relative;
-  margin-bottom: 1.8rem;
-}
-
 .slide-avatar {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   background: #1f2937;
   border: 2px solid var(--primary);
-  margin: -25px auto 0.5rem auto;
+  margin: 1.2rem auto 0.5rem auto;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Александър Петров - Дигитална Визитка | NFC Bulgaria</title>
   
+  <!-- Favicon -->
+  <link rel="icon" type="image/webp" href="assets/favicon.webp">
+
   <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -88,28 +91,13 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Banner & Avatar */
-    .banner {
-      height: 120px;
-      background: linear-gradient(135deg, #09203f 0%, #537895 100%);
-      position: relative;
-    }
 
-    .banner::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 50%;
-      background: linear-gradient(to top, var(--card-bg), transparent);
-    }
 
     .avatar-wrapper {
       position: relative;
       width: 110px;
       height: 110px;
-      margin: -55px auto 0 auto;
+      margin: 2.2rem auto 0 auto;
       border-radius: 50%;
       padding: 4px;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -393,8 +381,7 @@
 
   <div class="profile-container">
     
-    <!-- Banner Header -->
-    <div class="banner"></div>
+
 
     <!-- Profile Head -->
     <div class="avatar-wrapper">
