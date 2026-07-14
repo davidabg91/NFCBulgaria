@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ Панел | NFC Bulgaria</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/webp" href="assets/favicon.webp">
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --primary: #00f2ff;
+      --primary-glow: rgba(0, 242, 255, 0.4);
+      --secondary: #a1e8af;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(0, 242, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 17px;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .logo-text span {
+      color: var(--primary);
+    }
+
+    .btn-logout {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-logout:hover {
+      background: #ff6b6b;
+      color: #fff;
+      border-color: #ff6b6b;
+    }
+
+    /* Admin Gate Overlay */
+    .gate-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    /* Main Grid */
+    .admin-layout {
+      max-width: 1200px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1.8fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dash-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.85rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-create {
+      width: 100%;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 10px;
+      color: #0b0f19;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 242, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .btn-create:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 242, 255, 0.35);
+    }
+
+    /* Profiles List Table */
+    .profiles-table-wrapper {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    .profiles-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .profiles-table th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.8rem 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profiles-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .profiles-table tr:hover {
+      background: rgba(255,255,255,0.01);
+    }
+
+    .btn-action {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-right: 0.3rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action.btn-del {
+      color: #ff6b6b;
+      border-color: rgba(255, 107, 107, 0.2);
+    }
+
+    .btn-action.btn-del:hover {
+      background: #ff6b6b;
+      color: #fff;
+    }
+
+    .btn-action.btn-view:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Guard Overlay -->
+  <div id="gateOverlay" class="gate-overlay">Проверка за достъп...</div>
+
+  <header>
+    <a href="index.html" class="brand">
+      <div class="logo-icon"></div>
+      <div class="logo-text">NFC<span>Bulgaria</span></div>
+    </a>
+    <div>
+      <span style="font-weight: 700; font-size: 0.9rem; color: var(--secondary); margin-right: 1.5rem;">👑 АДМИНИСТРАТОР</span>
+      <button class="btn-logout" onclick="handleLogout()">Изход</button>
+    </div>
+  </header>
+
+  <div class="admin-layout">
+    
+    <!-- LEFT: Create Profile Form -->
+    <div class="dash-card">
+      <h3 class="card-title">🆕 Създай нов клиент</h3>
+      <form id="createClientForm" onsubmit="handleCreateClient(event)">
+        
+        <div class="form-group">
+          <label for="clientEmail">Имейл адрес на клиента</label>
+          <input type="email" id="clientEmail" class="form-input" placeholder="client@company.com" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="clientPassword">Парола</label>
+          <input type="text" id="clientPassword" class="form-input" placeholder="Въведете парола (мин. 6 знака)" required>
+        </div>
+
+        <div class="form-group">
+          <label for="clientName">Три имена</label>
+          <input type="text" id="clientName" class="form-input" placeholder="Деян Димитров" required>
+        </div>
+
+        <div class="form-group">
+          <label for="profileId">Уникално ID за линк (profile ID)</label>
+          <input type="text" id="profileId" class="form-input" placeholder="DeividDimitrov" required>
+          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Например: `DeividDimitrov` ще води до `profile.html?id=DeividDimitrov`</p>
+        </div>
+
+        <button type="submit" class="btn-create">Създай Клиент</button>
+      </form>
+    </div>
+
+    <!-- RIGHT: Active Profiles Table -->
+    <div class="dash-card">
+      <h3 class="card-title">📋 Активни дигитални визитки</h3>
+      
+      <div class="profiles-table-wrapper">
+        <table class="profiles-table">
+          <thead>
+            <tr>
+              <th>Профил ID</th>
+              <th>Име</th>
+              <th>Длъжност</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="profilesTableBody">
+            <!-- Loaded dynamically from Supabase -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // Supabase Credentials
+    const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // List of admin emails authorized to access the panel
+    const ADMIN_EMAILS = [
+      "office@nfcbulgaria.com", 
+      "sjv_gold@abv.bg",
+      "demo@nfcbulgaria.com" // Allowed for demonstration testing
+    ];
+
+    document.addEventListener('DOMContentLoaded', checkAdminAccess);
+
+    // Verify Admin authentication
+    async function checkAdminAccess() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      if (!ADMIN_EMAILS.includes(session.user.email)) {
+        document.getElementById('gateOverlay').innerHTML = "<span style='color:#ff6b6b;'>Нямате администраторски права! Пренасочване...</span>";
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 2000);
+      } else {
+        document.getElementById('gateOverlay').style.display = 'none';
+        loadProfilesList();
+      }
+    }
+
+    // Load active profile rows
+    async function loadProfilesList() {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error loading profiles: ", error.message);
+        return;
+      }
+
+      const tbody = document.getElementById('profilesTableBody');
+      tbody.innerHTML = '';
+
+      profiles.forEach(profile => {
+        tbody.innerHTML += `
+          <tr>
+            <td style="font-weight:600; color: var(--primary);">${profile.id}</td>
+            <td>${profile.name}</td>
+            <td>${profile.title || '<em style="color:var(--text-muted)">Няма въведена</em>'}</td>
+            <td>
+              <a href="profile.html?id=${profile.id}" target="_blank" class="btn-action btn-view">Преглед</a>
+              <button class="btn-action btn-del" onclick="handleDeleteProfile('${profile.id}', '${profile.user_id}')">Изтрий</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Create client handler calling Supabase RPC function
+    async function handleCreateClient(e) {
+      e.preventDefault();
+
+      const email = document.getElementById('clientEmail').value;
+      const password = document.getElementById('clientPassword').value;
+      const name = document.getElementById('clientName').value;
+      const profileId = document.getElementById('profileId').value.trim();
+
+      if (password.length < 6) {
+        alert("Паролата трябва да е поне 6 символа!");
+        return;
+      }
+
+      // Call our secure security-definer RPC function
+      const { data, error } = await supabase.rpc('create_new_client', {
+        client_email: email,
+        client_password: password,
+        profile_id: profileId,
+        client_name: name
+      });
+
+      if (error) {
+        alert("Грешка при създаване: " + error.message + "\n(Уверете се, че сте инсталирали SQL функцията в Supabase!)");
+      } else {
+        alert("Клиентът беше създаден успешно!");
+        document.getElementById('createClientForm').reset();
+        loadProfilesList();
+      }
+    }
+
+    // Delete profile (and optionally cascade auth user manually or let RLS trigger it)
+    async function handleDeleteProfile(profileId, userId) {
+      if (!confirm(`Сигурни ли сте, че искате да изтриете профил '${profileId}'?`)) {
+        return;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', profileId);
+
+      if (error) {
+        alert("Грешка при изтриване: " + error.message);
+      } else {
+        alert("Профилът беше изтрит успешно.");
+        loadProfilesList();
+      }
+    }
+
+    async function handleLogout() {
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
