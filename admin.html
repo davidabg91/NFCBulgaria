@@ -382,17 +382,38 @@
       tbody.innerHTML = '';
 
       profiles.forEach(profile => {
-        tbody.innerHTML += `
-          <tr>
-            <td style="font-weight:600; color: var(--primary);">${profile.id}</td>
-            <td>${profile.name}</td>
-            <td>${profile.title || '<em style="color:var(--text-muted)">Няма въведена</em>'}</td>
-            <td>
-              <a href="profile.html?id=${profile.id}" target="_blank" class="btn-action btn-view">Преглед</a>
-              <button class="btn-action btn-del" onclick="handleDeleteProfile('${profile.id}', '${profile.user_id}')">Изтрий</button>
-            </td>
-          </tr>
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+          <td style="font-weight:600; color: var(--primary);"></td>
+          <td></td>
+          <td></td>
+          <td>
+            <a target="_blank" class="btn-action btn-view">Преглед</a>
+            <button class="btn-action btn-del">Изтрий</button>
+          </td>
         `;
+
+        // Safe textContent assignment to prevent HTML injection or escaping issues
+        tr.cells[0].textContent = profile.id;
+        tr.cells[1].textContent = profile.name;
+        
+        if (profile.title) {
+          tr.cells[2].textContent = profile.title;
+        } else {
+          tr.cells[2].innerHTML = '<em style="color:var(--text-muted)">Няма въведена</em>';
+        }
+
+        // Action elements
+        const viewLink = tr.querySelector('.btn-view');
+        viewLink.href = `profile.html?id=${encodeURIComponent(profile.id)}`;
+
+        const delBtn = tr.querySelector('.btn-del');
+        delBtn.addEventListener('click', () => {
+          handleDeleteProfile(profile.id, profile.user_id);
+        });
+
+        tbody.appendChild(tr);
       });
     }
 
