@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Софтуерна Платформа за Дигитални Визитки — NFC Bulgaria</title>
+  <meta name="description" content="Подробно описание на всички софтуерни функции за дигитални визитки на NFC Bulgaria - без абонаменти, с анализ на посещенията, превод на 10 езика и управление на екипи.">
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/spacegrotesk-400-latin.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-800-latin.woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="index.css">
+  <style>
+    .features-page-content {
+      padding: 4rem 0 8rem;
+    }
+    .features-header {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+    .features-header h1 {
+      font-family: var(--font-heading);
+      font-size: 3rem;
+      margin-bottom: 1.2rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2.5rem;
+      margin-bottom: 5rem;
+    }
+    .feature-detail-card {
+      background: rgba(17, 24, 39, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-detail-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--primary), var(--secondary));
+      opacity: 0.8;
+    }
+    .feature-detail-card:hover {
+      border-color: rgba(0, 242, 255, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 242, 255, 0.08);
+    }
+    .feature-icon-badge {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      display: inline-block;
+      filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2));
+    }
+    .feature-detail-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.45rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+    .feature-detail-card p {
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+    .feature-detail-card ul {
+      margin-top: 1rem;
+      margin-left: 1.2rem;
+      color: var(--text-muted);
+      list-style-type: square;
+    }
+    .feature-detail-card li {
+      margin-bottom: 0.5rem;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .advantages-section {
+      background: rgba(0, 242, 255, 0.03);
+      border: 1px dashed rgba(0, 242, 255, 0.2);
+      border-radius: 24px;
+      padding: 3rem;
+      margin-bottom: 5rem;
+    }
+    .advantages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .adv-item h4 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    .adv-item p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+    .cta-box {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.8), rgba(30, 41, 59, 0.8));
+      border: 1px solid var(--primary);
+      border-radius: 24px;
+      box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <nav>
+    <div class="container nav-content">
+      <div class="logo">
+        <svg class="logo-svg" viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="36" height="26" rx="4" class="card-outline" />
+          <rect x="8" y="10" width="8" height="8" rx="1" class="chip" />
+          <path d="M22 8 Q30 15 22 22 M26 5 Q38 15 26 25" class="waves" />
+        </svg>
+        NFC<span>Bulgaria</span>
+      </div>
+      <a href="index.html" class="btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+        <span>←</span> Назад
+      </a>
+    </div>
+  </nav>
+
+  <main class="container features-page-content">
+    <div class="features-header">
+      <h1>Дигитални Профили <span class="gradient-text">Pro Max</span></h1>
+      <p style="color: var(--text-muted); max-width: 800px; margin: 0 auto; font-size: 1.15rem; line-height: 1.6;">
+        Пълно описание на безплатния софтуер и функционалности за дигитални визитки на NFC Bulgaria. Научете как работи платформата и какви възможности предлага.
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="features-grid">
+      
+      <!-- Card 1: Branding -->
+      <div class="feature-detail-card" data-aos>
+        <span class="feature-icon-badge">👤</span>
+        <h3>Персонален Брандинг</h3>
+        <p>Вашата визитка е огледало на Вашия бранд. Профилът Ви съдържа:</p>
+        <ul>
+          <li>Професионален аватар и логото на Вашата компания.</li>
+          <li>Длъжност, фирма и персонален брандинг бадж (напр. PRO).</li>
+          <li>Интуитивна цветова схема с висока визуализация.</li>
+        </ul>
+      </div>
+
+      <!-- Card 2: Automatic Translation -->
+      <div class="feature-detail-card" data-aos>
+        <span class="feature-icon-badge">🌍</span>
+        <h3>Автоматичен Превод на 10 Езика</h3>
+        <p>Идеално решение при работа с чуждестранни партньори и клиенти:</p>
+        <ul>
+          <li>Езиков селектор в реално време, интегриран в заглавната част.</li>
+          <li>Поддържа български, английски, немски, руски, румънски, турски, гръцки, френски, испански и италиански език.</li>
+          <li>Превежда целия профил (име, биография, бутони) с едно докосване.</li>
+        </ul>
+      </div>
+
+      <!-- Card 3: Saves Counter -->
+      <div class="feature-detail-card" data-aos>
+        <span class="feature-icon-badge">📥</span>
+        <h3>Брояч на Свалянията (Saves Count)</h3>
+        <p>Виждате точно колко успешен е Вашият мрежов маркетинг в реално време:</p>
+        <ul>
+          <li>Капсула (Pill) с икона показва колко пъти контактът е бил изтеглен.</li>
+          <li>Следи свалянията на VCF файла директно през базата данни.</li>
+          <li>Вдига доверието в профила и стимулира партньорите да Ви запазят.</li>
+        </ul>
+      </div>
+
+      <!-- Card 4: Lead Capture -->
+      <div class="feature-detail-card" data-aos>
+        <span class="feature-icon-badge">🤝</span>
+        <h3>Форма за Размяна на Контакти</h3>
+        <p>Позволява на хората да Ви изпратят своите контакти обратно на момента:</p>
+        <ul>
+          <li>Форма за бързо въвеждане на име и телефонен номер.</li>
+          <li>Записите се пазят в базата данни и се достъпват от Вашето табло.</li>
+          <li>Предотвратява нуждата клиентът да диктува или пише контактите си.</li>
+        </ul>
+      </div>
+
+      <!-- Card 5: Scan Analytics -->
+      <div class="feature-detail-card" data-aos>
+        <span class="feature-icon-badge">📊</span>
+        <h3>Детайлен Анализ на Сканиранията</h3>
+        <p>Пълен одит на ефективността на Вашата физическа визитка:</p>
+        <ul>
+          <li>Графична статистика на дневните сканирания на Вашата карта.</li>
+          <li>Следене на общия брой преглеждания на профила в реално време.</li>
+          <li>Визуализация на анализите през Вашия личен клиентски панел.</li>
+        </ul>
+      </div>
+
+      <!-- Card 6: Click Tracking -->
+      <div class="feature-detail-card" data-aos>
+        <span class="feature-icon-badge">🎯</span>
+        <h3>Следене на Кликове (Click Audit)</h3>
+        <p>Разберете кои канали за комуникация са най-интересни за клиентите Ви:</p>
+        <ul>
+          <li>Следене на кликовете върху бутона за телефон и имейл.</li>
+          <li>Регистриране на кликове към социалните мрежи (LinkedIn, Facebook).</li>
+          <li>Отчитане на препратките към Вашия фирмен уебсайт.</li>
+        </ul>
+      </div>
+
+      <!-- Card 7: Team Dashboard -->
+      <div class="feature-detail-card" data-aos style="grid-column: span 1;">
+        <span class="feature-icon-badge">👥</span>
+        <h3>Управление на Екипи (Team Dashboard)</h3>
+        <p>Удобно корпоративно решение за мениджъри и администратори:</p>
+        <ul>
+          <li>Добавяне и редактиране на профили за нови служители за секунди.</li>
+          <li>Контрол над линковете на целия екип от едно централно място.</li>
+          <li>Бърза деактивация на профили при напускане на персонал.</li>
+        </ul>
+      </div>
+
+      <!-- Card 8: Email Webhook Integration -->
+      <div class="feature-detail-card" data-aos>
+        <span class="feature-icon-badge">✉️</span>
+        <h3>Имейл Известия при Нов Контакт</h3>
+        <p>Никога не изпускайте потенциален клиент, благодарение на मेक (Make.com):</p>
+        <ul>
+          <li>Автоматично изпращане на сигнал към Make.com webhook.</li>
+          <li>SMTP имейл известия в реално време за новите получени лийдове.</li>
+          <li>Форматирани имейли с име и телефон на клиента, изпратени до Вас.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Advantages Section -->
+    <div class="advantages-section" data-aos>
+      <h2 style="font-family: var(--font-heading); font-size: 1.8rem; text-align: center;">Основни Предимства на Нашата Платформа</h2>
+      <div class="advantages-grid">
+        
+        <div class="adv-item">
+          <h4>❌ Без Месечни Абонаменти</h4>
+          <p>Повечето платформи изискват месечна такса. При NFC Bulgaria софтуерната платформа е напълно <strong>безплатна за ползване</strong>. Плащате само веднъж за физическата NFC карта.</p>
+        </div>
+
+        <div class="adv-item">
+          <h4>🔄 Динамична Актуализация</h4>
+          <p>Сменили сте си телефона, имейла или длъжността? Променяте ги за секунди през Вашето табло. Физическата Ви визитка продължава да работи с новата информация.</p>
+        </div>
+
+        <div class="adv-item">
+          <h4>🌲 Екологичност и Устойчивост</h4>
+          <p>Спестете отпечатването на хиляди хартиени визитки, които често биват изхвърляни. Една смарт NFC визитка е достатъчна за цял живот.</p>
+        </div>
+
+        <div class="adv-item">
+          <h4>⚡ Двуканално Споделяне</h4>
+          <p>Картата работи с вграден безконтактен NFC чип за новите телефони и индивидуален QR код за по-старите модели, гарантирайки 100% съвместимост.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CTA Box -->
+    <div class="cta-box" data-aos>
+      <h2 style="font-family: var(--font-heading); font-size: 2.2rem; margin-bottom: 1rem;">Искате да дигитализирате Вашата марка?</h2>
+      <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 2.5rem auto; line-height: 1.6;">
+        Поръчайте Вашата премиум NFC визитка днес с уникален дизайн и вземете достъп до пълния софтуерен пакет напълно безплатно.
+      </p>
+      <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+        <a href="index.html#contact" class="btn-primary" style="padding: 0.8rem 2.2rem; text-decoration: none; box-shadow: 0 0 20px rgba(0, 242, 255, 0.45);">Поръчайте Карта 💳</a>
+        <a href="demo-profile.html" target="_blank" class="btn-primary" style="padding: 0.8rem 2.2rem; text-decoration: none; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff;">Отворете Демо 📱</a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="logo" style="margin-bottom: 1rem;">
+        <div class="logo-icon"></div>
+        NFC<span>Bulgaria</span>
+      </div>
+      <p>гр. Плевен, ж.к. Сторгозия, бл. 133, офис | <strong>ДАВИДА БГ ЕООД</strong> | <a href="tel:0876141826" style="color: inherit; text-decoration: none;">0876141826</a> | <a href="mailto:office@nfcbulgaria.com" style="color: inherit; text-decoration: none;">office@nfcbulgaria.com</a></p>
+      <p style="margin-top: 0.8rem; font-size: 0.9rem; opacity: 0.85;">
+        <a href="faq.html" style="color: var(--primary); text-decoration: none; margin-right: 1.5rem; transition: color 0.3s ease;">Често Задавани Въпроси</a>
+        <a href="terms.html" style="color: var(--primary); text-decoration: none; margin-right: 1.5rem; transition: color 0.3s ease;">Общи Условия</a>
+        <a href="privacy.html" style="color: var(--primary); text-decoration: none; transition: color 0.3s ease;">Политика за Поверителност</a>
+      </p>
+      <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.6;">&copy; 2026 NFC Bulgaria. Всички права запазени. Партньор на DavidaX.org</p>
+    </div>
+  </footer>
+
+  <!-- Cookie Consent Banner -->
+  <div id="cookieConsentBanner" class="cookie-banner">
+    <div class="cookie-banner-content">
+      <div class="cookie-icon">🍪</div>
+      <p class="cookie-text">
+        Този уебсайт използва бисквитки (cookies) с цел подобряване на функционалността и анализиране на посещенията чрез Google Analytics. Научете повече в нашата <a href="privacy.html" style="color: var(--primary); text-decoration: underline;">Политика за поверителност</a>.
+      </p>
+    </div>
+    <div class="cookie-banner-actions">
+      <button id="btnAcceptCookies" class="cookie-btn cookie-btn-accept">Приемам</button>
+      <button id="btnDeclineCookies" class="cookie-btn cookie-btn-decline">Отказвам</button>
+    </div>
+  </div>
+
+  <script>
+    const cookieBanner = document.getElementById('cookieConsentBanner');
+    const btnAccept = document.getElementById('btnAcceptCookies');
+    const btnDecline = document.getElementById('btnDeclineCookies');
+
+    if (!localStorage.getItem('cookieConsent')) {
+      cookieBanner.classList.add('active');
+    }
+
+    btnAccept.addEventListener('click', () => {
+      localStorage.setItem('cookieConsent', 'accepted');
+      cookieBanner.classList.remove('active');
+    });
+
+    btnDecline.addEventListener('click', () => {
+      localStorage.setItem('cookieConsent', 'declined');
+      cookieBanner.classList.remove('active');
+    });
+  </script>
+</body>
+</html>
