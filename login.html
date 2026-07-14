@@ -243,10 +243,10 @@
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
 
-    let supabase = null;
+    let supabaseClient = null;
     
     if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_KEY !== "YOUR_SUPABASE_ANON_KEY") {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
     const form = document.getElementById('loginForm');
@@ -259,7 +259,7 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
-      if (!supabase) {
+      if (!supabaseClient) {
         // Fallback for static demo testing before DB setup
         if (email === "demo@nfcbulgaria.com" && password === "demo123") {
           localStorage.setItem('demo_logged_in', 'true');
@@ -273,7 +273,7 @@
       }
 
       // Real Supabase Auth login
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email,
         password: password,
       });

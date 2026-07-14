@@ -477,10 +477,10 @@
     // Supabase Configuration Placeholders
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
-    let supabase = null;
+    let supabaseClient = null;
 
     if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_KEY !== "YOUR_SUPABASE_ANON_KEY") {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
     // Live variables updated by DB or defaults
@@ -505,7 +505,7 @@
         profileId = queryId;
       }
 
-      if (supabase) {
+      if (supabaseClient) {
         fetchProfileData();
         logScan();
       } else {
@@ -515,7 +515,7 @@
 
     // 1. Fetch Profile Details
     async function fetchProfileData() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('id', profileId)
@@ -552,7 +552,7 @@
 
     // 2. Log Analytics Scan/Tap
     async function logScan() {
-      await supabase
+      await supabaseClient
         .from('analytics')
         .insert([{ profile_id: profileId }]);
     }
@@ -564,8 +564,8 @@
       const clientName = document.getElementById('clientName').value;
       const clientPhone = document.getElementById('clientPhone').value;
 
-      if (supabase) {
-        const { error } = await supabase
+      if (supabaseClient) {
+        const { error } = await supabaseClient
           .from('leads')
           .insert([{
             profile_id: profileId,

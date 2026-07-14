@@ -425,15 +425,15 @@
     // Supabase Credentials
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
-    let supabase = null;
+    let supabaseClient = null;
 
     if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_KEY !== "YOUR_SUPABASE_ANON_KEY") {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
     // Auth Validation Guard
     document.addEventListener('DOMContentLoaded', () => {
-      if (!supabase) {
+      if (!supabaseClient) {
         // Fallback for static demo check
         if (localStorage.getItem('demo_logged_in') !== 'true') {
           window.location.href = 'login.html';
@@ -445,7 +445,7 @@
     });
 
     async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
         window.location.href = 'login.html';
       } else {
@@ -472,7 +472,7 @@
     // Real Supabase data loader
     async function loadRealData(userId) {
       // 1. Fetch profile details
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
@@ -497,7 +497,7 @@
 
     async function loadStatsAndLeads(profileId) {
       // Fetch Leads
-      const { data: leads } = await supabase
+      const { data: leads } = await supabaseClient
         .from('leads')
         .select('*')
         .eq('profile_id', profileId)
@@ -520,7 +520,7 @@
       }
 
       // Fetch Analytics Scans
-      const { data: scans } = await supabase
+      const { data: scans } = await supabaseClient
         .from('analytics')
         .select('scanned_at')
         .eq('profile_id', profileId);
@@ -548,14 +548,14 @@
         avatar_url: document.getElementById('avatarInput').value,
       };
 
-      if (!supabase) {
+      if (!supabaseClient) {
         alert("Промените са запазени локално (демо режим)!");
         return;
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('profiles')
         .update(profileData)
         .eq('user_id', session.user.id);
@@ -570,12 +570,12 @@
 
     // Logout Handler
     async function handleLogout() {
-      if (!supabase) {
+      if (!supabaseClient) {
         localStorage.removeItem('demo_logged_in');
         window.location.href = 'login.html';
         return;
       }
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       window.location.href = 'login.html';
     }
 

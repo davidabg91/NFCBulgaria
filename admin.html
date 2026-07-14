@@ -336,7 +336,7 @@
     // Supabase Credentials
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // List of admin emails authorized to access the panel
     const ADMIN_EMAILS = [
@@ -349,7 +349,7 @@
 
     // Verify Admin authentication
     async function checkAdminAccess() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (!session) {
         window.location.href = 'login.html';
@@ -369,7 +369,7 @@
 
     // Load active profile rows
     async function loadProfilesList() {
-      const { data: profiles, error } = await supabase
+      const { data: profiles, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -412,7 +412,7 @@
       }
 
       // Call our secure security-definer RPC function
-      const { data, error } = await supabase.rpc('create_new_client', {
+      const { data, error } = await supabaseClient.rpc('create_new_client', {
         client_email: email,
         client_password: password,
         profile_id: profileId,
@@ -434,7 +434,7 @@
         return;
       }
 
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('profiles')
         .delete()
         .eq('id', profileId);
@@ -448,7 +448,7 @@
     }
 
     async function handleLogout() {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       window.location.href = 'login.html';
     }
   </script>
