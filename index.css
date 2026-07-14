@@ -1041,6 +1041,76 @@ footer {
 .mockup-slide.active .chart-bar-4 { height: 60px; }
 .mockup-slide.active .chart-bar-5 { height: 80px; background: var(--secondary); }
 
+/* FAQ Section Styles */
+.faq-section {
+  margin-top: 6rem;
+  margin-bottom: 8rem;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-width: 850px;
+  margin: 2.5rem auto 0 auto;
+}
+
+.faq-item {
+  background: rgba(17, 24, 39, 0.55);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem 1.8rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.faq-item:hover {
+  border-color: rgba(0, 242, 255, 0.4);
+  background: rgba(17, 24, 39, 0.7);
+}
+
+.faq-item[open] {
+  border-color: var(--primary);
+  background: rgba(17, 24, 39, 0.85);
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.12);
+}
+
+.faq-item summary {
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: '+';
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: var(--primary);
+  transition: transform 0.3s ease;
+}
+
+.faq-item[open] summary::after {
+  content: '−';
+  transform: rotate(90deg);
+}
+
+.faq-item p {
+  margin-top: 1rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  font-size: 0.98rem;
+}
+
 @media (max-width: 768px) {
   .visual-connector {
     flex-direction: column;
