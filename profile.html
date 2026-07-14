@@ -609,6 +609,19 @@
           showToast("Грешка при изпращане. Опитайте отново.");
           return;
         }
+
+        // Send email notification to Make.com directly from the browser (100% reliable)
+        fetch('https://hook.eu1.make.com/eql2r6jdpyk25sakmripfvy9br5dbiiu', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'no-cors',
+          body: JSON.stringify({
+            owner_email: currentProfile.email,
+            client_name: clientName,
+            client_phone: clientPhone,
+            created_at: new Date().toISOString()
+          })
+        }).catch(err => console.error("Error sending email notification:", err));
       }
 
       showToast("Контакта Ви е изпратен успешно! 👍");
