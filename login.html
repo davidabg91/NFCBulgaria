@@ -260,16 +260,9 @@
       const password = document.getElementById('password').value;
 
       if (!supabaseClient) {
-        // Fallback for static demo testing before DB setup
-        if (email === "demo@nfcbulgaria.com" && password === "demo123") {
-          localStorage.setItem('demo_logged_in', 'true');
-          window.location.href = 'admin.html';
-          return;
-        } else {
-          errorBox.innerText = "Системата не е конфигурирана. Използвайте демо поща: demo@nfcbulgaria.com с парола demo123 за тест.";
-          errorBox.style.display = 'block';
-          return;
-        }
+        errorBox.innerText = "Системата не е конфигурирана. Моля, конфигурирайте API ключовете.";
+        errorBox.style.display = 'block';
+        return;
       }
 
       // Real Supabase Auth login

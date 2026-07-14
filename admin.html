@@ -341,21 +341,13 @@
     // List of admin emails authorized to access the panel
     const ADMIN_EMAILS = [
       "office@nfcbulgaria.com", 
-      "sjv_gold@abv.bg",
-      "demo@nfcbulgaria.com" // Allowed for demonstration testing
+      "sjv_gold@abv.bg"
     ];
 
     document.addEventListener('DOMContentLoaded', checkAdminAccess);
 
     // Verify Admin authentication
     async function checkAdminAccess() {
-      // Check if demo bypass is active
-      if (localStorage.getItem('demo_logged_in') === 'true') {
-        document.getElementById('gateOverlay').style.display = 'none';
-        loadDemoProfilesList();
-        return;
-      }
-
       const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (!session) {
@@ -372,22 +364,6 @@
         document.getElementById('gateOverlay').style.display = 'none';
         loadProfilesList();
       }
-    }
-
-    // Render static profiles for demo exploration
-    function loadDemoProfilesList() {
-      const tbody = document.getElementById('profilesTableBody');
-      tbody.innerHTML = `
-        <tr>
-          <td style="font-weight:600; color: var(--primary);">demo-profile</td>
-          <td>Александър Петров</td>
-          <td>Главен Архитект</td>
-          <td>
-            <a href="profile.html" target="_blank" class="btn-action btn-view">Преглед</a>
-            <button class="btn-action btn-del" onclick="alert('Това е демо профил и не може да бъде изтрит!')">Изтрий</button>
-          </td>
-        </tr>
-      `;
     }
 
     // Load active profile rows

@@ -434,11 +434,7 @@
     // Auth Validation Guard
     document.addEventListener('DOMContentLoaded', () => {
       if (!supabaseClient) {
-        // Fallback for static demo check
-        if (localStorage.getItem('demo_logged_in') !== 'true') {
-          window.location.href = 'login.html';
-        }
-        loadDemoData();
+        window.location.href = 'login.html';
       } else {
         checkSession();
       }
