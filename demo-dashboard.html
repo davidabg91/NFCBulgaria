@@ -144,6 +144,10 @@
     .leads-table td { padding:0.75rem 1rem; border-bottom:1px solid var(--border); color:var(--text); }
     .leads-table tr:hover { background:rgba(255,255,255,0.015); }
 
+    /* Кой служител е събрал контакта */
+    .lead-owner { display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--text-muted); white-space:nowrap; }
+    .lead-owner-dot { width:22px; height:22px; border-radius:50%; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:0.6rem; font-weight:700; color:#0b0f19; background:linear-gradient(135deg,var(--primary),var(--secondary)); }
+
     /* Lead action buttons */
     .lead-actions { display:flex; gap:0.4rem; align-items:center; }
     .lead-btn {
@@ -187,6 +191,69 @@
     .demo-footer p { color:var(--text-muted); font-size:0.85rem; margin-bottom:1.2rem; }
     .btn-cta { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#0b0f19; font-weight:800; font-size:1rem; padding:0.9rem 2rem; border-radius:14px; text-decoration:none; box-shadow:0 8px 25px rgba(0,242,255,0.25); transition:all 0.3s ease; }
     .btn-cta:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,242,255,0.4); }
+
+    /* ===== ADMIN / TEAM ===== */
+    .admin-pill { background:rgba(161,232,175,0.1); border:1px solid rgba(161,232,175,0.25); color:var(--secondary); padding:0.3rem 0.7rem; border-radius:20px; font-size:0.72rem; font-weight:700; letter-spacing:0.4px; display:inline-flex; align-items:center; gap:5px; }
+
+    .team-section { max-width:1200px; width:100%; margin:0 auto 2rem; padding:0 1.5rem; }
+    .team-head { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.4rem; }
+    .team-head h3 { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:600; display:flex; align-items:center; gap:8px; }
+    .team-head p { font-size:0.78rem; color:var(--text-muted); margin-top:0.3rem; }
+    .team-seats { font-size:0.76rem; color:var(--text-muted); }
+    .team-seats b { color:var(--primary); font-family:'Space Grotesk',sans-serif; }
+
+    .team-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); gap:1.1rem; }
+    .member-card {
+      background:var(--card-bg);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:1.15rem;
+      display:flex;
+      flex-direction:column;
+      gap:0.9rem;
+      position:relative;
+      overflow:hidden;
+      transition:transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .member-card::before { content:''; position:absolute; inset:0 0 auto 0; height:2px; background:linear-gradient(90deg,var(--primary),var(--secondary)); opacity:0; transition:opacity 0.25s ease; }
+    .member-card:hover { transform:translateY(-3px); border-color:var(--glass-border); box-shadow:0 12px 28px rgba(0,0,0,0.35); }
+    .member-card:hover::before { opacity:0.7; }
+    .member-card.is-owner { border-color:var(--glass-border); background:linear-gradient(160deg, rgba(0,242,255,0.06), var(--card-bg) 60%); }
+
+    .member-top { display:flex; align-items:center; gap:0.8rem; }
+    .member-avatar { width:46px; height:46px; border-radius:50%; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:0.95rem; color:#0b0f19; background:linear-gradient(135deg,var(--primary),var(--secondary)); border:2px solid rgba(255,255,255,0.1); }
+    .member-avatar img { width:100%; height:100%; object-fit:cover; }
+    .member-avatar.muted { background:rgba(255,255,255,0.07); color:var(--text-muted); border-color:var(--border); }
+    .member-id { min-width:0; flex:1; }
+    .member-name { font-weight:700; font-size:0.92rem; line-height:1.25; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .member-role { font-size:0.74rem; color:var(--text-muted); margin-top:2px; }
+    .owner-tag { font-size:0.6rem; font-weight:800; letter-spacing:0.4px; color:var(--primary); background:rgba(0,242,255,0.1); border:1px solid var(--glass-border); border-radius:5px; padding:0.1rem 0.35rem; }
+
+    .member-stats { display:flex; gap:0.5rem; }
+    .m-stat { flex:1; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:0.5rem 0.4rem; text-align:center; }
+    .m-stat b { display:block; font-family:'Space Grotesk',sans-serif; font-size:1.05rem; color:var(--primary); font-weight:700; }
+    .m-stat.mint b { color:var(--secondary); }
+    .m-stat span { font-size:0.63rem; color:var(--text-muted); }
+
+    .member-foot { display:flex; align-items:center; justify-content:space-between; gap:0.6rem; }
+    .status { display:inline-flex; align-items:center; gap:5px; font-size:0.7rem; font-weight:600; color:var(--text-muted); }
+    .status .dot { width:7px; height:7px; border-radius:50%; background:var(--text-muted); flex-shrink:0; }
+    .status.active { color:var(--secondary); }
+    .status.active .dot { background:var(--secondary); box-shadow:0 0 8px rgba(161,232,175,0.6); animation:dotPulse 2s ease-in-out infinite; }
+    @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+    .status.pending { color:#fbbf24; }
+    .status.pending .dot { background:#fbbf24; }
+
+    .member-link { display:inline-flex; align-items:center; gap:5px; background:rgba(0,242,255,0.07); border:1px solid var(--glass-border); color:var(--primary); padding:0.34rem 0.7rem; border-radius:9px; font-size:0.72rem; font-weight:700; text-decoration:none; transition:all 0.25s ease; }
+    .member-link:hover { background:var(--primary); color:#0b0f19; }
+    .member-link.disabled { background:rgba(255,255,255,0.03); border-color:var(--border); color:var(--text-muted); pointer-events:none; }
+
+    /* Празен слот за нов служител */
+    .member-card.add-slot { align-items:center; justify-content:center; text-align:center; border-style:dashed; border-color:rgba(255,255,255,0.14); background:transparent; color:var(--text-muted); gap:0.5rem; min-height:170px; }
+    .member-card.add-slot:hover { border-color:var(--glass-border); color:var(--primary); }
+    .add-slot .ico { width:1.6rem; height:1.6rem; }
+    .add-slot strong { font-size:0.85rem; font-weight:700; }
+    .add-slot span { font-size:0.7rem; }
 
     /* ===== ICON SYSTEM =====
        Единен визуален език: 24-грид, заоблени краища, stroke 1.7,
@@ -297,6 +364,33 @@
       <path d="M5 12h13.5m-5.3-5.4L18.8 12l-5.6 5.4"/>
     </symbol>
 
+    <symbol id="i-admin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Щит с чек: администраторски достъп -->
+      <path d="M12 2.6 20 5.6v6c0 4.7-3.2 8.6-8 9.8-4.8-1.2-8-5.1-8-9.8v-6Z"/>
+      <path d="M8.6 11.9 11.2 14.5 15.6 9.8" class="acc"/>
+    </symbol>
+
+    <symbol id="i-team" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Три профила = екип -->
+      <circle cx="12" cy="7" r="3.1"/>
+      <path d="M7.4 15.4a5 5 0 0 1 9.2 0"/>
+      <circle cx="4.6" cy="11.4" r="2.2" class="acc"/>
+      <path d="M1.4 19a3.6 3.6 0 0 1 4.4-2.3" class="acc"/>
+      <circle cx="19.4" cy="11.4" r="2.2" class="acc"/>
+      <path d="M22.6 19a3.6 3.6 0 0 0-4.4-2.3" class="acc"/>
+    </symbol>
+
+    <symbol id="i-add-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9.6" cy="8" r="3.2"/>
+      <path d="M3.8 19.2a5.8 5.8 0 0 1 10.4-2.6"/>
+      <path d="M18.4 13.4v6.4M15.2 16.6h6.4" class="acc"/>
+    </symbol>
+
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1.8 12S5.5 5.4 12 5.4 22.2 12 22.2 12 18.5 18.6 12 18.6 1.8 12 1.8 12Z"/>
+      <circle cx="12" cy="12" r="2.9" class="acc"/>
+    </symbol>
+
     <symbol id="i-call" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
       <!-- Слушалка с изходящ сигнал -->
       <path d="M4.2 4.2h3.4l1.6 4-2 1.5a11.5 11.5 0 0 0 5.6 5.6l1.5-2 4 1.6v3.4a1.6 1.6 0 0 1-1.8 1.6C9.6 19.2 4.8 14.4 2.6 6a1.6 1.6 0 0 1 1.6-1.8Z"/>
@@ -333,7 +427,8 @@
     </a>
     <div class="header-right">
       <span class="demo-pill"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg> ДЕМО</span>
-      <span style="font-weight:600; font-size:0.88rem; color:var(--text);">Александър Петров</span>
+      <span class="admin-pill"><svg class="ico" aria-hidden="true"><use href="#i-admin"/></svg> АДМИН</span>
+      <span style="font-weight:600; font-size:0.88rem; color:var(--text);">Александър Петров <span style="color:var(--text-muted); font-weight:500;">· АРХПРОЕКТ</span></span>
       <a href="index.html" class="btn-outline"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"/></svg> Назад към сайта</a>
     </div>
   </header>
@@ -439,7 +534,10 @@
 
       <!-- Analytics Card -->
       <div class="dash-card">
-        <h3 class="card-title"><svg class="ico ico-title" aria-hidden="true"><use href="#i-pulse"/></svg> Анализи и активност</h3>
+        <h3 class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span><svg class="ico ico-title" aria-hidden="true"><use href="#i-pulse"/></svg> Анализи и активност</span>
+          <span style="font-size:0.7rem; font-weight:600; color:var(--secondary); background:rgba(161,232,175,0.09); border:1px solid rgba(161,232,175,0.22); border-radius:20px; padding:0.2rem 0.6rem;">Целият екип</span>
+        </h3>
         <div class="stats-row">
           <div class="stat-box">
             <div class="stat-num" id="statScans">0</div>
@@ -469,7 +567,7 @@
         <div class="leads-table-wrapper">
           <table class="leads-table">
             <thead>
-              <tr><th>Дата</th><th>Име</th><th>Телефон</th><th style="text-align:center">Действие</th></tr>
+              <tr><th>Дата</th><th>Име</th><th>Телефон</th><th>Служител</th><th style="text-align:center">Действие</th></tr>
             </thead>
             <tbody id="leadsBody">
             </tbody>
@@ -479,6 +577,18 @@
 
     </div>
   </div>
+
+  <!-- ===== TEAM / ADMIN SECTION ===== -->
+  <section class="team-section">
+    <div class="team-head">
+      <div>
+        <h3><svg class="ico ico-title" aria-hidden="true"><use href="#i-team"/></svg> Визитки на екипа</h3>
+        <p>Като администратор виждате и управлявате всички фирмени визитки на едно място.</p>
+      </div>
+      <div class="team-seats">Активни карти: <b id="seatsUsed">0</b> от <b>10</b> в абонамента</div>
+    </div>
+    <div class="team-grid" id="teamGrid"></div>
+  </section>
 
   <!-- Footer CTA -->
   <div class="demo-footer">
@@ -502,26 +612,82 @@
     }
 
     setTimeout(() => {
-      animateCount('statScans', 165, '', 1400);
-      animateCount('statSaves', 142, '', 1400);
-      animateCount('statLeads', 12, '', 1000);
+      animateCount('statScans', 504, '', 1400);
+      animateCount('statSaves', 421, '', 1400);
+      animateCount('statLeads', 37, '', 1000);
       animateCount('statConv', 7, '%', 1100);
     }, 350);
 
+    // ===== Team cards (administrative view) =====
+    const teamData = [
+      { name:'Александър Петров',  role:'Главен Архитект',      scans:165, leads:12, status:'active',  owner:true, avatar:'assets/avatar-alexandar.png' },
+      { name:'Мирослава Тонева',   role:'Ръководител Проекти',  scans:128, leads:9,  status:'active' },
+      { name:'Захари Илиев',       role:'Строителен Инженер',   scans:94,  leads:7,  status:'active' },
+      { name:'Даниела Кръстева',   role:'Интериорен Дизайнер',  scans:76,  leads:6,  status:'active' },
+      { name:'Огнян Лазаров',      role:'Строителен Надзор',    scans:41,  leads:3,  status:'active' },
+      { name:'Ивета Маркова',      role:'Офис Мениджър',        scans:0,   leads:0,  status:'pending' },
+    ];
+
+    const initials = n => n.split(' ').map(w => w[0]).join('').slice(0, 2);
+
+    const teamGrid = document.getElementById('teamGrid');
+    teamData.forEach(m => {
+      const isPending = m.status === 'pending';
+      const card = document.createElement('div');
+      card.className = 'member-card' + (m.owner ? ' is-owner' : '');
+      card.innerHTML = `
+        <div class="member-top">
+          <div class="member-avatar${isPending ? ' muted' : ''}">
+            ${m.avatar ? `<img src="${m.avatar}" alt="">` : initials(m.name)}
+          </div>
+          <div class="member-id">
+            <div class="member-name">${m.name}${m.owner ? '<span class="owner-tag">ВИЕ</span>' : ''}</div>
+            <div class="member-role">${m.role}</div>
+          </div>
+        </div>
+        <div class="member-stats">
+          <div class="m-stat"><b>${m.scans}</b><span>сканирания</span></div>
+          <div class="m-stat mint"><b>${m.leads}</b><span>контакти</span></div>
+        </div>
+        <div class="member-foot">
+          <span class="status ${m.status}">
+            <span class="dot"></span>${isPending ? 'Чака активиране' : 'Активна карта'}
+          </span>
+          <a href="demo-profile.html" class="member-link${isPending ? ' disabled' : ''}">
+            <svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>Виж визитката
+          </a>
+        </div>
+      `;
+      teamGrid.appendChild(card);
+    });
+
+    // Празен слот — показва, че админът може да добавя служители
+    const addSlot = document.createElement('div');
+    addSlot.className = 'member-card add-slot';
+    addSlot.innerHTML = `
+      <svg class="ico" aria-hidden="true"><use href="#i-add-user"/></svg>
+      <strong>Добави служител</strong>
+      <span>Свободни места: 4</span>
+    `;
+    teamGrid.appendChild(addSlot);
+
+    document.getElementById('seatsUsed').innerText =
+      teamData.filter(m => m.status === 'active').length;
+
     // ===== Build Leads Table with action buttons =====
     const leadsData = [
-      { date: '20.07.2026', name: 'Стефан Каменов',   phone: '+35987612345' },
-      { date: '19.07.2026', name: 'Елена Драгова',    phone: '+35988567890' },
-      { date: '18.07.2026', name: 'Виктор Попов',     phone: '+35989234567' },
-      { date: '17.07.2026', name: 'Николай Костов',   phone: '+35988333444' },
-      { date: '16.07.2026', name: 'Гергана Василева',  phone: '+35987111222' },
-      { date: '15.07.2026', name: 'Йордан Христов',   phone: '+35989777888' },
-      { date: '14.07.2026', name: 'Мария Тодорова',   phone: '+35988456789' },
-      { date: '13.07.2026', name: 'Петър Иванов',    phone: '+35987321098' },
-      { date: '11.07.2026', name: 'Симона Георгиева',  phone: '+35989654321' },
-      { date: '08.07.2026', name: 'Красимир Ненов',  phone: '+35988222111' },
-      { date: '06.07.2026', name: 'Ралица Стоянова',  phone: '+35987888999' },
-      { date: '03.07.2026', name: 'Димитър Велев',    phone: '+35989111333' },
+      { date: '20.07.2026', name: 'Стефан Каменов',   phone: '+35987612345', owner: 'Александър Петров' },
+      { date: '19.07.2026', name: 'Елена Драгова',    phone: '+35988567890', owner: 'Мирослава Тонева' },
+      { date: '18.07.2026', name: 'Виктор Попов',     phone: '+35989234567', owner: 'Захари Илиев' },
+      { date: '17.07.2026', name: 'Николай Костов',   phone: '+35988333444', owner: 'Мирослава Тонева' },
+      { date: '16.07.2026', name: 'Гергана Василева',  phone: '+35987111222', owner: 'Даниела Кръстева' },
+      { date: '15.07.2026', name: 'Йордан Христов',   phone: '+35989777888', owner: 'Александър Петров' },
+      { date: '14.07.2026', name: 'Мария Тодорова',   phone: '+35988456789', owner: 'Огнян Лазаров' },
+      { date: '13.07.2026', name: 'Петър Иванов',    phone: '+35987321098', owner: 'Захари Илиев' },
+      { date: '11.07.2026', name: 'Симона Георгиева',  phone: '+35989654321', owner: 'Даниела Кръстева' },
+      { date: '08.07.2026', name: 'Красимир Ненов',  phone: '+35988222111', owner: 'Мирослава Тонева' },
+      { date: '06.07.2026', name: 'Ралица Стоянова',  phone: '+35987888999', owner: 'Александър Петров' },
+      { date: '03.07.2026', name: 'Димитър Велев',    phone: '+35989111333', owner: 'Огнян Лазаров' },
     ];
 
     function downloadLeadVCard(name, phone) {
@@ -544,6 +710,11 @@
         <td style="font-weight:600">${lead.name}</td>
         <td>
           <a href="tel:${lead.phone}" style="color:var(--text); text-decoration:none; font-size:0.86rem;">${displayPhone}</a>
+        </td>
+        <td>
+          <span class="lead-owner">
+            <span class="lead-owner-dot">${initials(lead.owner)}</span>${lead.owner}
+          </span>
         </td>
         <td>
           <div class="lead-actions">
