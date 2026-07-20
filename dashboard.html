@@ -274,6 +274,41 @@
       color: var(--text-muted);
       margin-top: 0.2rem;
     }
+
+    /* Password input fields styling */
+    .password-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .password-container .form-input {
+      padding-right: 2.8rem;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      transition: color 0.3s ease;
+    }
+
+    .password-toggle-btn:hover {
+      color: var(--primary);
+    }
+
+    .password-toggle-btn svg {
+      width: 20px;
+      height: 20px;
+    }
   </style>
 </head>
 <body>
@@ -350,6 +385,32 @@
           <div class="form-group full-width">
             <label for="websiteInput">Уебсайт</label>
             <input type="text" id="websiteInput" class="form-input" placeholder="www.arhproekt.bg">
+          </div>
+
+          <div class="form-group">
+            <label for="newPasswordInput">Нова парола</label>
+            <div class="password-container">
+              <input type="password" id="newPasswordInput" class="form-input" placeholder="••••••••" autocomplete="new-password">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('newPasswordInput', this)" aria-label="Покажи парола">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPasswordInput">Потвърди новата парола</label>
+            <div class="password-container">
+              <input type="password" id="confirmPasswordInput" class="form-input" placeholder="••••••••" autocomplete="new-password">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirmPasswordInput', this)" aria-label="Покажи парола">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="form-group full-width" style="display: flex; align-items: center; gap: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.2rem;">
@@ -659,6 +720,20 @@
     async function saveProfile(e) {
       e.preventDefault();
       
+      const newPassword = document.getElementById('newPasswordInput').value;
+      const confirmPassword = document.getElementById('confirmPasswordInput').value;
+
+      if (newPassword || confirmPassword) {
+        if (newPassword !== confirmPassword) {
+          alert("Грешка: Паролите за потвърждение не съвпадат!");
+          return;
+        }
+        if (newPassword.length < 6) {
+          alert("Грешка: Новата парола трябва да бъде поне 6 символа!");
+          return;
+        }
+      }
+
       const profileData = {
         name: document.getElementById('nameInput').value,
         title: document.getElementById('titleInput').value,
@@ -674,22 +749,67 @@
       };
 
       if (!supabaseClient) {
-        alert("Промените са запазени локално (демо режим)!");
+        if (newPassword) {
+          alert("Паролата е променена успешно (демо режим)!\nПромените са запазени локално!");
+        } else {
+          alert("Промените са запазени локално (демо режим)!");
+        }
+        document.getElementById('newPasswordInput').value = '';
+        document.getElementById('confirmPasswordInput').value = '';
         return;
       }
 
       const { data: { session } } = await supabaseClient.auth.getSession();
       
+      // Update profile details
       const { error } = await supabaseClient
         .from('profiles')
         .update(profileData)
         .eq('user_id', session.user.id);
       
       if (error) {
-        alert("Грешка при записване: " + error.message);
+        alert("Грешка при записване на профила: " + error.message);
+        return;
+      }
+
+      // Update password if entered
+      if (newPassword) {
+        const { error: pwdError } = await supabaseClient.auth.updateUser({
+          password: newPassword
+        });
+        if (pwdError) {
+          alert("Данните на профила са обновени, но възникна грешка при смяната на паролата: " + pwdError.message);
+          return;
+        }
+        alert("Профилът и паролата бяха обновени успешно!");
+        document.getElementById('newPasswordInput').value = '';
+        document.getElementById('confirmPasswordInput').value = '';
       } else {
         alert("Данните бяха обновени успешно!");
-        loadRealData(session.user.id);
+      }
+      
+      loadRealData(session.user.id);
+    }
+
+    // Toggle password fields visibility
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+        `;
+      } else {
+        input.type = "password";
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        `;
       }
     }
 
