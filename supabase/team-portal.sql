@@ -331,20 +331,9 @@ revoke all on function public.admin_activate_subscription(uuid, text, int) from 
 -- ---------------------------------------------------------------------
 -- 8. Кой е администратор на сайта
 -- ---------------------------------------------------------------------
--- Не познавам guard-а на съществуващата admin_update_profile_relation,
--- затова тук е явен списък. Добави себе си веднъж:
---
---   insert into public.app_admins (user_id)
---   select id from auth.users where email = 'davida1991@gmail.com';
---
-create table if not exists public.app_admins (
-  user_id uuid primary key references auth.users (id) on delete cascade,
-  created_at timestamptz not null default now()
-);
-
-alter table public.app_admins enable row level security;
--- Никакъв клиентски достъп до самата таблица.
-
+-- Проверката ползва имейла от токена — същият списък като ADMIN_EMAILS
+-- в admin.html. Няма отделна таблица за поддръжка. За да добавиш/махнеш
+-- админ, редактирай списъка тук И в admin.html, после пусни пак този блок.
 create or replace function public.is_app_admin()
 returns boolean
 language sql
@@ -352,9 +341,16 @@ stable
 security definer
 set search_path = public
 as $$
-  select exists (select 1 from public.app_admins a where a.user_id = auth.uid());
+  select coalesce(
+    lower(auth.jwt() ->> 'email') in (
+      'office@nfcbulgaria.com',
+      'sjv_gold@abv.bg'
+    ),
+    false
+  );
 $$;
 
+revoke all on function public.is_app_admin() from public;
 grant execute on function public.is_app_admin() to authenticated;
 
 
