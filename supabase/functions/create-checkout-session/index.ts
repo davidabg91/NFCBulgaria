@@ -49,9 +49,12 @@ Deno.serve(async (req) => {
       return json({ error: 'Липсва сесия.' }, 401);
     }
 
+    // Авто-вкараният SERVICE_ROLE_KEY е счупен (проектът е на новите ключове)
+    // и няма права за таблиците. За четене ползваме публичния ANON ключ —
+    // profiles така или иначе е публично четим (визитките се показват на всеки).
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
     );
 
     const { data: userData, error: userErr } = await supabase.auth.getUser(
