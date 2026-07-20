@@ -144,6 +144,36 @@
     .leads-table td { padding:0.75rem 1rem; border-bottom:1px solid var(--border); color:var(--text); }
     .leads-table tr:hover { background:rgba(255,255,255,0.015); }
 
+    /* Lead action buttons */
+    .lead-actions { display:flex; gap:0.4rem; align-items:center; }
+    .lead-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .lead-btn-call {
+      background: rgba(0,242,255,0.08);
+      border-color: var(--glass-border);
+      color: var(--primary);
+    }
+    .lead-btn-call:hover { background: var(--primary); color: #0b0f19; }
+    .lead-btn-save {
+      background: rgba(161,232,175,0.08);
+      border-color: rgba(161,232,175,0.2);
+      color: var(--secondary);
+    }
+    .lead-btn-save:hover { background: var(--secondary); color: #0b0f19; }
+
     /* AVATAR / LOGO PREVIEW */
     .preview-box { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:1rem; display:flex; align-items:center; gap:1rem; }
     .avatar-circle { width:58px; height:58px; border-radius:50%; border:2px solid var(--primary); overflow:hidden; flex-shrink:0; box-shadow:0 0 12px rgba(0,242,255,0.2); }
@@ -310,21 +340,9 @@
         <div class="leads-table-wrapper">
           <table class="leads-table">
             <thead>
-              <tr><th>Дата</th><th>Име</th><th>Телефон</th></tr>
+              <tr><th>Дата</th><th>Име</th><th>Телефон</th><th style="text-align:center">Действие</th></tr>
             </thead>
-            <tbody>
-              <tr><td>20.07.2026</td><td>Стефан Каменов</td><td>+359 87 612 3456</td></tr>
-              <tr><td>19.07.2026</td><td>Елена Драгова</td><td>+359 88 567 8901</td></tr>
-              <tr><td>18.07.2026</td><td>Виктор Попов</td><td>+359 89 234 5678</td></tr>
-              <tr><td>17.07.2026</td><td>Николай Костов</td><td>+359 88 333 4444</td></tr>
-              <tr><td>16.07.2026</td><td>Гергана Василева</td><td>+359 87 111 2222</td></tr>
-              <tr><td>15.07.2026</td><td>Йордан Христов</td><td>+359 89 777 8888</td></tr>
-              <tr><td>14.07.2026</td><td>Мария Тодорова</td><td>+359 88 456 7890</td></tr>
-              <tr><td>13.07.2026</td><td>Петър Иванов</td><td>+359 87 321 0987</td></tr>
-              <tr><td>11.07.2026</td><td>Симона Георгиева</td><td>+359 89 654 3210</td></tr>
-              <tr><td>08.07.2026</td><td>Красимир Ненов</td><td>+359 88 222 1111</td></tr>
-              <tr><td>06.07.2026</td><td>Ралица Стоянова</td><td>+359 87 888 9999</td></tr>
-              <tr><td>03.07.2026</td><td>Димитър Велев</td><td>+359 89 111 3333</td></tr>
+            <tbody id="leadsBody">
             </tbody>
           </table>
         </div>
@@ -360,6 +378,59 @@
       animateCount('statLeads', 12, '', 1000);
       animateCount('statConv', 7, '%', 1100);
     }, 350);
+
+    // ===== Build Leads Table with action buttons =====
+    const leadsData = [
+      { date: '20.07.2026', name: 'Стефан Каменов',   phone: '+35987612345' },
+      { date: '19.07.2026', name: 'Елена Драгова',    phone: '+35988567890' },
+      { date: '18.07.2026', name: 'Виктор Попов',     phone: '+35989234567' },
+      { date: '17.07.2026', name: 'Николай Костов',   phone: '+35988333444' },
+      { date: '16.07.2026', name: 'Гергана Василева',  phone: '+35987111222' },
+      { date: '15.07.2026', name: 'Йордан Христов',   phone: '+35989777888' },
+      { date: '14.07.2026', name: 'Мария Тодорова',   phone: '+35988456789' },
+      { date: '13.07.2026', name: 'Петър Иванов',    phone: '+35987321098' },
+      { date: '11.07.2026', name: 'Симона Георгиева',  phone: '+35989654321' },
+      { date: '08.07.2026', name: 'Красимир Ненов',  phone: '+35988222111' },
+      { date: '06.07.2026', name: 'Ралица Стоянова',  phone: '+35987888999' },
+      { date: '03.07.2026', name: 'Димитър Велев',    phone: '+35989111333' },
+    ];
+
+    function downloadLeadVCard(name, phone) {
+      const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nN:${name};;;;\nTEL;TYPE=CELL:${phone}\nEND:VCARD`;
+      const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = name.replace(/\s+/g, '_') + '.vcf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    const tbody = document.getElementById('leadsBody');
+    leadsData.forEach(lead => {
+      const displayPhone = lead.phone.replace('+359', '+359 ').replace(/(\d{2})(\d{3})(\d{3})$/, '$1 $2 $3');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${lead.date}</td>
+        <td style="font-weight:600">${lead.name}</td>
+        <td>
+          <a href="tel:${lead.phone}" style="color:var(--text); text-decoration:none; font-size:0.86rem;">${displayPhone}</a>
+        </td>
+        <td>
+          <div class="lead-actions">
+            <a href="tel:${lead.phone}" class="lead-btn lead-btn-call">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              Звънни
+            </a>
+            <button onclick="downloadLeadVCard('${lead.name}', '${lead.phone}')" class="lead-btn lead-btn-save">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Запази
+            </button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
 
     // Chart
     const ctx = document.getElementById('demoChart').getContext('2d');

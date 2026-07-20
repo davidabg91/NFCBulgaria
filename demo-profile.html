@@ -471,9 +471,62 @@
       color: #fff;
       background: rgba(255, 255, 255, 0.06);
     }
+
+    /* Demo top banner */
+    .demo-top-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 999;
+      background: linear-gradient(90deg, rgba(0,242,255,0.18), rgba(161,232,175,0.1), rgba(0,242,255,0.18));
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0.55rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: bannerIn 0.5s ease both;
+    }
+
+    @keyframes bannerIn {
+      from { opacity:0; transform:translateY(-100%); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .demo-top-banner a {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--primary);
+      color: #0b0f19;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .demo-top-banner a:hover { background: var(--secondary); }
+
+    body.has-demo-banner {
+      padding-top: 3.5rem;
+    }
   </style>
 </head>
-<body>
+<body class="has-demo-banner">
+
+  <!-- Demo Banner pointing to admin panel -->
+  <div class="demo-top-banner">
+    <span>🎯 ДЕМО РЕЖИМ &mdash; Виж как изглежда клиентският панел</span>
+    <a href="demo-dashboard.html">📊 Виж панела &rarr;</a>
+  </div>
 
   <div class="profile-container">
 
