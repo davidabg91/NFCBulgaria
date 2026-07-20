@@ -67,10 +67,21 @@ Deno.serve(async (req) => {
     if (!spec) return json({ error: 'Непознат пакет.' }, 400);
 
     // --- Фирмата трябва да е зададена, иначе абонаментът няма към какво да се върже ---
-    const { data: profiles } = await supabase
+    // Търсим профила първо по user_id, после по имейл (той е потвърден в
+    // токена). Fallback-ът по имейл спасява случаите, в които профилът е
+    // закачен за друг вътрешен user_id заради разминаване при създаването.
+    let { data: profiles } = await supabase
       .from('profiles')
       .select('company_id, company, name, id')
       .eq('user_id', user.id);
+
+    if ((!profiles || profiles.length === 0) && user.email) {
+      const byEmail = await supabase
+        .from('profiles')
+        .select('company_id, company, name, id')
+        .ilike('email', user.email);
+      profiles = byEmail.data ?? [];
+    }
 
     if (!profiles || profiles.length === 0) {
       return json({
