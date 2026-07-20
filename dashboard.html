@@ -1360,22 +1360,31 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = 'login.html'; return; }
 
-        const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-checkout-session`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ plan })
-        });
+        let res;
+        try {
+          res = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-checkout-session`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ plan })
+          });
+        } catch {
+          // Мрежов срив или недостъпна функция — браузърът го дава като CORS/Failed to fetch
+          throw new Error(
+            'Плащанията временно не са достъпни. Опитайте по-късно или се свържете с нас.'
+          );
+        }
 
-        const body = await res.json();
+        const body = await res.json().catch(() => ({}));
         if (!res.ok || !body.url) {
-          throw new Error(body.error || 'Плащането не може да бъде стартирано.');
+          throw new Error(body.error || 'Плащането не може да бъде стартирано в момента.');
         }
 
         window.location.href = body.url;
       } catch (err) {
+        console.error('checkout:', err);
         alert(err.message);
         buttons.forEach(b => b.disabled = false);
         btn.innerText = original;
