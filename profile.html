@@ -152,11 +152,23 @@
     .profile-company {
       font-size: 0.9rem;
       color: var(--text-muted);
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.8rem;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+    }
+
+    .profile-bio {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+      padding: 0.7rem 1rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      display: none;
     }
 
     .company-badge {
@@ -265,6 +277,28 @@
       text-overflow: ellipsis;
       width: 100%;
       text-align: center;
+    }
+
+    /* Website link with logo background */
+    .link-item-website {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .link-item-website .website-logo-bg {
+      position: absolute;
+      inset: 0;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.12;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .link-item-website:hover .website-logo-bg,
+    .link-item-website:active .website-logo-bg {
+      opacity: 0.2;
     }
 
     /* Lead Capture Section */
@@ -471,6 +505,9 @@
         <span id="profileCompany">АРХПРОЕКТ</span>
         <span class="company-badge">PRO</span>
       </div>
+
+      <!-- Short Bio -->
+      <div class="profile-bio" id="profileBio"></div>
       
       <!-- Primary Save Button -->
       <button class="btn-save" onclick="downloadVCard()">
@@ -530,12 +567,21 @@
         <div class="link-value" id="instagramVal">Профил</div>
       </a>
 
-      <a href="https://nfcbulgaria.com" target="_blank" class="link-item" style="grid-column: span 2;" id="websiteLink">
+      <a href="https://nfcbulgaria.com" target="_blank" class="link-item link-item-website" style="grid-column: span 2;" id="websiteLink">
+        <div class="website-logo-bg" id="websiteLogoBg"></div>
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         </div>
         <div class="link-label" id="websiteLabel">Уебсайт на Компанията</div>
         <div class="link-value" id="websiteVal">www.arhproekt.bg</div>
+      </a>
+
+      <a href="#" target="_blank" class="link-item" style="grid-column: span 2;" id="googleMapsLink">
+        <div class="link-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        </div>
+        <div class="link-label" id="googleMapsLabel">Намерете ни на картата</div>
+        <div class="link-value" id="googleMapsVal">Google Maps</div>
       </a>
 
     </div>
@@ -648,6 +694,23 @@
         document.getElementById('websiteLink').href = formatExternalUrl(data.website);
         document.getElementById('websiteVal').innerText = data.website ? data.website.replace('https://','').replace('http://','').replace('www.','') : '';
 
+        // Company logo as background on website button
+        if (data.company_logo) {
+          document.getElementById('websiteLogoBg').style.backgroundImage = `url('${data.company_logo}')`;
+        }
+
+        // Google Maps link
+        document.getElementById('googleMapsLink').href = formatExternalUrl(data.google_maps);
+
+        // Bio
+        const bioEl = document.getElementById('profileBio');
+        if (data.bio && data.bio.trim() !== '') {
+          bioEl.innerText = data.bio;
+          bioEl.style.display = 'block';
+        } else {
+          bioEl.style.display = 'none';
+        }
+
         // Dynamic visibility - only show links that are filled in!
         toggleLinkVisibility('phoneLink', data.phone);
         toggleLinkVisibility('emailLink', data.email);
@@ -656,6 +719,7 @@
         toggleLinkVisibility('facebookLink', data.facebook);
         toggleLinkVisibility('instagramLink', data.instagram);
         toggleLinkVisibility('websiteLink', data.website);
+        toggleLinkVisibility('googleMapsLink', data.google_maps);
 
 
       }
