@@ -57,12 +57,14 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization') ?? '';
     if (!authHeader.startsWith('Bearer ')) return json({ error: 'Липсва сесия.' }, 401);
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
+    const url = Deno.env.get('SUPABASE_URL')!;
+    // Четене/валидация — публичен ключ (работи). Писане — SERVICE_KEY
+    // (авто-вкараният service-role на този проект е без права).
+    const anon = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!);
+    const writeKey = Deno.env.get('SERVICE_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(url, writeKey);
 
-    const { data: userData, error: userErr } = await supabase.auth.getUser(
+    const { data: userData, error: userErr } = await anon.auth.getUser(
       authHeader.replace('Bearer ', ''),
     );
     if (userErr || !userData.user) return json({ error: 'Невалидна сесия.' }, 401);
@@ -120,7 +122,11 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Грешка при активиране.' }, 500);
     }
 
+    // Match и по имейл — профилът може да е закачен за друг вътрешен user_id.
     await supabase.from('profiles').update({ is_boss: true }).eq('user_id', user.id);
+    if (user.email) {
+      await supabase.from('profiles').update({ is_boss: true }).ilike('email', user.email);
+    }
 
     return json({ ok: true, plan, seats: spec.seats });
   } catch (err) {
