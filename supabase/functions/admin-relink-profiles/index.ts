@@ -9,7 +9,7 @@
 // Пуска се веднъж, после се трие.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
   const writeKey = Deno.env.get('SERVICE_KEY');
   if (!writeKey) {
     return new Response(
@@ -21,6 +21,18 @@ Deno.serve(async () => {
   const url = Deno.env.get('SUPABASE_URL')!;
   const admin = createClient(url, writeKey);        // за писане
   const authAdmin = createClient(url, writeKey);    // за listUsers
+
+  if (new URL(req.url).searchParams.get('diag') === '1') {
+    const rd = await admin.from('profiles').select('id').limit(1);
+    const wr = await admin.from('profiles').update({ saves_count: 0 }).eq('id', '__none__').select('id');
+    const lu = await authAdmin.auth.admin.listUsers({ page: 1, perPage: 1 });
+    return new Response(JSON.stringify({
+      SERVICE_KEY_prefix: writeKey.slice(0, 11),
+      read: rd.error?.message ?? `ok (${rd.data?.length})`,
+      write: wr.error?.message ?? 'ok (ПИШЕ!)',
+      listUsers: lu.error?.message ?? `ok (${lu.data?.users?.length})`,
+    }, null, 2), { headers: { 'Content-Type': 'application/json' } });
+  }
 
   const emailToUid = new Map<string, string[]>();
   let page = 1;
