@@ -309,6 +309,161 @@
       width: 20px;
       height: 20px;
     }
+
+    /* ===================== ФИРМЕН ПОРТАЛ — ПАКЕТИ ===================== */
+    .team-upsell {
+      background: linear-gradient(160deg, rgba(0, 242, 255, 0.07), var(--card-bg) 55%);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 2.2rem;
+      box-shadow: 0 0 30px rgba(0, 242, 255, 0.06);
+    }
+    .team-upsell-head { text-align: center; max-width: 620px; margin: 0 auto 2rem; }
+    .team-upsell-head h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+    .team-upsell-head p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; }
+
+    .team-benefits {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 0.9rem;
+      margin: 1.8rem auto 2rem;
+      max-width: 820px;
+    }
+    .benefit {
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-start;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 0.95rem;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: var(--text-muted);
+    }
+    .benefit b { color: var(--text); display: block; font-size: 0.85rem; margin-bottom: 2px; }
+    .benefit-check {
+      width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+      border-radius: 50%;
+      background: rgba(161, 232, 175, 0.12);
+      border: 1px solid rgba(161, 232, 175, 0.3);
+      color: var(--secondary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; font-weight: 800;
+    }
+
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 1.1rem;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .plan-card {
+      position: relative;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.6rem 1.25rem 1.35rem;
+      text-align: center;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .plan-card:hover { transform: translateY(-4px); border-color: var(--glass-border); }
+    .plan-card.featured {
+      border-color: var(--primary);
+      box-shadow: 0 0 28px rgba(0, 242, 255, 0.14);
+      background: rgba(0, 242, 255, 0.04);
+    }
+    .plan-tag {
+      position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #0b0f19;
+      font-size: 0.62rem; font-weight: 800; letter-spacing: 0.5px;
+      padding: 0.22rem 0.7rem; border-radius: 20px; white-space: nowrap;
+    }
+    .plan-seats {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem; font-weight: 700; color: var(--text);
+    }
+    .plan-price {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.4rem; font-weight: 800; color: var(--primary);
+      line-height: 1.1; margin: 0.5rem 0 0.1rem;
+    }
+    .plan-price small { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .plan-per { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 1.15rem; }
+    .plan-btn {
+      width: 100%; padding: 0.72rem;
+      background: rgba(0, 242, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      color: var(--primary);
+      font-size: 0.87rem; font-weight: 700; cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.25s ease;
+    }
+    .plan-btn:hover { background: var(--primary); color: #0b0f19; }
+    .plan-card.featured .plan-btn {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #0b0f19; border-color: transparent;
+    }
+    .plan-btn:disabled { opacity: 0.55; cursor: wait; }
+
+    .plan-note {
+      text-align: center; font-size: 0.74rem; color: var(--text-muted);
+      margin-top: 1.6rem; line-height: 1.55;
+    }
+
+    /* ---- Лента със състояние на абонамента ---- */
+    .sub-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.8rem;
+      background: rgba(161, 232, 175, 0.05);
+      border: 1px solid rgba(161, 232, 175, 0.2);
+      border-radius: 12px;
+      padding: 0.85rem 1.15rem;
+      margin-bottom: 1.6rem;
+      font-size: 0.82rem;
+    }
+    .sub-bar .seats-used { color: var(--text); font-weight: 600; }
+    .sub-bar .seats-used b { color: var(--primary); font-family: 'Space Grotesk', sans-serif; }
+    .sub-bar .renew { color: var(--text-muted); font-size: 0.76rem; }
+    .sub-bar.expiring { background: rgba(251, 191, 36, 0.06); border-color: rgba(251, 191, 36, 0.28); }
+    .sub-bar.expiring .renew { color: #fbbf24; font-weight: 600; }
+
+    /* ---- Добавяне на служител ---- */
+    .add-emp {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.8rem;
+    }
+    .add-emp h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; color: #fff; margin-bottom: 0.35rem;
+    }
+    .add-emp p { font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.9rem; line-height: 1.5; }
+    .add-emp-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .add-emp-row .form-input { flex: 1; min-width: 210px; }
+    .add-emp-btn {
+      padding: 0 1.3rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none; border-radius: 10px; color: #0b0f19;
+      font-weight: 700; font-size: 0.87rem; cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: opacity 0.25s ease;
+    }
+    .add-emp-btn:hover { opacity: 0.88; }
+    .add-emp-btn:disabled { opacity: 0.5; cursor: wait; }
+    .add-emp-msg { margin-top: 0.75rem; font-size: 0.8rem; display: none; line-height: 1.5; }
+    .add-emp-msg.ok { color: var(--secondary); display: block; }
+    .add-emp-msg.err { color: #f87171; display: block; }
   </style>
 </head>
 <body>
@@ -518,11 +673,107 @@
 
   </div>
 
+  <!-- Изчакване на потвърждение от Stripe -->
+  <div class="container" id="checkoutPending" style="display: none; margin-bottom: 4rem;">
+    <div class="team-upsell" style="text-align: center; padding: 3rem 2rem;">
+      <div style="font-size: 2rem; margin-bottom: 0.8rem;">⏳</div>
+      <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem;">
+        Потвърждаваме плащането...
+      </h3>
+      <p style="color: var(--text-muted); font-size: 0.88rem;">
+        Отнема няколко секунди. Не затваряйте страницата.
+      </p>
+    </div>
+  </div>
+
+  <!-- Team Upsell — показва се, когато няма активен пакет -->
+  <div class="container" id="teamUpsellSection" style="display: none; margin-bottom: 4rem;">
+    <div class="team-upsell">
+      <div class="team-upsell-head">
+        <h3>🏢 Свържете екипа си към вашия профил</h3>
+        <p>
+          Добавете картите на вашите служители и вижте на едно място колко пъти е
+          сканирана всяка визитка, кой колко контакта е събрал и кои клиенти
+          са оставили данните си — в реално време.
+        </p>
+      </div>
+
+      <div class="team-benefits">
+        <div class="benefit">
+          <span class="benefit-check">✓</span>
+          <span><b>Реални данни</b>Сканирания, сваляния и контакти за всяка карта поотделно.</span>
+        </div>
+        <div class="benefit">
+          <span class="benefit-check">✓</span>
+          <span><b>Класация</b>Виждате кой от екипа се представя най-добре.</span>
+        </div>
+        <div class="benefit">
+          <span class="benefit-check">✓</span>
+          <span><b>Всички лийдове</b>Контактите на служителите ви не се губят при напускане.</span>
+        </div>
+        <div class="benefit">
+          <span class="benefit-check">✓</span>
+          <span><b>Без нови карти</b>Работи с картите, които вече сте поръчали.</span>
+        </div>
+      </div>
+
+      <div class="plan-grid" id="planGrid">
+        <div class="plan-card">
+          <div class="plan-seats">5 служителя</div>
+          <div class="plan-price">6<small> €/мес.</small></div>
+          <div class="plan-per">1.20 € на служител</div>
+          <button class="plan-btn" data-plan="team5" onclick="startCheckout('team5', this)">Избери пакета</button>
+        </div>
+        <div class="plan-card featured">
+          <div class="plan-tag">НАЙ-ИЗБИРАН</div>
+          <div class="plan-seats">10 служителя</div>
+          <div class="plan-price">10<small> €/мес.</small></div>
+          <div class="plan-per">1.00 € на служител</div>
+          <button class="plan-btn" data-plan="team10" onclick="startCheckout('team10', this)">Избери пакета</button>
+        </div>
+        <div class="plan-card">
+          <div class="plan-seats">20 служителя</div>
+          <div class="plan-price">18<small> €/мес.</small></div>
+          <div class="plan-per">0.90 € на служител — най-изгодно</div>
+          <button class="plan-btn" data-plan="team20" onclick="startCheckout('team20', this)">Избери пакета</button>
+        </div>
+      </div>
+
+      <p class="plan-note" id="planNote">
+        Месечен абонамент — активира се веднага след плащането и важи 1 месец.
+        Може да се откаже по всяко време.
+      </p>
+    </div>
+  </div>
+
   <!-- Company Portal Section (HubSpot Lite) -->
   <div class="company-portal-container container" id="companyPortalSection" style="display: none; margin-bottom: 4rem;">
     <div class="dash-card" style="border-color: rgba(0, 242, 255, 0.25); box-shadow: 0 0 30px rgba(0, 242, 255, 0.08); background: var(--card-bg); border-radius: 20px; padding: 2rem;">
       <h3 class="card-title" style="color: var(--primary); border-color: rgba(0, 242, 255, 0.15); margin-bottom: 1.5rem; padding-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">🏢 Фирмен Портал — HubSpot Lite</h3>
-      
+
+      <!-- Състояние на абонамента -->
+      <div class="sub-bar" id="subBar" style="display: none;">
+        <span class="seats-used">Заети места: <b id="seatsUsed">0</b> от <b id="seatsTotal">0</b></span>
+        <span class="renew" id="subRenew"></span>
+      </div>
+
+      <!-- Добавяне на служител по линк -->
+      <div class="add-emp" id="addEmployeeCard" style="display: none;">
+        <h4>➕ Добави служител</h4>
+        <p>
+          Поставете линка към визитката на служителя (например
+          <code style="color: var(--primary);">nfcbulgaria.com/profile.html?id=IvanPetrov</code>)
+          или само неговото потребителско име. Добавят се само карти, издадени на вашата фирма.
+        </p>
+        <div class="add-emp-row">
+          <input type="text" id="employeeLinkInput" class="form-input"
+                 placeholder="Линк към визитката или потребителско име"
+                 autocomplete="off">
+          <button class="add-emp-btn" id="addEmployeeBtn" onclick="addEmployeeByLink()">Добави</button>
+        </div>
+        <div class="add-emp-msg" id="addEmployeeMsg"></div>
+      </div>
+
       <!-- Team Stats KPI Cards -->
       <div class="stats-row" style="margin-bottom: 2rem;">
         <div class="stat-box" style="background: rgba(0, 242, 255, 0.03);">
@@ -700,13 +951,8 @@
           document.getElementById('companyLogoPlaceholder').style.display = 'block';
         }
 
-        // Check if user is Boss (Company portal manager)
-        if (profile.is_boss) {
-          document.getElementById('companyPortalSection').style.display = 'block';
-          loadCompanyPortalData(profile.user_id);
-        } else {
-          document.getElementById('companyPortalSection').style.display = 'none';
-        }
+        // Портал или оферта — решава се от абонамента, не от ръчен флаг
+        loadTeamGate(profile.user_id);
 
         // Load stats & leads for this profile
         loadStatsAndLeads(profile.id, profile.saves_count);
@@ -1016,6 +1262,198 @@
           img.src = evt.target.result;
         };
         reader.readAsDataURL(file);
+      }
+    });
+
+    // ============ ФИРМЕН ПОРТАЛ: АБОНАМЕНТ И ДОСТЪП ============
+
+    const SUPABASE_FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
+
+    // Прочита се веднъж при зареждане — после чистим URL-а, а флагът остава.
+    const JUST_PAID =
+      new URLSearchParams(window.location.search).get('checkout') === 'success';
+
+    // Единствената проверка кой какво вижда. Сървърът решава, не браузърът —
+    // тук само рисуваме резултата.
+    async function loadTeamGate(userId, attempt = 0) {
+      const upsell = document.getElementById('teamUpsellSection');
+      const portal = document.getElementById('companyPortalSection');
+
+      const { data, error } = await supabaseClient.rpc('get_my_team_subscription');
+
+      if (error) {
+        console.error('Грешка при проверка на абонамента:', error.message);
+        upsell.style.display = 'block';
+        portal.style.display = 'none';
+        return;
+      }
+
+      const sub = Array.isArray(data) ? data[0] : data;
+
+      if (!sub || !sub.is_active) {
+        // Току-що се връщаме от Stripe? Webhook-ът може още да не е стигнал —
+        // изчакваме го, вместо да показваме офертата на вече платил клиент.
+        if (JUST_PAID && attempt < 6) {
+          upsell.style.display = 'none';
+          portal.style.display = 'none';
+          document.getElementById('checkoutPending').style.display = 'block';
+          setTimeout(() => loadTeamGate(userId, attempt + 1), 1500);
+          return;
+        }
+        document.getElementById('checkoutPending').style.display = 'none';
+
+        // Няма платен пакет → показваме офертата
+        upsell.style.display = 'block';
+        portal.style.display = 'none';
+
+        if (JUST_PAID) {
+          document.getElementById('planNote').innerHTML =
+            'Плащането се обработва. Ако пакетът не се появи до минута, презаредете страницата или ни пишете.';
+        } else if (sub && sub.has_subscription) {
+          document.getElementById('planNote').innerHTML =
+            'Пакетът ви е изтекъл. Изберете пакет, за да възстановите достъпа до данните на екипа.';
+        }
+        return;
+      }
+
+      document.getElementById('checkoutPending').style.display = 'none';
+
+      // Има активен пакет → порталът
+      upsell.style.display = 'none';
+      portal.style.display = 'block';
+
+      document.getElementById('subBar').style.display = 'flex';
+      document.getElementById('addEmployeeCard').style.display = 'block';
+      document.getElementById('seatsUsed').innerText = sub.seats_used ?? 0;
+      document.getElementById('seatsTotal').innerText = sub.seats ?? 0;
+
+      renderRenewNotice(sub.current_period_end);
+      loadCompanyPortalData(userId);
+    }
+
+    function renderRenewNotice(periodEnd) {
+      const bar = document.getElementById('subBar');
+      const el = document.getElementById('subRenew');
+      if (!periodEnd) { el.innerText = ''; return; }
+
+      const end = new Date(periodEnd);
+      const daysLeft = Math.ceil((end - new Date()) / 86400000);
+      const dateStr = end.toLocaleDateString('bg-BG', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+
+      el.innerText = `Пакетът е активен до ${dateStr}`;
+      bar.classList.toggle('expiring', daysLeft <= 5);
+      if (daysLeft <= 5) {
+        el.innerText = `Изтича след ${daysLeft} ${daysLeft === 1 ? 'ден' : 'дни'} — ${dateStr}`;
+      }
+    }
+
+    // --- Плащане ---
+    async function startCheckout(plan, btn) {
+      const buttons = document.querySelectorAll('.plan-btn');
+      buttons.forEach(b => b.disabled = true);
+      const original = btn.innerText;
+      btn.innerText = 'Пренасочване...';
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { window.location.href = 'login.html'; return; }
+
+        const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-checkout-session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ plan })
+        });
+
+        const body = await res.json();
+        if (!res.ok || !body.url) {
+          throw new Error(body.error || 'Плащането не може да бъде стартирано.');
+        }
+
+        window.location.href = body.url;
+      } catch (err) {
+        alert(err.message);
+        buttons.forEach(b => b.disabled = false);
+        btn.innerText = original;
+      }
+    }
+
+    // --- Добавяне на служител ---
+    // Приема цял линк или само slug — вадим последното полезно парче.
+    function extractProfileSlug(raw) {
+      const value = (raw || '').trim();
+      if (!value) return '';
+
+      const byQuery = value.match(/[?&]id=([^&#\s]+)/i);
+      if (byQuery) return decodeURIComponent(byQuery[1]);
+
+      if (/^https?:\/\//i.test(value) || value.includes('/')) {
+        const last = value.split(/[?#]/)[0].split('/').filter(Boolean).pop() || '';
+        return decodeURIComponent(last.replace(/\.html$/i, ''));
+      }
+
+      return value;
+    }
+
+    async function addEmployeeByLink() {
+      const input = document.getElementById('employeeLinkInput');
+      const btn = document.getElementById('addEmployeeBtn');
+      const msg = document.getElementById('addEmployeeMsg');
+
+      const slug = extractProfileSlug(input.value);
+      msg.className = 'add-emp-msg';
+      msg.innerText = '';
+
+      if (!slug) {
+        msg.className = 'add-emp-msg err';
+        msg.innerText = 'Поставете линк към визитката или потребителско име.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'Добавяне...';
+
+      try {
+        const { data, error } = await supabaseClient.rpc('claim_company_employee', {
+          employee_slug: slug
+        });
+        if (error) throw new Error(error.message);
+
+        if (data && data.ok) {
+          msg.className = 'add-emp-msg ok';
+          msg.innerText = data.message;
+          input.value = '';
+          document.getElementById('seatsUsed').innerText = data.seats_used;
+          loadCompanyPortalData(currentBossUserId);
+        } else {
+          msg.className = 'add-emp-msg err';
+          msg.innerText = (data && data.message) || 'Служителят не може да бъде добавен.';
+        }
+      } catch (err) {
+        msg.className = 'add-emp-msg err';
+        msg.innerText = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Добави';
+      }
+    }
+
+    // Enter в полето = натискане на бутона
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('employeeLinkInput');
+      if (input) {
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); addEmployeeByLink(); }
+        });
+      }
+
+      // Чистим ?checkout= от адреса; JUST_PAID вече е прочетен.
+      if (window.location.search.includes('checkout=')) {
+        history.replaceState(null, '', 'dashboard.html');
       }
     });
 

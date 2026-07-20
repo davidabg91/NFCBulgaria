@@ -337,6 +337,36 @@
         </form>
       </div>
 
+      <!-- Company assignment — без нея Фирменият Портал не работи -->
+      <div class="dash-card">
+        <h3 class="card-title">🏭 Фирма на профила</h3>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.5;">
+          Шефът може да добавя само служители от <strong style="color: var(--text);">същата фирма</strong>.
+          Задай обща фирма на шефа и на неговите карти.
+        </p>
+        <form id="companyForm" onsubmit="handleSetCompany(event)">
+
+          <div class="form-group">
+            <label for="companyProfileSelect">Профил</label>
+            <select id="companyProfileSelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;" required>
+              <option value="">-- Изберете профил --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="companyIdSelect">Фирма</label>
+            <select id="companyIdSelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;">
+              <option value="">-- Създай НОВА фирма --</option>
+            </select>
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem;">
+              За шефа избери „Създай НОВА фирма“, после закачи служителите към същата.
+            </p>
+          </div>
+
+          <button type="submit" class="btn-create">Запази фирмата</button>
+        </form>
+      </div>
+
     </div>
 
     <!-- RIGHT: Active Profiles Table -->
@@ -496,6 +526,68 @@
       // Restore selections if valid
       empSelect.value = currentEmpVal;
       bossSelect.value = currentBossVal;
+
+      populateCompanyDropdowns();
+    }
+
+    // --- Фирми ---
+    function populateCompanyDropdowns() {
+      const profSelect = document.getElementById('companyProfileSelect');
+      const compSelect = document.getElementById('companyIdSelect');
+      if (!profSelect || !compSelect) return;
+
+      const currentProf = profSelect.value;
+      const currentComp = compSelect.value;
+
+      profSelect.innerHTML = '<option value="">-- Изберете профил --</option>';
+      compSelect.innerHTML = '<option value="">-- Създай НОВА фирма --</option>';
+
+      allProfilesList.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.id})` + (p.company_id ? ' ✓' : ' — без фирма');
+        profSelect.appendChild(opt);
+      });
+
+      // Уникалните фирми, кръстени на шефа си, за да са разпознаваеми
+      const seen = new Map();
+      allProfilesList.forEach(p => {
+        if (!p.company_id || seen.has(p.company_id)) return;
+        const owner = allProfilesList.find(x => x.company_id === p.company_id && x.is_boss);
+        seen.set(p.company_id, (owner || p).company || (owner || p).name);
+      });
+
+      seen.forEach((label, id) => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = `${label} · ${id.slice(0, 8)}`;
+        compSelect.appendChild(opt);
+      });
+
+      profSelect.value = currentProf;
+      compSelect.value = currentComp;
+    }
+
+    async function handleSetCompany(e) {
+      e.preventDefault();
+      const targetId = document.getElementById('companyProfileSelect').value;
+      const companyId = document.getElementById('companyIdSelect').value || null;
+
+      if (!targetId) { alert('Моля, изберете профил!'); return; }
+
+      const { data, error } = await supabaseClient.rpc('admin_set_profile_company', {
+        p_target_id: targetId,
+        p_company_id: companyId
+      });
+
+      if (error) {
+        alert('Грешка: ' + error.message);
+      } else if (data && data.ok) {
+        alert(data.message);
+        loadProfilesList();
+      } else {
+        alert((data && data.message) || 'Неуспешен запис.');
+      }
     }
 
     // Add employee select change listener
