@@ -67,16 +67,26 @@ Deno.serve(async (req) => {
     if (!spec) return json({ error: 'Непознат пакет.' }, 400);
 
     // --- Фирмата трябва да е зададена, иначе абонаментът няма към какво да се върже ---
-    const { data: profile } = await supabase
+    const { data: profiles } = await supabase
       .from('profiles')
-      .select('company_id, company, name')
-      .eq('user_id', user.id)
-      .maybeSingle();
+      .select('company_id, company, name, id')
+      .eq('user_id', user.id);
 
-    if (!profile?.company_id) {
+    if (!profiles || profiles.length === 0) {
       return json({
         error:
-          'Профилът ви още няма зададена фирма. Свържете се с нас, за да я активираме.',
+          `Този акаунт (${user.email}) няма профил-визитка и не може да купува пакети. ` +
+          `Влезте с акаунта на визитката, на която е зададена фирма.`,
+      }, 409);
+    }
+
+    const profile = profiles.find((p) => p.company_id) ?? profiles[0];
+
+    if (!profile.company_id) {
+      return json({
+        error:
+          `Профилът „${profile.id}" още няма зададена фирма. ` +
+          `Задайте я от админ панела (Фирма на профила).`,
       }, 409);
     }
 
