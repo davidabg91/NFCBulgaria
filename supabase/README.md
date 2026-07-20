@@ -31,20 +31,31 @@ select id from auth.users where email = 'davida1991@gmail.com';
 
 ```bash
 supabase functions deploy create-checkout-session
-supabase functions deploy stripe-webhook --no-verify-jwt
+supabase functions deploy verify-checkout
+supabase functions deploy stripe-webhook --no-verify-jwt   # по избор, виж по-долу
 
 supabase secrets set \
   STRIPE_SECRET_KEY=sk_live_... \
   SITE_URL=https://nfcbulgaria.com
 ```
 
-3. Stripe → Developers → Webhooks → Add endpoint:
+Това е достатъчно порталът да работи. `verify-checkout` потвърждава
+плащането директно при връщане от Stripe и отключва пакета — не е нужен
+webhook за първоначалното активиране.
+
+### Webhook (по избор — за подновявания и откази)
+
+Нужен е само ако искаш месечните подновявания и отказите да се отразяват
+автоматично. Ако го пропуснеш, пакетът пак се отключва след плащане,
+но изтича след 1 месец без авто-подновяване.
+
+1. Stripe → Developers → Webhooks → Add endpoint:
    `https://upjwsqfrblxzhyuxeumj.supabase.co/functions/v1/stripe-webhook`
 
    Събития: `checkout.session.completed`, `invoice.paid`,
    `customer.subscription.deleted`
 
-4. Копирай `whsec_...` от Stripe и го добави:
+2. Копирай `whsec_...` от Stripe и го добави:
 
 ```bash
 supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...

@@ -1270,12 +1270,36 @@
     const SUPABASE_FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 
     // Прочита се веднъж при зареждане — после чистим URL-а, а флагът остава.
-    const JUST_PAID =
-      new URLSearchParams(window.location.search).get('checkout') === 'success';
+    const _params = new URLSearchParams(window.location.search);
+    const JUST_PAID = _params.get('checkout') === 'success';
+    const CHECKOUT_SESSION_ID = _params.get('session_id');
+
+    // След връщане от Stripe: потвърждаваме плащането директно и отключваме.
+    // Не разчитаме на webhook за първоначалното активиране.
+    async function confirmCheckout() {
+      if (!JUST_PAID || !CHECKOUT_SESSION_ID) return;
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
+        await fetch(`${SUPABASE_FUNCTIONS_URL}/verify-checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ session_id: CHECKOUT_SESSION_ID })
+        });
+      } catch (err) {
+        console.error('verify-checkout:', err);
+      }
+    }
 
     // Единствената проверка кой какво вижда. Сървърът решава, не браузърът —
     // тук само рисуваме резултата.
     async function loadTeamGate(userId, attempt = 0) {
+      // Първи опит след плащане: изчакваме потвърждението, преди да четем статуса.
+      if (JUST_PAID && attempt === 0) await confirmCheckout();
+
       const upsell = document.getElementById('teamUpsellSection');
       const portal = document.getElementById('companyPortalSection');
 
@@ -1291,8 +1315,8 @@
       const sub = Array.isArray(data) ? data[0] : data;
 
       if (!sub || !sub.is_active) {
-        // Току-що се връщаме от Stripe? Webhook-ът може още да не е стигнал —
-        // изчакваме го, вместо да показваме офертата на вече платил клиент.
+        // Плащането още се обработва? Изчакваме, вместо да показваме
+        // офертата на вече платил клиент.
         if (JUST_PAID && attempt < 6) {
           upsell.style.display = 'none';
           portal.style.display = 'none';
