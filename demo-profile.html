@@ -370,6 +370,7 @@
     .link-item-website {
       position: relative;
       overflow: hidden;
+      transition: all 0.3s ease;
     }
 
     .link-item-website .website-logo-bg {
@@ -386,6 +387,43 @@
     .link-item-website:hover .website-logo-bg,
     .link-item-website:active .website-logo-bg {
       opacity: 0.2;
+    }
+
+    /* When logo is present on website button */
+    .link-item-website.has-logo {
+      background: #ffffff !important;
+      border-color: #ffffff !important;
+      min-height: 80px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .link-item-website.has-logo .website-logo-bg {
+      position: absolute;
+      inset: 0;
+      background-color: #ffffff;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 1;
+      border-radius: 16px;
+      padding: 6px;
+      box-sizing: border-box;
+      background-origin: content-box;
+    }
+
+    .link-item-website.has-logo .link-icon,
+    .link-item-website.has-logo .link-label,
+    .link-item-website.has-logo .link-value {
+      display: none !important;
+    }
+
+    .link-item-website.has-logo:hover,
+    .link-item-website.has-logo:active {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.25);
     }
 
     /* Toast Notification */
@@ -598,7 +636,7 @@
         <div class="link-value">Профил</div>
       </a>
 
-      <a href="https://www.arhproekt.bg" target="_blank" class="link-item link-item-website" style="grid-column: span 2;" id="websiteLink">
+      <a href="https://www.arhproekt.bg" target="_blank" class="link-item link-item-website has-logo" style="grid-column: span 2;" id="websiteLink">
         <div class="website-logo-bg" style="background-image: url('assets/demo-logo-arhproekt.png');"></div>
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>

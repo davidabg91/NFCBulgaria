@@ -283,6 +283,7 @@
     .link-item-website {
       position: relative;
       overflow: hidden;
+      transition: all 0.3s ease;
     }
 
     .link-item-website .website-logo-bg {
@@ -299,6 +300,43 @@
     .link-item-website:hover .website-logo-bg,
     .link-item-website:active .website-logo-bg {
       opacity: 0.2;
+    }
+
+    /* When logo is present on website button */
+    .link-item-website.has-logo {
+      background: #ffffff !important;
+      border-color: #ffffff !important;
+      min-height: 80px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .link-item-website.has-logo .website-logo-bg {
+      position: absolute;
+      inset: 0;
+      background-color: #ffffff;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 1;
+      border-radius: 16px;
+      padding: 6px;
+      box-sizing: border-box;
+      background-origin: content-box;
+    }
+
+    .link-item-website.has-logo .link-icon,
+    .link-item-website.has-logo .link-label,
+    .link-item-website.has-logo .link-value {
+      display: none !important;
+    }
+
+    .link-item-website.has-logo:hover,
+    .link-item-website.has-logo:active {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.25);
     }
 
     /* Lead Capture Section */
@@ -695,8 +733,12 @@
         document.getElementById('websiteVal').innerText = data.website ? data.website.replace('https://','').replace('http://','').replace('www.','') : '';
 
         // Company logo as background on website button
-        if (data.company_logo) {
+        if (data.company_logo && data.company_logo.trim() !== '') {
           document.getElementById('websiteLogoBg').style.backgroundImage = `url('${data.company_logo}')`;
+          document.getElementById('websiteLink').classList.add('has-logo');
+        } else {
+          document.getElementById('websiteLogoBg').style.backgroundImage = '';
+          document.getElementById('websiteLink').classList.remove('has-logo');
         }
 
         // Google Maps link
