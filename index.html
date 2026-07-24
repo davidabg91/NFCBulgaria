@@ -618,10 +618,96 @@
           </div>
         </div>
       </div>
-      <div class="service-img" data-aos style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <img src="assets/card_vizitka.png" alt="Лице на дигитална NFC визитка с персонален дизайн" width="901" height="571" loading="lazy" decoding="async">
-        <img src="assets/card_vizitka_back.png" alt="Гръб на дигитална NFC визитка с QR код" width="901" height="571" loading="lazy" decoding="async">
+      <style>
+        .flip-showcase { perspective: 1600px; }
+        .flip-card {
+          width: 100%;
+          aspect-ratio: 901 / 571;
+          transform-style: preserve-3d;
+        }
+        .flip-card-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          transition: transform 1.15s cubic-bezier(0.65, 0, 0.35, 1);
+          transform-style: preserve-3d;
+        }
+        .flip-card.is-flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-face {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
+        .flip-card-face img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          display: block;
+        }
+        .flip-card-back { transform: rotateY(180deg); }
+      </style>
+      <div class="service-img flip-showcase" data-aos style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">
+              <img src="assets/card_vizitka.png?v=2" alt="Лице на дигитална NFC визитка с персонален дизайн" width="901" height="571" loading="lazy" decoding="async">
+            </div>
+            <div class="flip-card-face flip-card-back">
+              <img src="assets/DEMO%20(1).png?v=2" alt="Дигитална NFC визитка — алтернативен персонален дизайн" width="901" height="571" loading="lazy" decoding="async">
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">
+              <img src="assets/card_vizitka_back.png" alt="Гръб на дигитална NFC визитка с QR код" width="901" height="571" loading="lazy" decoding="async">
+            </div>
+            <div class="flip-card-face flip-card-back">
+              <img src="assets/DEMO%20(2).png?v=2" alt="Дигитална NFC визитка — алтернативен дизайн на гърба" width="901" height="571" loading="lazy" decoding="async">
+            </div>
+          </div>
+        </div>
       </div>
+      <script>
+        (function () {
+          var showcase = document.querySelector('.flip-showcase');
+          if (!showcase) return;
+          var cards = showcase.querySelectorAll('.flip-card');
+          if (!cards.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          var timers = [];
+          var running = false;
+          function play() {
+            if (running) return;
+            running = true;
+            cards.forEach(function (card, i) {
+              var kickoff = setTimeout(function () {
+                card.classList.toggle('is-flipped');
+                var loop = setInterval(function () {
+                  card.classList.toggle('is-flipped');
+                }, 5200);
+                timers.push(loop);
+              }, 2400 + i * 2600);
+              timers.push(kickoff);
+            });
+          }
+          function stop() {
+            running = false;
+            timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
+            timers = [];
+          }
+          if ('IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (entries) {
+              entries.forEach(function (e) { e.isIntersecting ? play() : stop(); });
+            }, { threshold: 0.25 });
+            io.observe(showcase);
+          } else {
+            play();
+          }
+        })();
+      </script>
     </div>
 
     <!-- NFC Chip Capabilities — compact mini-pills integrated into Digital Cards -->
