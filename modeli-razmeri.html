@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Модели и Размери на Поставки — NFC Bulgaria</title>
+  <meta name="description" content="Всички модели и размери на NFC поставки/стойки на NFC Bulgaria — вертикални и хоризонтални, формати A4, A5 и A6, с точни размери в милиметри.">
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/spacegrotesk-400-latin.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-800-latin.woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="index.css">
+  <style>
+    .models-page-content {
+      padding: 7.5rem 0 8rem;
+    }
+    .models-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .models-header h1 {
+      font-family: var(--font-heading);
+      font-size: 3rem;
+      margin-bottom: 1.2rem;
+    }
+    .models-header p {
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto;
+      font-size: 1.12rem;
+      line-height: 1.6;
+    }
+    .size-note {
+      max-width: 780px;
+      margin: 1.5rem auto 0;
+      padding: 1rem 1.5rem;
+      background: rgba(0, 242, 255, 0.05);
+      border: 1px dashed rgba(0, 242, 255, 0.25);
+      border-radius: 14px;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .size-note strong { color: var(--primary); }
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2.5rem;
+    }
+    .model-card {
+      background: rgba(17, 24, 39, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 1.8rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .model-card:hover {
+      border-color: rgba(0, 242, 255, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 242, 255, 0.08);
+    }
+    .model-card img {
+      width: 100%;
+      height: 300px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 14px;
+      margin-bottom: 1.5rem;
+    }
+    .model-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      margin-bottom: 0.4rem;
+      color: #fff;
+    }
+    .model-card .model-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.2rem;
+    }
+    .size-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    .size-table th,
+    .size-table td {
+      padding: 0.7rem 0.6rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .size-table th {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--primary);
+    }
+    .size-table td:first-child {
+      font-weight: 700;
+      color: #fff;
+      text-align: left;
+    }
+    .size-table tr:last-child td { border-bottom: none; }
+    .cta-box {
+      text-align: center;
+      padding: 3.5rem 2rem;
+      margin-top: 5rem;
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.8), rgba(30, 41, 59, 0.8));
+      border: 1px solid var(--primary);
+      border-radius: 24px;
+      box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <nav>
+    <div class="container nav-content">
+      <div class="logo">
+        <svg class="logo-svg" viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="36" height="26" rx="4" class="card-outline" />
+          <rect x="8" y="10" width="8" height="8" rx="1" class="chip" />
+          <path d="M22 8 Q30 15 22 22 M26 5 Q38 15 26 25" class="waves" />
+        </svg>
+        NFC<span>Bulgaria</span>
+      </div>
+      <a href="index.html" class="btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+        <span>←</span> Назад
+      </a>
+    </div>
+  </nav>
+
+  <main class="container models-page-content">
+    <div class="models-header">
+      <h1>Модели и <span class="gradient-text">Размери</span></h1>
+      <p>
+        Предлагаме нашите NFC поставки/стойки в четири модела — вертикални и хоризонтални — всеки в три формата: A4, A5 и A6. Изберете модела и размера, който отговаря на нуждите на Вашия бизнес.
+      </p>
+      <div class="size-note">
+        <strong>Как да четете размерите (в мм):</strong> посочените числа са в последователност <strong>широчина × височина × широчина на държача</strong> — тоест първо е широчината на стойката, второ височината, а третото число е широчината на самия държач в основата, който придържа поставката.
+      </div>
+    </div>
+
+    <div class="models-grid">
+
+      <!-- Model 1: ZP -->
+      <div class="model-card" data-aos>
+        <img src="razmeri/zp.jpg" alt="Вертикална NFC поставка модел ZP" loading="lazy" decoding="async">
+        <h3>Стела <span class="gradient-text">Про</span></h3>
+        <p class="model-sub">Вертикална · широка стабилна основа · формати A4 / A5 / A6</p>
+        <table class="size-table">
+          <thead>
+            <tr><th>Формат</th><th>Широчина</th><th>Височина</th><th>Държач</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A4</td><td>215 мм</td><td>310 мм</td><td>102 мм</td></tr>
+            <tr><td>A5</td><td>153 мм</td><td>222 мм</td><td>102 мм</td></tr>
+            <tr><td>A6</td><td>110 мм</td><td>160 мм</td><td>82 мм</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Model 2: ZL -->
+      <div class="model-card" data-aos>
+        <img src="razmeri/zl.jpg" alt="Хоризонтална NFC поставка модел ZL" loading="lazy" decoding="async">
+        <h3>Панорама <span class="gradient-text">Про</span></h3>
+        <p class="model-sub">Хоризонтална · широка стабилна основа · формати A4 / A5 / A6</p>
+        <table class="size-table">
+          <thead>
+            <tr><th>Формат</th><th>Широчина</th><th>Височина</th><th>Държач</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A4</td><td>302 мм</td><td>222 мм</td><td>102 мм</td></tr>
+            <tr><td>A5</td><td>215 мм</td><td>160 мм</td><td>82 мм</td></tr>
+            <tr><td>A6</td><td>153 мм</td><td>117 мм</td><td>72 мм</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Model 3: 15 -->
+      <div class="model-card" data-aos>
+        <img src="razmeri/15.jpg" alt="Вертикална NFC поставка модел 15" loading="lazy" decoding="async">
+        <h3>Стела</h3>
+        <p class="model-sub">Вертикална · тънка елегантна основа · формати A4 / A5 / A6</p>
+        <table class="size-table">
+          <thead>
+            <tr><th>Формат</th><th>Широчина</th><th>Височина</th><th>Държач</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A4</td><td>216 мм</td><td>303 мм</td><td>75 мм</td></tr>
+            <tr><td>A5</td><td>153 мм</td><td>215 мм</td><td>75 мм</td></tr>
+            <tr><td>A6</td><td>109 мм</td><td>152 мм</td><td>75 мм</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Model 4: 17 -->
+      <div class="model-card" data-aos>
+        <img src="razmeri/17.jpg" alt="Хоризонтална NFC поставка модел 17" loading="lazy" decoding="async">
+        <h3>Панорама</h3>
+        <p class="model-sub">Хоризонтална · тънка елегантна основа · формати A4 / A5 / A6</p>
+        <table class="size-table">
+          <thead>
+            <tr><th>Формат</th><th>Широчина</th><th>Височина</th><th>Държач</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A4</td><td>303 мм</td><td>216 мм</td><td>75 мм</td></tr>
+            <tr><td>A5</td><td>215 мм</td><td>153 мм</td><td>75 мм</td></tr>
+            <tr><td>A6</td><td>152 мм</td><td>109 мм</td><td>75 мм</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Model 5: T-shaped desktop stand -->
+      <div class="model-card" data-aos>
+        <img src="razmeri/917d5f8d-8fa0-4e4e-8f62-465e23ec60de.avif" alt="T-образна настолна NFC поставка с черна основа, размер 10.5 x 14.8 см" loading="lazy" decoding="async" style="background: #111;">
+        <h3>Компакт <span class="gradient-text">T</span></h3>
+        <p class="model-sub">Настолна · T-образна черна основа · формат A6</p>
+        <table class="size-table">
+          <thead>
+            <tr><th>Формат</th><th>Широчина</th><th>Височина</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A6</td><td>10,5 см (105 мм)</td><td>14,8 см (148 мм)</td></tr>
+            <tr><td>A5</td><td>14,8 см (148 мм)</td><td>21 см (210 мм)</td></tr>
+          </tbody>
+        </table>
+        <ul style="margin-top: 1.2rem; color: var(--text-muted); list-style: none; font-size: 0.9rem; line-height: 1.7;">
+          <li>✓ Прецизно огъване на плексигласа</li>
+          <li>✓ T-образна стабилна конструкция</li>
+          <li>✓ Дебела основа за стабилно стоене</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="cta-box" data-aos>
+      <h2 style="font-family: var(--font-heading); font-size: 2rem; margin-bottom: 1rem;">Не сте сигурни кой размер е точният?</h2>
+      <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 2.5rem auto; line-height: 1.6;">
+        Свържете се с нас и ще Ви съдействаме безплатно да изберете подходящия модел и формат според мястото и нуждите на Вашия бизнес.
+      </p>
+      <a href="index.html#contact" class="btn-primary" style="padding: 0.8rem 2.2rem; text-decoration: none; box-shadow: 0 0 20px rgba(0, 242, 255, 0.45);">Свържете се с нас 📩</a>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="logo" style="margin-bottom: 1rem;">
+        <div class="logo-icon"></div>
+        NFC<span>Bulgaria</span>
+      </div>
+      <p>гр. Плевен, ж.к. Сторгозия, бл. 133, офис | <strong>ДАВИДА БГ ЕООД</strong> | <a href="tel:0876141826" style="color: inherit; text-decoration: none;">0876141826</a> | <a href="mailto:office@nfcbulgaria.com" style="color: inherit; text-decoration: none;">office@nfcbulgaria.com</a></p>
+      <p style="margin-top: 0.8rem; font-size: 0.9rem; opacity: 0.85;">
+        <a href="faq.html" style="color: var(--primary); text-decoration: none; margin-right: 1.5rem; transition: color 0.3s ease;">Често Задавани Въпроси</a>
+        <a href="terms.html" style="color: var(--primary); text-decoration: none; margin-right: 1.5rem; transition: color 0.3s ease;">Общи Условия</a>
+        <a href="privacy.html" style="color: var(--primary); text-decoration: none; transition: color 0.3s ease;">Политика за Поверителност</a>
+      </p>
+      <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.6;">&copy; 2026 NFC Bulgaria. Всички права запазени. Партньор на DavidaX.org</p>
+    </div>
+  </footer>
+
+  <script src="index.js"></script>
+</body>
+</html>
