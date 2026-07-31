@@ -14,6 +14,9 @@
   <!-- Preload LCP hero image -->
   <link rel="preload" as="image" href="assets/card_full_copy.webp" fetchpriority="high">
 
+  <!-- Preconnect to Google Analytics origin so the deferred gtag request is faster -->
+  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+
   <!-- Google Analytics (library deferred until after load to keep initial render fast) -->
   <script>
     // GDPR/ePrivacy Consent Check
