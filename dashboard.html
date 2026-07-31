@@ -580,7 +580,7 @@
 
           <div class="form-group full-width" style="display: flex; align-items: center; gap: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.2rem;">
             <div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; background: #1f2937; flex-shrink: 0;">
-              <img id="avatarPreview" src="assets/avatar-alexandar.png" style="width: 100%; height: 100%; object-fit: cover;">
+              <img id="avatarPreview" src="assets/avatar-alexandar.webp" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex-grow: 1;">
               <label for="avatarFileInput" style="margin-bottom: 0.5rem; display: block;">Качете профилна снимка</label>
@@ -893,8 +893,8 @@
       document.getElementById('companyLogoPreview').src = "assets/demo-logo-arhproekt.png";
       document.getElementById('companyLogoPreview').style.display = 'block';
       document.getElementById('companyLogoPlaceholder').style.display = 'none';
-      document.getElementById('avatarInput').value = "assets/avatar-alexandar.png";
-      document.getElementById('avatarPreview').src = "assets/avatar-alexandar.png";
+      document.getElementById('avatarInput').value = "assets/avatar-alexandar.webp";
+      document.getElementById('avatarPreview').src = "assets/avatar-alexandar.webp";
       document.getElementById('myProfileLink').href = "profile.html?id=demo-profile";
       
       // Populate demo stats
@@ -939,7 +939,7 @@
         if (profile.avatar_url) {
           document.getElementById('avatarPreview').src = profile.avatar_url;
         } else {
-          document.getElementById('avatarPreview').src = "assets/avatar-alexandar.png";
+          document.getElementById('avatarPreview').src = "assets/avatar-alexandar.webp";
         }
         document.getElementById('companyLogoInput').value = profile.company_logo || '';
         if (profile.company_logo) {
@@ -1523,7 +1523,7 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td style="display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem;">
-            <img src="${emp.employee_avatar || 'assets/avatar-alexandar.png'}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <img src="${emp.employee_avatar || 'assets/avatar-alexandar.webp'}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
             <span style="font-weight: 600;">${emp.employee_name}</span>
           </td>
           <td style="padding: 0.8rem 1rem;">${emp.employee_title || '<em style="color:var(--text-muted)">Няма</em>'}</td>
@@ -1597,7 +1597,7 @@
       tbody.innerHTML = `
         <tr>
           <td style="display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem;">
-            <img src="assets/avatar-alexandar.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <img src="assets/avatar-alexandar.webp" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
             <span style="font-weight: 600;">Петър Тодоров</span>
           </td>
           <td style="padding: 0.8rem 1rem;">Акаунт мениджър</td>
@@ -1610,7 +1610,7 @@
         </tr>
         <tr>
           <td style="display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem;">
-            <img src="assets/avatar-alexandar.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <img src="assets/avatar-alexandar.webp" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
             <span style="font-weight: 600;">Иван Георгиев</span>
           </td>
           <td style="padding: 0.8rem 1rem;">Търговски директор</td>
@@ -1623,7 +1623,7 @@
         </tr>
         <tr>
           <td style="display: flex; align-items: center; gap: 10px; padding: 0.8rem 1rem;">
-            <img src="assets/avatar-alexandar.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            <img src="assets/avatar-alexandar.webp" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
             <span style="font-weight: 600;">Мария Петрова</span>
           </td>
           <td style="padding: 0.8rem 1rem;">Продавач-консултант</td>
