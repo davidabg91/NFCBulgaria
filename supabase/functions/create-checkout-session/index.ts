@@ -19,6 +19,9 @@ const PLANS: Record<string, { seats: number; amount: number; label: string }> = 
   team20: { seats: 20, amount: 1800, label: 'Фирмен Портал — 20 служителя' },
 };
 
+// Годишно = месечно × 11 (една такса безплатна).
+const YEAR_MULTIPLIER = 11;
+
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
   apiVersion: '2024-06-20',
   httpClient: Stripe.createFetchHttpClient(),
@@ -64,10 +67,14 @@ Deno.serve(async (req) => {
 
     const user = userData.user;
 
-    // --- Кой пакет ---
-    const { plan } = await req.json().catch(() => ({ plan: null }));
-    const spec = PLANS[plan as string];
-    if (!spec) return json({ error: 'Непознат пакет.' }, 400);
+    // --- Кой пакет и на какъв период ---
+    const body = await req.json().catch(() => ({} as Record<string, unknown>));
+    const plan = body.plan as string | null;
+    const interval = (body.interval === 'year' ? 'year' : 'month') as 'month' | 'year';
+
+    const isBusiness = plan === 'business';
+    const spec = plan ? PLANS[plan] : undefined;
+    if (!isBusiness && !spec) return json({ error: 'Непознат пакет.' }, 400);
 
     // --- Фирмата трябва да е зададена, иначе абонаментът няма към какво да се върже ---
     // Търсим профила първо по user_id, после по имейл (той е потвърден в
@@ -104,6 +111,54 @@ Deno.serve(async (req) => {
       }, 409);
     }
 
+    // --- Определяме места / месечна цена / етикет / триал ---
+    let seats: number;
+    let monthlyAmount: number;
+    let label: string;
+    let trial = false;
+
+    if (isBusiness) {
+      // Договорената оферта се чете СЪРВЪРНО (никога от браузъра), с токена
+      // на потребителя — RPC-то връща офертата за неговата фирма.
+      const userClient = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } },
+      );
+      const { data: offers } = await userClient.rpc('get_my_business_offer');
+      const offer = Array.isArray(offers) ? offers[0] : offers;
+      if (!offer) {
+        return json({
+          error: 'Няма изготвена бизнес оферта за вашата фирма. Свържете се с нас.',
+        }, 409);
+      }
+      seats = offer.seats;
+      monthlyAmount = offer.monthly_price_cents;
+      label = offer.label ?? `Бизнес план — ${seats} служителя`;
+      trial = !!offer.trial;
+    } else {
+      seats = spec!.seats;
+      monthlyAmount = spec!.amount;
+      label = spec!.label;
+    }
+
+    // Годишно = месечно × 11. Триалът (първи месец безплатно) важи само за
+    // месечно плащане — при годишно отстъпката е самата безплатна такса.
+    const unitAmount = interval === 'year' ? monthlyAmount * YEAR_MULTIPLIER : monthlyAmount;
+    const trialDays = trial && interval === 'month' ? 30 : undefined;
+    const periodLabel = interval === 'year' ? 'годишно' : 'месечно';
+
+    // Тези метаданни verify-checkout/webhook четат, за да запишат правилно
+    // местата, цената и периода (важно за бизнес и годишно).
+    const meta = {
+      supabase_user_id: user.id,
+      plan: plan!,
+      company_id: profile.company_id,
+      seats: String(seats),
+      price_cents: String(unitAmount),
+      interval,
+    };
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: user.email ?? undefined,
@@ -112,18 +167,18 @@ Deno.serve(async (req) => {
         quantity: 1,
         price_data: {
           currency: 'eur',
-          unit_amount: spec.amount,
-          recurring: { interval: 'month' },
+          unit_amount: unitAmount,
+          recurring: { interval },
           product_data: {
-            name: spec.label,
-            description: `${spec.seats} места за служители · достъп до Фирмения Портал`,
+            name: label,
+            description: `${seats} места за служители · ${periodLabel} · достъп до Фирмения Портал`,
           },
         },
       }],
-      // Тези метаданни webhook-ът чете, за да знае кого да отключи.
-      metadata: { supabase_user_id: user.id, plan, company_id: profile.company_id },
+      metadata: meta,
       subscription_data: {
-        metadata: { supabase_user_id: user.id, plan, company_id: profile.company_id },
+        metadata: meta,
+        ...(trialDays ? { trial_period_days: trialDays } : {}),
       },
       success_url: `${SITE_URL}/dashboard.html?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_URL}/dashboard.html?checkout=cancel`,

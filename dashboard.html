@@ -414,6 +414,37 @@
     }
     .plan-btn:disabled { opacity: 0.55; cursor: wait; }
 
+    .billing-toggle {
+      display: inline-flex; gap: 4px; margin: 0 auto 1.6rem; padding: 4px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+      border-radius: 999px;
+    }
+    .billing-toggle { display: flex; width: fit-content; }
+    .bt-opt {
+      border: none; background: transparent; color: var(--text-muted);
+      font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.85rem;
+      padding: 0.5rem 1.1rem; border-radius: 999px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;
+    }
+    .bt-opt.active { background: var(--primary); color: #0b0f19; }
+    .bt-save {
+      font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+      background: rgba(0,242,255,0.15); color: var(--primary);
+    }
+    .bt-opt.active .bt-save { background: rgba(11,15,25,0.18); color: #0b0f19; }
+    #billingToggle { justify-content: center; }
+
+    .biz-activate {
+      display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, rgba(0,242,255,0.10), rgba(0,242,255,0.03));
+      border: 1px solid rgba(0,242,255,0.3); border-radius: 14px;
+      padding: 1.1rem 1.3rem; margin-bottom: 1.5rem;
+    }
+    .biz-activate-title { font-weight: 800; font-size: 1rem; color: var(--primary); margin-bottom: 3px; }
+    .biz-activate-sub { font-size: 0.82rem; color: var(--text-muted); }
+    .biz-activate-actions { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; }
+
     .plan-note {
       text-align: center; font-size: 0.74rem; color: var(--text-muted);
       margin-top: 1.6rem; line-height: 1.55;
@@ -722,31 +753,37 @@
         </div>
       </div>
 
+      <div class="billing-toggle" id="billingToggle">
+        <button type="button" class="bt-opt active" data-interval="month" onclick="setBillingInterval('month')">Месечно</button>
+        <button type="button" class="bt-opt" data-interval="year" onclick="setBillingInterval('year')">Годишно <span class="bt-save">−1 такса</span></button>
+      </div>
+
       <div class="plan-grid" id="planGrid">
         <div class="plan-card">
           <div class="plan-seats">5 служителя</div>
-          <div class="plan-price">6<small> €/мес.</small></div>
-          <div class="plan-per">1.20 € на служител</div>
+          <div class="plan-price" data-monthly="6" data-annual="66"><span class="pp-num">6</span><small class="pp-unit"> €/мес.</small></div>
+          <div class="plan-per" data-monthly="1.20 € на служител" data-annual="66 €/год. — спестявате 6 €">1.20 € на служител</div>
           <button class="plan-btn" data-plan="team5" onclick="startCheckout('team5', this)">Избери пакета</button>
         </div>
         <div class="plan-card featured">
           <div class="plan-tag">НАЙ-ИЗБИРАН</div>
           <div class="plan-seats">10 служителя</div>
-          <div class="plan-price">10<small> €/мес.</small></div>
-          <div class="plan-per">1.00 € на служител</div>
+          <div class="plan-price" data-monthly="10" data-annual="110"><span class="pp-num">10</span><small class="pp-unit"> €/мес.</small></div>
+          <div class="plan-per" data-monthly="1.00 € на служител" data-annual="110 €/год. — спестявате 10 €">1.00 € на служител</div>
           <button class="plan-btn" data-plan="team10" onclick="startCheckout('team10', this)">Избери пакета</button>
         </div>
         <div class="plan-card">
           <div class="plan-seats">20 служителя</div>
-          <div class="plan-price">18<small> €/мес.</small></div>
-          <div class="plan-per">0.90 € на служител — най-изгодно</div>
+          <div class="plan-price" data-monthly="18" data-annual="198"><span class="pp-num">18</span><small class="pp-unit"> €/мес.</small></div>
+          <div class="plan-per" data-monthly="0.90 € на служител — най-изгодно" data-annual="198 €/год. — спестявате 18 €">0.90 € на служител — най-изгодно</div>
           <button class="plan-btn" data-plan="team20" onclick="startCheckout('team20', this)">Избери пакета</button>
         </div>
       </div>
 
       <p class="plan-note" id="planNote">
-        Месечен абонамент — активира се веднага след плащането и важи 1 месец.
-        Може да се откаже по всяко време.
+        <span id="planNoteText">Месечен абонамент — активира се веднага след плащането и важи 1 месец.
+        Може да се откаже по всяко време.</span><br>
+        <b>Над 20 служителя?</b> Пишете ни за индивидуална бизнес оферта.
       </p>
     </div>
   </div>
@@ -755,6 +792,21 @@
   <div class="company-portal-container container" id="companyPortalSection" style="display: none; margin-bottom: 4rem;">
     <div class="dash-card" style="border-color: rgba(0, 242, 255, 0.25); box-shadow: 0 0 30px rgba(0, 242, 255, 0.08); background: var(--card-bg); border-radius: 20px; padding: 2rem;">
       <h3 class="card-title" style="color: var(--primary); border-color: rgba(0, 242, 255, 0.15); margin-bottom: 1.5rem; padding-bottom: 0.8rem; display: flex; align-items: center; gap: 8px;">🏢 Фирмен Портал — HubSpot Lite</h3>
+
+      <!-- Банер за активиране на бизнес плана (докато фирмата не плати) -->
+      <div class="biz-activate" id="bizActivate" style="display: none;">
+        <div class="biz-activate-info">
+          <div class="biz-activate-title" id="bizActivateTitle">Активирайте бизнес плана</div>
+          <div class="biz-activate-sub" id="bizActivateSub"></div>
+        </div>
+        <div class="biz-activate-actions">
+          <div class="billing-toggle" id="bizBillingToggle">
+            <button type="button" class="bt-opt active" data-interval="month" onclick="setBizInterval('month')">Месечно</button>
+            <button type="button" class="bt-opt" data-interval="year" onclick="setBizInterval('year')">Годишно <span class="bt-save">−1 такса</span></button>
+          </div>
+          <button class="plan-btn" id="bizActivateBtn" style="width:auto; padding:0.72rem 1.4rem;" onclick="startCheckout('business', this)">Активирай</button>
+        </div>
+      </div>
 
       <!-- Състояние на абонамента -->
       <div class="sub-bar" id="subBar" style="display: none;">
@@ -879,6 +931,57 @@
 
     let currentBossUserId = null;
     let isCompanyAdminMode = false;
+    let billingInterval = 'month';
+
+    // Превключване Месечно / Годишно — обновява цените по картите.
+    function setBillingInterval(iv) {
+      billingInterval = (iv === 'year') ? 'year' : 'month';
+      document.querySelectorAll('#billingToggle .bt-opt').forEach(b => {
+        b.classList.toggle('active', b.dataset.interval === billingInterval);
+      });
+      const annual = billingInterval === 'year';
+      document.querySelectorAll('#planGrid .plan-price').forEach(el => {
+        const num = el.querySelector('.pp-num');
+        const unit = el.querySelector('.pp-unit');
+        if (num) num.textContent = annual ? el.dataset.annual : el.dataset.monthly;
+        if (unit) unit.textContent = annual ? ' €/год.' : ' €/мес.';
+      });
+      document.querySelectorAll('#planGrid .plan-per').forEach(el => {
+        el.textContent = annual ? el.dataset.annual : el.dataset.monthly;
+      });
+      const noteText = document.getElementById('planNoteText');
+      if (noteText) noteText.textContent = annual
+        ? 'Годишен абонамент — плащате 11 месеца, ползвате 12. Активира се веднага след плащането.'
+        : 'Месечен абонамент — активира се веднага след плащането и важи 1 месец. Може да се откаже по всяко време.';
+    }
+
+    // Бизнес банер: същият глобален interval, отделен превключвател.
+    let currentBizOffer = null;
+    function setBizInterval(iv) {
+      billingInterval = (iv === 'year') ? 'year' : 'month';
+      document.querySelectorAll('#bizBillingToggle .bt-opt').forEach(b => {
+        b.classList.toggle('active', b.dataset.interval === billingInterval);
+      });
+      renderBizOffer();
+    }
+    function renderBizOffer() {
+      if (!currentBizOffer) return;
+      const monthly = (currentBizOffer.monthly_price_cents || 0) / 100;
+      const seats = currentBizOffer.seats;
+      const annual = billingInterval === 'year';
+      const priceStr = annual
+        ? `${(monthly * 11).toFixed(0)} €/год. (спестявате ${monthly.toFixed(0)} €)`
+        : `${monthly.toFixed(0)} €/мес.`;
+      const trialStr = (currentBizOffer.trial && !annual) ? ' · първи месец безплатно' : '';
+      document.getElementById('bizActivateTitle').textContent =
+        currentBizOffer.label || `Бизнес план — ${seats} служителя`;
+      document.getElementById('bizActivateSub').textContent = `${seats} места · ${priceStr}${trialStr}`;
+    }
+    function showBusinessActivateBanner(offer) {
+      currentBizOffer = offer;
+      document.getElementById('bizActivate').style.display = 'flex';
+      renderBizOffer();
+    }
 
     // Static Demo Data loader
     function loadDemoData() {
@@ -1321,6 +1424,18 @@
         const addCard = document.getElementById('addEmployeeCard');
         if (addCard) addCard.style.display = 'none';
         loadCompanyAdminData();
+
+        // Ако фирмата още няма активен абонамент и има изготвена оферта →
+        // показваме банер за активиране (плащането го прави шефът).
+        const { data: active } = await supabaseClient.rpc('company_subscription_active');
+        const bizBanner = document.getElementById('bizActivate');
+        if (!active) {
+          const { data: offers } = await supabaseClient.rpc('get_my_business_offer');
+          const offer = Array.isArray(offers) ? offers[0] : offers;
+          if (offer) showBusinessActivateBanner(offer);
+        } else if (bizBanner) {
+          bizBanner.style.display = 'none';
+        }
         return;
       }
 
@@ -1429,7 +1544,7 @@
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${session.access_token}`
             },
-            body: JSON.stringify({ plan })
+            body: JSON.stringify({ plan, interval: billingInterval })
           });
         } catch {
           // Мрежов срив или недостъпна функция — браузърът го дава като CORS/Failed to fetch

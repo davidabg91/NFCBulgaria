@@ -52,13 +52,20 @@ async function activate(opts: {
   companyId: string;
   plan: string;
   periodEndIso: string;
+  seats?: number | null;
+  priceCents?: number | null;
+  interval?: string | null;
+  trialEndIso?: string | null;
   customerId?: string | null;
   subscriptionId?: string | null;
   sessionId?: string | null;
 }) {
-  const spec = PLAN_SEATS[opts.plan];
-  if (!spec) {
-    console.error('Непознат пакет в metadata:', opts.plan);
+  // Места/цена от metadata (бизнес/годишно); fallback към фиксираните пакети.
+  const fallback = PLAN_SEATS[opts.plan];
+  const seats = opts.seats ?? fallback?.seats;
+  const priceCents = opts.priceCents ?? fallback?.amount;
+  if (!seats || priceCents == null) {
+    console.error('Липсват места/цена за пакет:', opts.plan);
     return;
   }
 
@@ -70,8 +77,10 @@ async function activate(opts: {
       company_id: opts.companyId,
       boss_user_id: opts.userId,
       plan: opts.plan,
-      seats: spec.seats,
-      price_cents: spec.amount,
+      seats,
+      price_cents: priceCents,
+      interval: opts.interval === 'year' ? 'year' : 'month',
+      trial_end: opts.trialEndIso ?? null,
       status: 'active',
       current_period_end: opts.periodEndIso,
       stripe_customer_id: opts.customerId ?? null,
@@ -118,15 +127,21 @@ Deno.serve(async (req) => {
         }
 
         let end: number | null = null;
+        let trialEnd: number | null = null;
         if (typeof s.subscription === 'string') {
           const sub = await stripe.subscriptions.retrieve(s.subscription);
           end = sub.current_period_end;
+          trialEnd = sub.trial_end ?? null;
         }
 
         await activate({
           userId,
           companyId,
           plan,
+          seats: s.metadata?.seats ? parseInt(s.metadata.seats, 10) : null,
+          priceCents: s.metadata?.price_cents ? parseInt(s.metadata.price_cents, 10) : null,
+          interval: s.metadata?.interval ?? null,
+          trialEndIso: trialEnd ? new Date(trialEnd * 1000).toISOString() : null,
           periodEndIso: periodEnd(end),
           customerId: typeof s.customer === 'string' ? s.customer : null,
           subscriptionId: typeof s.subscription === 'string' ? s.subscription : null,
@@ -150,6 +165,10 @@ Deno.serve(async (req) => {
           userId,
           companyId,
           plan,
+          seats: sub.metadata?.seats ? parseInt(sub.metadata.seats, 10) : null,
+          priceCents: sub.metadata?.price_cents ? parseInt(sub.metadata.price_cents, 10) : null,
+          interval: sub.metadata?.interval ?? null,
+          trialEndIso: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
           periodEndIso: periodEnd(sub.current_period_end),
           customerId: typeof sub.customer === 'string' ? sub.customer : null,
           subscriptionId: sub.id,

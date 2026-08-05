@@ -88,16 +88,28 @@ Deno.serve(async (req) => {
 
     const plan = session.metadata?.plan;
     const companyId = session.metadata?.company_id;
-    const spec = plan ? PLAN_SEATS[plan] : undefined;
-    if (!spec || !companyId) {
+    if (!plan || !companyId) {
+      return json({ ok: false, error: 'Липсват данни за пакета в сесията.' }, 400);
+    }
+
+    // Места/цена/период идват от metadata (важно за бизнес и годишно);
+    // fallback към фиксираните пакети за стари сесии.
+    const fallback = PLAN_SEATS[plan];
+    const seats = session.metadata?.seats ? parseInt(session.metadata.seats, 10) : fallback?.seats;
+    const priceCents = session.metadata?.price_cents
+      ? parseInt(session.metadata.price_cents, 10) : fallback?.amount;
+    const interval = session.metadata?.interval === 'year' ? 'year' : 'month';
+    if (!seats || priceCents == null) {
       return json({ ok: false, error: 'Липсват данни за пакета в сесията.' }, 400);
     }
 
     let end: number | null = null;
+    let trialEnd: number | null = null;
     let subscriptionId: string | null = null;
     if (typeof session.subscription === 'string') {
       const sub = await stripe.subscriptions.retrieve(session.subscription);
       end = sub.current_period_end;
+      trialEnd = sub.trial_end ?? null;
       subscriptionId = sub.id;
     }
 
@@ -107,8 +119,10 @@ Deno.serve(async (req) => {
         company_id: companyId,
         boss_user_id: user.id,
         plan,
-        seats: spec.seats,
-        price_cents: spec.amount,
+        seats,
+        price_cents: priceCents,
+        interval,
+        trial_end: trialEnd ? new Date(trialEnd * 1000).toISOString() : null,
         status: 'active',
         current_period_end: periodEnd(end),
         stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
@@ -128,7 +142,7 @@ Deno.serve(async (req) => {
       await supabase.from('profiles').update({ is_boss: true }).ilike('email', user.email);
     }
 
-    return json({ ok: true, plan, seats: spec.seats });
+    return json({ ok: true, plan, seats });
   } catch (err) {
     console.error('verify error', err);
     return json({ ok: false, error: 'Грешка при проверка на плащането.' }, 500);

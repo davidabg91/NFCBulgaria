@@ -367,6 +367,46 @@
         </form>
       </div>
 
+      <!-- Бизнес оферта (20+ служителя, договорена цена) -->
+      <div class="dash-card">
+        <h3 class="card-title">💼 Бизнес оферта (20+)</h3>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.5;">
+          Договорена цена за голяма фирма. Шефът вижда бутон „Активирай“ в портала
+          и плаща с карта. Годишно = месечно × 11.
+        </p>
+        <form id="bizOfferForm" onsubmit="handleSetBizOffer(event)">
+
+          <div class="form-group">
+            <label for="bizCompanySelect">Фирма</label>
+            <select id="bizCompanySelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;" required>
+              <option value="">-- Изберете фирма --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="bizSeats">Брой места (служители)</label>
+            <input type="number" id="bizSeats" class="form-input" min="1" placeholder="24" required>
+          </div>
+
+          <div class="form-group">
+            <label for="bizPrice">Месечна цена (€)</label>
+            <input type="number" id="bizPrice" class="form-input" min="0" step="0.01" placeholder="20" required>
+          </div>
+
+          <div class="form-group">
+            <label for="bizLabel">Етикет (по избор)</label>
+            <input type="text" id="bizLabel" class="form-input" placeholder="Бизнес план — ЕЛКАБЕЛ">
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
+            <input type="checkbox" id="bizTrial" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <label for="bizTrial" style="margin-bottom: 0; cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;">Първи месец безплатно (само при месечно)</label>
+          </div>
+
+          <button type="submit" class="btn-create">Запази офертата</button>
+        </form>
+      </div>
+
     </div>
 
     <!-- RIGHT: Active Profiles Table -->
@@ -534,13 +574,16 @@
     function populateCompanyDropdowns() {
       const profSelect = document.getElementById('companyProfileSelect');
       const compSelect = document.getElementById('companyIdSelect');
+      const bizSelect  = document.getElementById('bizCompanySelect');
       if (!profSelect || !compSelect) return;
 
       const currentProf = profSelect.value;
       const currentComp = compSelect.value;
+      const currentBiz  = bizSelect ? bizSelect.value : '';
 
       profSelect.innerHTML = '<option value="">-- Изберете профил --</option>';
       compSelect.innerHTML = '<option value="">-- Създай НОВА фирма --</option>';
+      if (bizSelect) bizSelect.innerHTML = '<option value="">-- Изберете фирма --</option>';
 
       allProfilesList.forEach(p => {
         const opt = document.createElement('option');
@@ -562,10 +605,49 @@
         opt.value = id;
         opt.textContent = `${label} · ${id.slice(0, 8)}`;
         compSelect.appendChild(opt);
+
+        if (bizSelect) {
+          const bopt = document.createElement('option');
+          bopt.value = id;
+          bopt.textContent = `${label} · ${id.slice(0, 8)}`;
+          bizSelect.appendChild(bopt);
+        }
       });
 
       profSelect.value = currentProf;
       compSelect.value = currentComp;
+      if (bizSelect) bizSelect.value = currentBiz;
+    }
+
+    async function handleSetBizOffer(e) {
+      e.preventDefault();
+      const companyId = document.getElementById('bizCompanySelect').value;
+      const seats = parseInt(document.getElementById('bizSeats').value, 10);
+      const euros = parseFloat(document.getElementById('bizPrice').value);
+      const trial = document.getElementById('bizTrial').checked;
+      const label = document.getElementById('bizLabel').value.trim() || null;
+
+      if (!companyId) { alert('Моля, изберете фирма!'); return; }
+      if (!seats || seats <= 0) { alert('Въведете валиден брой места!'); return; }
+      if (isNaN(euros) || euros < 0) { alert('Въведете валидна цена!'); return; }
+
+      const { data, error } = await supabaseClient.rpc('admin_set_business_offer', {
+        p_company_id: companyId,
+        p_seats: seats,
+        p_monthly_price_cents: Math.round(euros * 100),
+        p_trial: trial,
+        p_label: label
+      });
+
+      if (error) {
+        alert('Грешка: ' + error.message);
+      } else if (data && data.ok === false) {
+        alert(data.message);
+      } else {
+        alert('Бизнес офертата беше записана успешно!');
+        document.getElementById('bizOfferForm').reset();
+        document.getElementById('bizTrial').checked = true;
+      }
     }
 
     async function handleSetCompany(e) {
