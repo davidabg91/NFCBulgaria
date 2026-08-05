@@ -523,6 +523,11 @@
           </div>
 
           <div class="form-group">
+            <label for="whatsappInput">WhatsApp (телефон)</label>
+            <input type="text" id="whatsappInput" class="form-input" placeholder="+359881234567">
+          </div>
+
+          <div class="form-group">
             <label for="linkedinInput">LinkedIn URL</label>
             <input type="text" id="linkedinInput" class="form-input" placeholder="https://linkedin.com/in/...">
           </div>
@@ -873,6 +878,7 @@
     }
 
     let currentBossUserId = null;
+    let isCompanyAdminMode = false;
 
     // Static Demo Data loader
     function loadDemoData() {
@@ -883,6 +889,7 @@
       document.getElementById('phoneInput').value = "+359 88 123 4567";
       document.getElementById('emailInput').value = "a.petrov@arhproekt.bg";
       document.getElementById('viberInput').value = "+359881234567";
+      document.getElementById('whatsappInput').value = "+359881234567";
       document.getElementById('linkedinInput').value = "https://linkedin.com";
       document.getElementById('facebookInput').value = "";
       document.getElementById('instagramInput').value = "";
@@ -929,6 +936,7 @@
         document.getElementById('phoneInput').value = profile.phone || '';
         document.getElementById('emailInput').value = profile.email || '';
         document.getElementById('viberInput').value = profile.viber || '';
+        document.getElementById('whatsappInput').value = profile.whatsapp || '';
         document.getElementById('linkedinInput').value = profile.linkedin || '';
         document.getElementById('facebookInput').value = profile.facebook || '';
         document.getElementById('instagramInput').value = profile.instagram || '';
@@ -951,8 +959,8 @@
           document.getElementById('companyLogoPlaceholder').style.display = 'block';
         }
 
-        // Портал или оферта — решава се от абонамента, не от ръчен флаг
-        loadTeamGate(profile.user_id);
+        // Портал или оферта — решава се от абонамента/фирмения статус, не от ръчен флаг
+        loadTeamGate(profile.user_id, 0, profile.company_id);
 
         // Load stats & leads for this profile
         loadStatsAndLeads(profile.id, profile.saves_count);
@@ -1034,6 +1042,7 @@
         phone: document.getElementById('phoneInput').value,
         email: document.getElementById('emailInput').value,
         viber: document.getElementById('viberInput').value,
+        whatsapp: document.getElementById('whatsappInput').value,
         linkedin: document.getElementById('linkedinInput').value,
         facebook: document.getElementById('facebookInput').value,
         instagram: document.getElementById('instagramInput').value,
@@ -1296,7 +1305,35 @@
 
     // Единствената проверка кой какво вижда. Сървърът решава, не браузърът —
     // тук само рисуваме резултата.
-    async function loadTeamGate(userId, attempt = 0) {
+    async function loadTeamGate(userId, attempt = 0, companyId = null) {
+      // Фирмен админ (напр. шеф на ЕЛКАБЕЛ)? Показваме целофирмения изглед по
+      // company_id — без Stripe пакет и без ограничение за места.
+      const { data: adminCompany } = await supabaseClient.rpc('my_company_admin_id');
+      if (adminCompany) {
+        isCompanyAdminMode = true;
+        document.getElementById('teamUpsellSection').style.display = 'none';
+        document.getElementById('companyPortalSection').style.display = 'block';
+        const pending = document.getElementById('checkoutPending');
+        if (pending) pending.style.display = 'none';
+        // Абонаментните елементи не важат за фирмен админ.
+        const subBar = document.getElementById('subBar');
+        if (subBar) subBar.style.display = 'none';
+        const addCard = document.getElementById('addEmployeeCard');
+        if (addCard) addCard.style.display = 'none';
+        loadCompanyAdminData();
+        return;
+      }
+
+      // Обикновен служител на управлявана фирма (има company_id, но не е админ):
+      // управлението е фирмено — не му показваме нито офертата, нито портала.
+      if (companyId) {
+        document.getElementById('teamUpsellSection').style.display = 'none';
+        document.getElementById('companyPortalSection').style.display = 'none';
+        const pending = document.getElementById('checkoutPending');
+        if (pending) pending.style.display = 'none';
+        return;
+      }
+
       // Първи опит след плащане: изчакваме потвърждението, преди да четем статуса.
       if (JUST_PAID && attempt === 0) await confirmCheckout();
 
@@ -1500,12 +1537,30 @@
         console.error("Error loading team summary: ", error.message);
         return;
       }
+      renderTeamLeaderboard(teamSummary);
+    }
 
+    // Фирмен админ: целият екип по company_id (нови RPC-та, без Stripe).
+    async function loadCompanyAdminData() {
+      const { data: teamSummary, error } = await supabaseClient.rpc('get_company_team_summary');
+      if (error) {
+        console.error("Error loading company team summary: ", error.message);
+        return;
+      }
+      renderTeamLeaderboard(teamSummary);
+    }
+
+    // Рисува таблицата с екипа. Ползва се и от шеф (parent_boss), и от фирмен админ.
+    function renderTeamLeaderboard(teamSummary) {
       const tbody = document.getElementById('teamLeaderboardBody');
       tbody.innerHTML = '';
 
       if (!teamSummary || teamSummary.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Няма свързани служители към този акаунт.</td></tr>`;
+        document.getElementById('teamMembersCount').innerText = 0;
+        document.getElementById('teamTotalScans').innerText = 0;
+        document.getElementById('teamTotalSaves').innerText = 0;
+        document.getElementById('teamTotalLeads').innerText = 0;
         return;
       }
 
@@ -1544,14 +1599,17 @@
     }
 
     async function viewEmployeeLeads(employeeId, employeeName) {
-      if (!currentBossUserId) return;
-      
       document.getElementById('detailEmployeeName').innerText = `Събрани контакти от ${employeeName}`;
-      
-      const { data: leads, error } = await supabaseClient.rpc('get_employee_leads_for_boss', {
-        boss_user_id: currentBossUserId,
-        target_employee_id: employeeId
-      });
+
+      // Фирмен админ чете по company_id; иначе — класическият шеф по parent_boss.
+      const { data: leads, error } = isCompanyAdminMode
+        ? await supabaseClient.rpc('get_company_employee_leads', {
+            target_employee_id: employeeId
+          })
+        : await supabaseClient.rpc('get_employee_leads_for_boss', {
+            boss_user_id: currentBossUserId,
+            target_employee_id: employeeId
+          });
 
       if (error) {
         alert("Грешка при извличане на контакти: " + error.message);
