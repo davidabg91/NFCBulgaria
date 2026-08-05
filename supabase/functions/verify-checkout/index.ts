@@ -81,7 +81,12 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Тази сесия не принадлежи на профила ви.' }, 403);
     }
 
-    if (session.payment_status !== 'paid') {
+    // 'paid' = нормално плащане; 'no_payment_required' = триал (първи месец
+    // безплатно — Stripe не таксува сега, но абонаментът е валиден).
+    const okPaid = session.payment_status === 'paid'
+      || session.payment_status === 'no_payment_required'
+      || session.status === 'complete';
+    if (!okPaid) {
       // Още не е платено — казваме на UI-а да изчака/опита пак.
       return json({ ok: false, pending: true, message: 'Плащането още не е потвърдено.' });
     }
