@@ -831,6 +831,18 @@
         <div class="add-emp-msg" id="addEmployeeMsg"></div>
       </div>
 
+      <!-- Заключено съобщение (няма активен абонамент) -->
+      <div id="portalLocked" style="display: none; text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+        <div style="font-size: 2.2rem; margin-bottom: 0.6rem;">🔒</div>
+        <p id="portalLockedText" style="font-size: 0.95rem; line-height: 1.6; max-width: 460px; margin: 0 auto;">
+          Данните на екипа са заключени. Активирайте бизнес плана по-горе, за да видите
+          статистиката и събраните контакти на служителите.
+        </p>
+      </div>
+
+      <!-- Съдържание на портала — вижда се само при активен абонамент -->
+      <div id="companyStats">
+
       <!-- Team Stats KPI Cards -->
       <div class="stats-row" style="margin-bottom: 2rem;">
         <div class="stat-box" style="background: rgba(0, 242, 255, 0.03);">
@@ -892,6 +904,8 @@
           </table>
         </div>
       </div>
+
+      </div><!-- /companyStats -->
 
     </div>
   </div>
@@ -1423,18 +1437,39 @@
         if (subBar) subBar.style.display = 'none';
         const addCard = document.getElementById('addEmployeeCard');
         if (addCard) addCard.style.display = 'none';
-        loadCompanyAdminData();
 
-        // Ако фирмата още няма активен абонамент и има изготвена оферта →
-        // показваме банер за активиране (плащането го прави шефът).
-        const { data: active } = await supabaseClient.rpc('company_subscription_active');
+        const stats     = document.getElementById('companyStats');
+        const locked    = document.getElementById('portalLocked');
+        const lockedTxt = document.getElementById('portalLockedText');
         const bizBanner = document.getElementById('bizActivate');
-        if (!active) {
+
+        // Достъпът до статистиката е ЗАКЛЮЧЕН, докато фирмата няма активен
+        // абонамент. При триал абонаментът е активен → отключено; изтече ли
+        // без плащане → пак заключено.
+        const { data: active } = await supabaseClient.rpc('company_subscription_active');
+
+        if (active) {
+          if (bizBanner) bizBanner.style.display = 'none';
+          if (locked) locked.style.display = 'none';
+          if (stats) stats.style.display = '';
+          loadCompanyAdminData();
+        } else {
+          // Заключено — крием статистиката, показваме банер за активиране.
+          if (stats) stats.style.display = 'none';
+          if (locked) locked.style.display = 'block';
+
           const { data: offers } = await supabaseClient.rpc('get_my_business_offer');
           const offer = Array.isArray(offers) ? offers[0] : offers;
-          if (offer) showBusinessActivateBanner(offer);
-        } else if (bizBanner) {
-          bizBanner.style.display = 'none';
+          if (offer) {
+            showBusinessActivateBanner(offer);
+            if (lockedTxt) lockedTxt.textContent =
+              'Данните на екипа са заключени. Натиснете „Активирай“ по-горе, за да отключите ' +
+              'статистиката и събраните контакти (първият месец е безплатен).';
+          } else {
+            if (bizBanner) bizBanner.style.display = 'none';
+            if (lockedTxt) lockedTxt.textContent =
+              'Данните на екипа са заключени. Свържете се с нас за активиране на бизнес плана.';
+          }
         }
         return;
       }
