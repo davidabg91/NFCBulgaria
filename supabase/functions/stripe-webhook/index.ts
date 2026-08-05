@@ -150,12 +150,31 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // Месечно подновяване — удължава с още един период
+      // Месечно/годишно подновяване (и първата такса след триала) —
+      // удължава с още един период.
       case 'invoice.paid': {
-        const inv = event.data.object as Stripe.Invoice;
-        if (typeof inv.subscription !== 'string') break;
+        const invObj = event.data.object as Stripe.Invoice & {
+          subscription?: string | null;
+          parent?: { subscription_details?: { subscription?: string | null } };
+        };
 
-        const sub = await stripe.subscriptions.retrieve(inv.subscription);
+        // Webhook-ът праща по-нова API версия, в която `invoice.subscription`
+        // е преместено. Търсим ID-то на няколко места, а ако не го намерим —
+        // презимаме фактурата с фиксираната версия на SDK-то.
+        let subId: string | null =
+          typeof invObj.subscription === 'string' ? invObj.subscription : null;
+        if (!subId) {
+          subId = invObj.parent?.subscription_details?.subscription ?? null;
+        }
+        if (!subId && invObj.id) {
+          const inv = await stripe.invoices.retrieve(invObj.id) as Stripe.Invoice & {
+            subscription?: string | null;
+          };
+          subId = typeof inv.subscription === 'string' ? inv.subscription : null;
+        }
+        if (!subId) break;
+
+        const sub = await stripe.subscriptions.retrieve(subId);
         const userId = sub.metadata?.supabase_user_id;
         const companyId = sub.metadata?.company_id;
         const plan = sub.metadata?.plan;
