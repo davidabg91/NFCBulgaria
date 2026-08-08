@@ -504,7 +504,7 @@
       justify-content: center;
       flex-wrap: wrap;
       gap: 6px 10px;
-      margin: 0.6rem auto 0;
+      margin: 0.9rem auto 1.6rem;
       font-size: 0.85rem;
     }
     .work-status {
@@ -704,10 +704,11 @@
     // Supabase Configuration Placeholders
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
-    // OG preview endpoint (Supabase Edge Function `og`, деплойната). Дава богат
-    // preview при споделяне (Facebook/LinkedIn/Viber). Задайте "" за да
-    // споделяте директния profile.html линк.
-    const OG_SHARE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co/functions/v1/og";
+    // Бутонът "Сподели" праща чистия адрес на визитката (nfcbulgaria.com/...).
+    // При споделяне се показва общата branded preview картинка.
+    // (Функцията `og` остава деплойната за богат per-profile preview — при
+    //  нужда сложете тук: "https://upjwsqfrblxzhyuxeumj.supabase.co/functions/v1/og")
+    const OG_SHARE_URL = "";
     let supabaseClient = null;
 
     if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_KEY !== "YOUR_SUPABASE_ANON_KEY") {
