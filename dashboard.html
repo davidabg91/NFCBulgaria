@@ -247,6 +247,40 @@
       background: rgba(255,255,255,0.01);
     }
 
+    /* Lead action buttons (call / email) */
+    .lead-actions { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+    .lead-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 0.35rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .lead-btn-call {
+      background: rgba(0,242,255,0.08);
+      border-color: var(--glass-border);
+      color: var(--primary);
+    }
+    .lead-btn-call:hover { background: var(--primary); color: #0b0f19; }
+    .lead-btn-email {
+      background: rgba(161,232,175,0.08);
+      border-color: rgba(161,232,175,0.2);
+      color: var(--secondary);
+    }
+    .lead-btn-email:hover { background: var(--secondary); color: #0b0f19; }
+    .lead-btn-disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
     /* Stats Grid */
     .stats-row {
       display: grid;
@@ -730,11 +764,12 @@
                 <th>Телефон</th>
                 <th>Имейл</th>
                 <th>Съобщение</th>
+                <th style="text-align:center">Действие</th>
               </tr>
             </thead>
             <tbody id="leadsTableBody">
               <tr>
-                <td colspan="5" style="text-align: center; color: var(--text-muted);">Няма събрани контакти все още.</td>
+                <td colspan="6" style="text-align: center; color: var(--text-muted);">Няма събрани контакти все още.</td>
               </tr>
             </tbody>
           </table>
@@ -1154,10 +1189,18 @@
         const tbody = document.getElementById('leadsTableBody');
         tbody.innerHTML = '';
         if (leads.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Няма събрани контакти все още.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Няма събрани контакти все още.</td></tr>';
         }
         leads.forEach(lead => {
           const dateStr = new Date(lead.created_at).toLocaleDateString('bg-BG');
+          const telHref = (lead.client_phone || '').replace(/[^\d+]/g, '');
+          const emailHref = (lead.client_email || '').trim();
+          const callBtn = telHref
+            ? `<a href="tel:${telHref}" class="lead-btn lead-btn-call">📞 Звънни</a>`
+            : `<span class="lead-btn lead-btn-call lead-btn-disabled">📞 Звънни</span>`;
+          const emailBtn = emailHref
+            ? `<a href="mailto:${escapeHtml(emailHref)}" class="lead-btn lead-btn-email">✉️ Имейл</a>`
+            : `<span class="lead-btn lead-btn-email lead-btn-disabled">✉️ Имейл</span>`;
           tbody.innerHTML += `
             <tr>
               <td>${dateStr}</td>
@@ -1165,6 +1208,7 @@
               <td>${escapeHtml(lead.client_phone)}</td>
               <td>${escapeHtml(lead.client_email || '—')}</td>
               <td>${escapeHtml(lead.client_message || '—')}</td>
+              <td><div class="lead-actions">${callBtn}${emailBtn}</div></td>
             </tr>
           `;
         });

@@ -775,6 +775,37 @@
             <textarea class="form-input" rows="2" readonly>Специализираме в архитектурно проектиране и строителен надзор на жилищни и офис сгради за Северна България.</textarea>
           </div>
 
+          <!-- Работно време (демо) -->
+          <div class="form-group full-width" style="background:rgba(255,255,255,0.02); padding:1.2rem; border-radius:12px; border:1px solid var(--border);">
+            <label style="display:flex; align-items:center; gap:10px; margin-bottom:0;">
+              <input type="checkbox" checked disabled style="width:18px; height:18px; accent-color:var(--primary);">
+              <span>🕐 Показвай работно време в профила</span>
+            </label>
+            <div style="margin-top:1rem;">
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:0.8rem;">
+                <span style="padding:6px 12px; border-radius:20px; background:var(--primary); color:#0b0f19; font-size:0.8rem; font-weight:600;">Пон</span>
+                <span style="padding:6px 12px; border-radius:20px; background:var(--primary); color:#0b0f19; font-size:0.8rem; font-weight:600;">Вт</span>
+                <span style="padding:6px 12px; border-radius:20px; background:var(--primary); color:#0b0f19; font-size:0.8rem; font-weight:600;">Ср</span>
+                <span style="padding:6px 12px; border-radius:20px; background:var(--primary); color:#0b0f19; font-size:0.8rem; font-weight:600;">Чет</span>
+                <span style="padding:6px 12px; border-radius:20px; background:var(--primary); color:#0b0f19; font-size:0.8rem; font-weight:600;">Пет</span>
+                <span style="padding:6px 12px; border-radius:20px; background:rgba(255,255,255,0.03); color:var(--text-muted); border:1px solid var(--border); font-size:0.8rem; font-weight:600;">Съб</span>
+                <span style="padding:6px 12px; border-radius:20px; background:rgba(255,255,255,0.03); color:var(--text-muted); border:1px solid var(--border); font-size:0.8rem; font-weight:600;">Нед</span>
+              </div>
+              <div style="display:flex; gap:12px;">
+                <div style="flex:1;"><label style="font-size:0.78rem;">От</label><input type="time" class="form-input" value="09:00" readonly></div>
+                <div style="flex:1;"><label style="font-size:0.78rem;">До</label><input type="time" class="form-input" value="18:00" readonly></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Сподели профила (демо) -->
+          <div class="form-group full-width" style="background:rgba(255,255,255,0.02); padding:1.2rem; border-radius:12px; border:1px solid var(--border);">
+            <label style="display:flex; align-items:center; gap:10px; margin-bottom:0;">
+              <input type="checkbox" checked disabled style="width:18px; height:18px; accent-color:var(--primary);">
+              <span>🔗 Показвай бутон „Сподели профила“</span>
+            </label>
+          </div>
+
           <!-- Avatar -->
           <div class="form-group full-width">
             <label>Профилна снимка</label>
@@ -836,7 +867,10 @@
 
       <!-- Leads Card -->
       <div class="dash-card">
-        <h3 class="card-title"><svg class="ico ico-title" aria-hidden="true"><use href="#i-leads"/></svg> Получени Контакти (Leads)</h3>
+        <h3 class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <span><svg class="ico ico-title" aria-hidden="true"><use href="#i-leads"/></svg> Получени Контакти (Leads)</span>
+          <button type="button" onclick="exportDemoLeads()" style="display:inline-flex; align-items:center; gap:6px; padding:0.4rem 0.9rem; border-radius:8px; border:1px solid var(--primary); background:rgba(0,242,255,0.08); color:var(--primary); font-family:inherit; font-size:0.78rem; font-weight:700; cursor:pointer;">⬇️ Свали в Excel</button>
+        </h3>
         <div class="leads-table-wrapper">
           <table class="leads-table">
             <thead>
@@ -962,6 +996,19 @@
       { date: '06.07.2026', name: 'Ралица Стоянова',  phone: '+35987888999', owner: 'Александър Петров' },
       { date: '03.07.2026', name: 'Димитър Велев',    phone: '+35989111333', owner: 'Огнян Лазаров' },
     ];
+
+    function exportDemoLeads() {
+      const rows = [['Дата', 'Име', 'Телефон', 'Служител']]
+        .concat(leadsData.map(l => [l.date, l.name, l.phone, l.owner]));
+      const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'kontakti-demo.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
 
     function downloadLeadVCard(name, phone) {
       const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nN:${name};;;;\nTEL;TYPE=CELL:${phone}\nEND:VCARD`;
