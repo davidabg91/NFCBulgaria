@@ -529,6 +529,57 @@
     .add-emp-msg { margin-top: 0.75rem; font-size: 0.8rem; display: none; line-height: 1.5; }
     .add-emp-msg.ok { color: var(--secondary); display: block; }
     .add-emp-msg.err { color: #f87171; display: block; }
+
+    /* ============ Мобилна оптимизация (в края → има приоритет) ============ */
+    @media (max-width: 640px) {
+      header { padding: 0.9rem 1rem; }
+      .logo-text { font-size: 1.05rem; }
+      .user-info { gap: 0.6rem; }
+      .user-info #userName { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .btn-logout { padding: 0.45rem 0.8rem; font-size: 0.8rem; }
+
+      .dashboard-layout { margin: 1rem auto; padding: 0 0.8rem; gap: 1.2rem; }
+      .dash-card { padding: 1.2rem; border-radius: 16px; }
+      .card-title { font-size: 1.05rem; margin-bottom: 1rem; }
+
+      /* Таблицата с контакти → карти */
+      .leads-table thead { display: none; }
+      .leads-table, .leads-table tbody, .leads-table tr, .leads-table td { display: block; width: 100%; }
+      .leads-table tr {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 0.8rem;
+        overflow: hidden;
+      }
+      .leads-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.55rem 0.9rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: right;
+        word-break: break-word;
+      }
+      .leads-table td:last-child { border-bottom: none; }
+      .leads-table td::before {
+        content: attr(data-label);
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.76rem;
+        text-align: left;
+        flex-shrink: 0;
+      }
+      .leads-table td[colspan]::before { content: none; }
+      .leads-table td[data-label="Действие"] { justify-content: flex-end; }
+      .leads-table td[data-label="Действие"]::before { display: none; }
+      .lead-actions { justify-content: flex-end; }
+    }
+
+    @media (max-width: 380px) {
+      .lead-btn { padding: 0.3rem 0.55rem; font-size: 0.72rem; }
+    }
   </style>
 </head>
 <body>
@@ -1203,12 +1254,12 @@
             : `<span class="lead-btn lead-btn-email lead-btn-disabled">✉️ Имейл</span>`;
           tbody.innerHTML += `
             <tr>
-              <td>${dateStr}</td>
-              <td>${escapeHtml(lead.client_name)}</td>
-              <td>${escapeHtml(lead.client_phone)}</td>
-              <td>${escapeHtml(lead.client_email || '—')}</td>
-              <td>${escapeHtml(lead.client_message || '—')}</td>
-              <td><div class="lead-actions">${callBtn}${emailBtn}</div></td>
+              <td data-label="Дата">${dateStr}</td>
+              <td data-label="Име">${escapeHtml(lead.client_name)}</td>
+              <td data-label="Телефон">${escapeHtml(lead.client_phone)}</td>
+              <td data-label="Имейл">${escapeHtml(lead.client_email || '—')}</td>
+              <td data-label="Съобщение">${escapeHtml(lead.client_message || '—')}</td>
+              <td data-label="Действие"><div class="lead-actions">${callBtn}${emailBtn}</div></td>
             </tr>
           `;
         });
