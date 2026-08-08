@@ -718,12 +718,10 @@
     // Supabase Configuration Placeholders
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
-    // OG preview endpoint (Supabase Edge Function). Дава богат preview при
-    // споделяне. ВАЖНО: попълва се СЛЕД като функцията `og` е деплойната:
-    //   const OG_SHARE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co/functions/v1/og";
-    // Докато е "", бутонът "Сподели" праща директния profile.html линк (работи,
-    // но с общ preview).
-    const OG_SHARE_URL = "";
+    // OG preview endpoint (Supabase Edge Function `og`, деплойната). Дава богат
+    // preview при споделяне (Facebook/LinkedIn/Viber). Задайте "" за да
+    // споделяте директния profile.html линк.
+    const OG_SHARE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co/functions/v1/og";
     let supabaseClient = null;
 
     if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_KEY !== "YOUR_SUPABASE_ANON_KEY") {
