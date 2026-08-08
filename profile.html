@@ -675,27 +675,13 @@
         <div class="form-group">
           <input type="tel" id="clientPhone" class="form-input" placeholder="Твоят телефон" required>
         </div>
+        <div class="form-group">
+          <input type="email" id="clientEmail" class="form-input" placeholder="Твоят имейл (незадължително)">
+        </div>
+        <div class="form-group">
+          <textarea id="clientMessage" class="form-input" rows="3" placeholder="Запитване (незадължително)..." style="resize: vertical; min-height: 72px;"></textarea>
+        </div>
         <button type="submit" class="btn-submit" id="leadSubmitBtn">Изпрати Обратно</button>
-      </form>
-    </div>
-
-    <!-- Inquiry Section -->
-    <div class="lead-section" id="inquirySection">
-      <h3 class="lead-title" id="inquiryTitle">Оставете запитване</h3>
-      <form id="inquiryForm" onsubmit="submitInquiry(event)">
-        <div class="form-group">
-          <input type="text" id="inqName" class="form-input" placeholder="Вашето име" required>
-        </div>
-        <div class="form-group">
-          <input type="tel" id="inqPhone" class="form-input" placeholder="Вашият телефон" required>
-        </div>
-        <div class="form-group">
-          <input type="email" id="inqEmail" class="form-input" placeholder="Вашият имейл (незадължително)">
-        </div>
-        <div class="form-group">
-          <textarea id="inqMessage" class="form-input" rows="3" placeholder="Вашето запитване..." required style="resize: vertical; min-height: 72px;"></textarea>
-        </div>
-        <button type="submit" class="btn-submit" id="inquirySubmitBtn">Изпрати запитване</button>
       </form>
     </div>
 
@@ -910,49 +896,6 @@
       }
     }
 
-    // Submit inquiry (name + phone + optional email + message) -> leads
-    async function submitInquiry(e) {
-      e.preventDefault();
-      const name = document.getElementById('inqName').value;
-      const phone = document.getElementById('inqPhone').value;
-      const email = document.getElementById('inqEmail').value;
-      const message = document.getElementById('inqMessage').value;
-
-      if (supabaseClient) {
-        let { error } = await supabaseClient
-          .from('leads')
-          .insert([{
-            profile_id: profileId,
-            client_name: name,
-            client_phone: phone,
-            client_email: email || null,
-            client_message: message
-          }]);
-
-        // Ако колоните client_email/client_message още ги няма (миграцията
-        // не е пусната), записваме поне име и телефон, за да не се губи лийдът.
-        if (error) {
-          const retry = await supabaseClient
-            .from('leads')
-            .insert([{ profile_id: profileId, client_name: name, client_phone: phone }]);
-          error = retry.error;
-        }
-
-        if (error) {
-          showToast(activeLang === 'bg' ? "Грешка при изпращане. Опитайте отново." : "Error sending. Please try again.");
-          return;
-        }
-
-        // Notify owner via Make.com webhook
-        const ownerEmail = currentProfile.email || '';
-        const webhookUrl = `https://hook.eu1.make.com/37nc5kpk2bfwzo3c6nyaqqt4synyhhaa?owner_email=${encodeURIComponent(ownerEmail)}&client_name=${encodeURIComponent(name)}&client_phone=${encodeURIComponent(phone)}&client_email=${encodeURIComponent(email)}&client_message=${encodeURIComponent(message)}`;
-        fetch(webhookUrl).catch(err => console.error("Error sending inquiry notification:", err));
-      }
-
-      showToast(translations[activeLang].inquirySuccess);
-      document.getElementById('inquiryForm').reset();
-    }
-
     // 2. Log Analytics Scan/Tap
     async function logScan() {
       await supabaseClient
@@ -960,33 +903,43 @@
         .insert([{ profile_id: profileId }]);
     }
 
-    // 3. Submit Lead form
+    // 3. Submit Lead form (name + phone, с по избор имейл и запитване)
     async function submitLead(e) {
       e.preventDefault();
-      
+
       const clientName = document.getElementById('clientName').value;
       const clientPhone = document.getElementById('clientPhone').value;
+      const clientEmail = document.getElementById('clientEmail').value;
+      const clientMessage = document.getElementById('clientMessage').value;
 
       if (supabaseClient) {
-        const { error } = await supabaseClient
+        let { error } = await supabaseClient
           .from('leads')
           .insert([{
             profile_id: profileId,
             client_name: clientName,
-            client_phone: clientPhone
+            client_phone: clientPhone,
+            client_email: clientEmail || null,
+            client_message: clientMessage || null
           }]);
+
+        // Ако колоните client_email/client_message още ги няма (миграцията
+        // не е пусната), записваме поне име и телефон, за да не се губи лийдът.
+        if (error) {
+          const retry = await supabaseClient
+            .from('leads')
+            .insert([{ profile_id: profileId, client_name: clientName, client_phone: clientPhone }]);
+          error = retry.error;
+        }
 
         if (error) {
           showToast(activeLang === 'bg' ? "Грешка при изпращане. Опитайте отново." : "Error sending contact. Please try again.");
           return;
         }
 
-        // Send email notification to Make.com directly from the browser via GET query string (avoids CORS and parses fields automatically)
-        const email = currentProfile.email || '';
-        const name = clientName || '';
-        const phone = clientPhone || '';
-        const webhookUrl = `https://hook.eu1.make.com/37nc5kpk2bfwzo3c6nyaqqt4synyhhaa?owner_email=${encodeURIComponent(email)}&client_name=${encodeURIComponent(name)}&client_phone=${encodeURIComponent(phone)}`;
-        
+        // Известие към собственика през Make.com (GET заобикаля CORS)
+        const ownerEmail = currentProfile.email || '';
+        const webhookUrl = `https://hook.eu1.make.com/37nc5kpk2bfwzo3c6nyaqqt4synyhhaa?owner_email=${encodeURIComponent(ownerEmail)}&client_name=${encodeURIComponent(clientName)}&client_phone=${encodeURIComponent(clientPhone)}&client_email=${encodeURIComponent(clientEmail)}&client_message=${encodeURIComponent(clientMessage)}`;
         fetch(webhookUrl).catch(err => console.error("Error sending email notification:", err));
       }
 
@@ -1264,19 +1217,11 @@ END:VCARD`;
       const shareBtnText = document.getElementById('shareBtnText');
       if (shareBtnText) shareBtnText.innerText = t.share;
 
-      // Inquiry form
-      const inquiryTitle = document.getElementById('inquiryTitle');
-      if (inquiryTitle) inquiryTitle.innerText = t.inquiryTitle;
-      const inqName = document.getElementById('inqName');
-      if (inqName) inqName.placeholder = t.inqName;
-      const inqPhone = document.getElementById('inqPhone');
-      if (inqPhone) inqPhone.placeholder = t.inqPhone;
-      const inqEmail = document.getElementById('inqEmail');
-      if (inqEmail) inqEmail.placeholder = t.inqEmail;
-      const inqMessage = document.getElementById('inqMessage');
-      if (inqMessage) inqMessage.placeholder = t.inqMessage;
-      const inquirySubmitBtn = document.getElementById('inquirySubmitBtn');
-      if (inquirySubmitBtn) inquirySubmitBtn.innerText = t.inquirySend;
+      // Optional email + inquiry fields inside the contact form
+      const clientEmailInput = document.getElementById('clientEmail');
+      if (clientEmailInput) clientEmailInput.placeholder = t.inqEmail;
+      const clientMessageInput = document.getElementById('clientMessage');
+      if (clientMessageInput) clientMessageInput.placeholder = t.inqMessage;
 
       // Re-render working hours labels/status in the new language
       if (currentProfile && currentProfile.hours_enabled) {
