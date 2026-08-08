@@ -939,7 +939,7 @@
         }
 
         // Известие към собственика през Make.com (GET заобикаля CORS)
-        const ownerEmail = currentProfile.email || '';
+        const ownerEmail = currentProfile.email || 'office@nfcbulgaria.com';
         const webhookUrl = `https://hook.eu1.make.com/37nc5kpk2bfwzo3c6nyaqqt4synyhhaa?owner_email=${encodeURIComponent(ownerEmail)}&client_name=${encodeURIComponent(clientName)}&client_phone=${encodeURIComponent(clientPhone)}&client_email=${encodeURIComponent(clientEmail)}&client_message=${encodeURIComponent(clientMessage)}`;
         fetch(webhookUrl).catch(err => console.error("Error sending email notification:", err));
       }
