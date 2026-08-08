@@ -474,6 +474,68 @@
       color: #fff;
       background: rgba(255, 255, 255, 0.06);
     }
+
+    /* Share button */
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      background: rgba(0, 242, 255, 0.08);
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .share-btn:hover, .share-btn:active {
+      background: var(--primary);
+      color: #0b0f19;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    /* Working hours */
+    .work-hours {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin: 0.6rem auto 0;
+      font-size: 0.85rem;
+    }
+    .work-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .work-status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .work-status.is-open {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+    }
+    .work-status.is-closed {
+      background: rgba(148, 163, 184, 0.12);
+      color: #94a3b8;
+    }
+    .work-schedule {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
   </style>
 </head>
 <body>
@@ -482,13 +544,17 @@
 
     <!-- Utilities Row (Language translation + Saves count) -->
     <!-- Utilities Row (Language translation) -->
-    <div class="profile-header-utils" style="justify-content: flex-start;">
+    <div class="profile-header-utils" style="justify-content: space-between;">
       <div class="lang-selector">
         <button class="lang-btn active" onclick="setLanguage('bg')">BG</button>
         <button class="lang-btn" onclick="setLanguage('en')">EN</button>
         <button class="lang-btn" onclick="setLanguage('de')">DE</button>
         <button class="lang-btn" onclick="setLanguage('ro')">RO</button>
       </div>
+      <button id="shareBtn" class="share-btn" onclick="shareProfile()" style="display: none;" aria-label="Сподели профила">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        <span id="shareBtnText">Сподели</span>
+      </button>
     </div>
 
     <!-- Profile Head -->
@@ -503,6 +569,12 @@
       <div class="profile-title" id="profileTitle">Главен Архитект</div>
       <div class="profile-company">
         <span id="profileCompany">АРХПРОЕКТ</span>
+      </div>
+
+      <!-- Working Hours (optional) -->
+      <div class="work-hours" id="workHours" style="display: none;">
+        <span class="work-status" id="workStatus"></span>
+        <span class="work-schedule" id="workSchedule"></span>
       </div>
 
       <!-- Short Bio -->
@@ -607,6 +679,26 @@
       </form>
     </div>
 
+    <!-- Inquiry Section -->
+    <div class="lead-section" id="inquirySection">
+      <h3 class="lead-title" id="inquiryTitle">Оставете запитване</h3>
+      <form id="inquiryForm" onsubmit="submitInquiry(event)">
+        <div class="form-group">
+          <input type="text" id="inqName" class="form-input" placeholder="Вашето име" required>
+        </div>
+        <div class="form-group">
+          <input type="tel" id="inqPhone" class="form-input" placeholder="Вашият телефон" required>
+        </div>
+        <div class="form-group">
+          <input type="email" id="inqEmail" class="form-input" placeholder="Вашият имейл (незадължително)">
+        </div>
+        <div class="form-group">
+          <textarea id="inqMessage" class="form-input" rows="3" placeholder="Вашето запитване..." required style="resize: vertical; min-height: 72px;"></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="inquirySubmitBtn">Изпрати запитване</button>
+      </form>
+    </div>
+
     <!-- Mini Footer -->
     <div class="brand-footer">
       <a href="index.html" class="brand-link" id="brandFooterLink">
@@ -626,6 +718,12 @@
     // Supabase Configuration Placeholders
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
+    // OG preview endpoint (Supabase Edge Function). Дава богат preview при
+    // споделяне. ВАЖНО: попълва се СЛЕД като функцията `og` е деплойната:
+    //   const OG_SHARE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co/functions/v1/og";
+    // Докато е "", бутонът "Сподели" праща директния profile.html линк (работи,
+    // но с общ preview).
+    const OG_SHARE_URL = "";
     let supabaseClient = null;
 
     if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_KEY !== "YOUR_SUPABASE_ANON_KEY") {
@@ -730,8 +828,131 @@
         toggleLinkVisibility('websiteLink', data.website);
         toggleLinkVisibility('googleMapsLink', data.google_maps);
 
+        // Share button (only if owner enabled it)
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) shareBtn.style.display = data.share_enabled ? 'inline-flex' : 'none';
 
+        // Working hours (only if owner enabled it)
+        renderWorkingHours(data.hours_enabled, data.working_hours);
       }
+    }
+
+    // Render working hours + live status
+    function renderWorkingHours(enabled, hoursJson) {
+      const box = document.getElementById('workHours');
+      if (!box) return;
+      if (!enabled || !hoursJson) { box.style.display = 'none'; return; }
+
+      let cfg;
+      try { cfg = typeof hoursJson === 'string' ? JSON.parse(hoursJson) : hoursJson; }
+      catch (e) { box.style.display = 'none'; return; }
+      if (!cfg || !cfg.from || !cfg.to || !Array.isArray(cfg.days) || cfg.days.length === 0) {
+        box.style.display = 'none'; return;
+      }
+
+      const t = translations[activeLang];
+      // Schedule text, e.g. "Пон–Пет · 09:00–18:00"
+      document.getElementById('workSchedule').innerText =
+        `${daysLabel(cfg.days, activeLang)} · ${cfg.from}–${cfg.to}`;
+
+      // Live status based on current local time
+      const now = new Date();
+      const jsDay = now.getDay();            // 0=Sun..6=Sat
+      const isoDay = jsDay === 0 ? 7 : jsDay; // 1=Mon..7=Sun
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      const fromMin = toMinutes(cfg.from);
+      const toMin = toMinutes(cfg.to);
+      const working = cfg.days.includes(isoDay) && nowMin >= fromMin && nowMin < toMin;
+
+      const statusEl = document.getElementById('workStatus');
+      statusEl.classList.toggle('is-open', working);
+      statusEl.classList.toggle('is-closed', !working);
+      statusEl.innerText = working ? t.hoursOpen : t.hoursClosed;
+
+      box.style.display = 'flex';
+    }
+
+    function toMinutes(hhmm) {
+      const [h, m] = String(hhmm).split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    }
+
+    function daysLabel(days, lang) {
+      const names = {
+        bg: ['', 'Пон', 'Вт', 'Ср', 'Чет', 'Пет', 'Съб', 'Нед'],
+        en: ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        de: ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
+        ro: ['', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm', 'Dum']
+      };
+      const n = names[lang] || names.bg;
+      const sorted = [...days].sort((a, b) => a - b);
+      // Contiguous range → "Пон–Пет", else comma list
+      const contiguous = sorted.every((d, i) => i === 0 || d === sorted[i - 1] + 1);
+      if (contiguous && sorted.length > 1) return `${n[sorted[0]]}–${n[sorted[sorted.length - 1]]}`;
+      return sorted.map(d => n[d]).join(', ');
+    }
+
+    // Share profile (native share with clipboard fallback)
+    async function shareProfile() {
+      // Споделяме OG линка (богат preview), с fallback към директния адрес
+      const url = OG_SHARE_URL
+        ? `${OG_SHARE_URL}?id=${encodeURIComponent(profileId)}`
+        : window.location.href;
+      const title = `${currentProfile.name || 'Дигитална визитка'} — NFC Bulgaria`;
+      const text = currentProfile.company ? `${currentProfile.name} · ${currentProfile.company}` : title;
+      if (navigator.share) {
+        try { await navigator.share({ title, text, url }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast(translations[activeLang].linkCopied);
+      } catch (e) {
+        showToast(url);
+      }
+    }
+
+    // Submit inquiry (name + phone + optional email + message) -> leads
+    async function submitInquiry(e) {
+      e.preventDefault();
+      const name = document.getElementById('inqName').value;
+      const phone = document.getElementById('inqPhone').value;
+      const email = document.getElementById('inqEmail').value;
+      const message = document.getElementById('inqMessage').value;
+
+      if (supabaseClient) {
+        let { error } = await supabaseClient
+          .from('leads')
+          .insert([{
+            profile_id: profileId,
+            client_name: name,
+            client_phone: phone,
+            client_email: email || null,
+            client_message: message
+          }]);
+
+        // Ако колоните client_email/client_message още ги няма (миграцията
+        // не е пусната), записваме поне име и телефон, за да не се губи лийдът.
+        if (error) {
+          const retry = await supabaseClient
+            .from('leads')
+            .insert([{ profile_id: profileId, client_name: name, client_phone: phone }]);
+          error = retry.error;
+        }
+
+        if (error) {
+          showToast(activeLang === 'bg' ? "Грешка при изпращане. Опитайте отново." : "Error sending. Please try again.");
+          return;
+        }
+
+        // Notify owner via Make.com webhook
+        const ownerEmail = currentProfile.email || '';
+        const webhookUrl = `https://hook.eu1.make.com/37nc5kpk2bfwzo3c6nyaqqt4synyhhaa?owner_email=${encodeURIComponent(ownerEmail)}&client_name=${encodeURIComponent(name)}&client_phone=${encodeURIComponent(phone)}&client_email=${encodeURIComponent(email)}&client_message=${encodeURIComponent(message)}`;
+        fetch(webhookUrl).catch(err => console.error("Error sending inquiry notification:", err));
+      }
+
+      showToast(translations[activeLang].inquirySuccess);
+      document.getElementById('inquiryForm').reset();
     }
 
     // 2. Log Analytics Scan/Tap
@@ -874,7 +1095,18 @@ END:VCARD`;
         leadSuccess: "Контакта Ви е изпратен успешно! 👍",
         contactDownloaded: "Контакта е изтеглен!",
         titleDemo: "Главен Архитект",
-        companyDemo: "АРХПРОЕКТ"
+        companyDemo: "АРХПРОЕКТ",
+        share: "Сподели",
+        linkCopied: "Линкът е копиран! 🔗",
+        hoursOpen: "В момента е на работа",
+        hoursClosed: "Извън работно време",
+        inquiryTitle: "Оставете запитване",
+        inqName: "Вашето име",
+        inqPhone: "Вашият телефон",
+        inqEmail: "Вашият имейл (незадължително)",
+        inqMessage: "Вашето запитване...",
+        inquirySend: "Изпрати запитване",
+        inquirySuccess: "Запитването Ви е изпратено! ✅"
       },
       en: {
         saveContact: "Save Contact",
@@ -895,7 +1127,18 @@ END:VCARD`;
         leadSuccess: "Your contact has been sent successfully! 👍",
         contactDownloaded: "Contact downloaded!",
         titleDemo: "Chief Architect",
-        companyDemo: "ARCHPROJECT"
+        companyDemo: "ARCHPROJECT",
+        share: "Share",
+        linkCopied: "Link copied! 🔗",
+        hoursOpen: "Currently at work",
+        hoursClosed: "Outside working hours",
+        inquiryTitle: "Leave an inquiry",
+        inqName: "Your name",
+        inqPhone: "Your phone",
+        inqEmail: "Your email (optional)",
+        inqMessage: "Your inquiry...",
+        inquirySend: "Send inquiry",
+        inquirySuccess: "Your inquiry has been sent! ✅"
       },
       de: {
         saveContact: "Kontakt speichern",
@@ -916,7 +1159,18 @@ END:VCARD`;
         leadSuccess: "Ihr Kontakt wurde erfolgreich gesendet! 👍",
         contactDownloaded: "Kontakt heruntergeladen!",
         titleDemo: "Chefarchitekt",
-        companyDemo: "ARCHPROJECT"
+        companyDemo: "ARCHPROJECT",
+        share: "Teilen",
+        linkCopied: "Link kopiert! 🔗",
+        hoursOpen: "Derzeit im Dienst",
+        hoursClosed: "Außerhalb der Geschäftszeiten",
+        inquiryTitle: "Anfrage hinterlassen",
+        inqName: "Ihr Name",
+        inqPhone: "Ihre Telefonnummer",
+        inqEmail: "Ihre E-Mail (optional)",
+        inqMessage: "Ihre Anfrage...",
+        inquirySend: "Anfrage senden",
+        inquirySuccess: "Ihre Anfrage wurde gesendet! ✅"
       },
       ro: {
         saveContact: "Salvare contact",
@@ -937,7 +1191,18 @@ END:VCARD`;
         leadSuccess: "Contactul dvs. a fost trimis cu succes! 👍",
         contactDownloaded: "Contact descărcat!",
         titleDemo: "Arhitect Şef",
-        companyDemo: "ARCHPROJECT"
+        companyDemo: "ARCHPROJECT",
+        share: "Distribuie",
+        linkCopied: "Link copiat! 🔗",
+        hoursOpen: "În prezent la lucru",
+        hoursClosed: "În afara programului",
+        inquiryTitle: "Lăsați o solicitare",
+        inqName: "Numele dvs.",
+        inqPhone: "Telefonul dvs.",
+        inqEmail: "Email-ul dvs. (opțional)",
+        inqMessage: "Solicitarea dvs...",
+        inquirySend: "Trimite solicitarea",
+        inquirySuccess: "Solicitarea dvs. a fost trimisă! ✅"
       }
     };
 
@@ -997,6 +1262,28 @@ END:VCARD`;
       const leadSubmitBtn = document.getElementById('leadSubmitBtn');
       if (leadSubmitBtn) leadSubmitBtn.innerText = t.sendBack;
 
+      // Share button
+      const shareBtnText = document.getElementById('shareBtnText');
+      if (shareBtnText) shareBtnText.innerText = t.share;
+
+      // Inquiry form
+      const inquiryTitle = document.getElementById('inquiryTitle');
+      if (inquiryTitle) inquiryTitle.innerText = t.inquiryTitle;
+      const inqName = document.getElementById('inqName');
+      if (inqName) inqName.placeholder = t.inqName;
+      const inqPhone = document.getElementById('inqPhone');
+      if (inqPhone) inqPhone.placeholder = t.inqPhone;
+      const inqEmail = document.getElementById('inqEmail');
+      if (inqEmail) inqEmail.placeholder = t.inqEmail;
+      const inqMessage = document.getElementById('inqMessage');
+      if (inqMessage) inqMessage.placeholder = t.inqMessage;
+      const inquirySubmitBtn = document.getElementById('inquirySubmitBtn');
+      if (inquirySubmitBtn) inquirySubmitBtn.innerText = t.inquirySend;
+
+      // Re-render working hours labels/status in the new language
+      if (currentProfile && currentProfile.hours_enabled) {
+        renderWorkingHours(currentProfile.hours_enabled, currentProfile.working_hours);
+      }
 
       const brandLink = document.getElementById('brandFooterLink');
       if (brandLink) {

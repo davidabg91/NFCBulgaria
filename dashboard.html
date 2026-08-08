@@ -588,6 +588,35 @@
             <textarea id="bioInput" class="form-input" rows="3" placeholder="Описание на фирмената дейност, специализация или услуги..." style="resize: vertical; min-height: 80px;"></textarea>
           </div>
 
+          <!-- Настройки: Работно време + Споделяне -->
+          <div class="form-group full-width" style="background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.2rem;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 0;">
+              <input type="checkbox" id="hoursEnabledInput" onchange="toggleHoursBuilder()" style="width: 18px; height: 18px; accent-color: var(--primary);">
+              <span>🕐 Показвай работно време в профила</span>
+            </label>
+            <div id="hoursBuilder" style="display: none; margin-top: 1rem;">
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem;">Изберете работни дни и часове. В профила автоматично ще се показва „В момента е на работа“ или „Извън работно време“.</p>
+              <div id="workDaysWrap" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.8rem;"></div>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 120px;">
+                  <label for="workFromInput" style="font-size: 0.78rem;">От</label>
+                  <input type="time" id="workFromInput" class="form-input" value="09:00">
+                </div>
+                <div style="flex: 1; min-width: 120px;">
+                  <label for="workToInput" style="font-size: 0.78rem;">До</label>
+                  <input type="time" id="workToInput" class="form-input" value="18:00">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full-width" style="background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.2rem;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 0;">
+              <input type="checkbox" id="shareEnabledInput" style="width: 18px; height: 18px; accent-color: var(--primary);">
+              <span>🔗 Показвай бутон „Сподели профила“</span>
+            </label>
+          </div>
+
           <div class="form-group">
             <label for="newPasswordInput">Нова парола</label>
             <div class="password-container">
@@ -685,8 +714,13 @@
 
       <!-- Lead Capture List Section -->
       <div class="dash-card">
-        <h3 class="card-title">🤝 Получени Контакти (Leads)</h3>
-        
+        <h3 class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <span>🤝 Получени Контакти (Leads)</span>
+          <button type="button" id="exportLeadsBtn" onclick="exportLeadsToExcel()" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.4rem 0.9rem; border-radius: 8px; border: 1px solid var(--primary); background: rgba(0,242,255,0.08); color: var(--primary); font-family: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+            ⬇️ Свали в Excel
+          </button>
+        </h3>
+
         <div class="leads-table-wrapper">
           <table class="leads-table">
             <thead>
@@ -694,11 +728,13 @@
                 <th>Дата</th>
                 <th>Име</th>
                 <th>Телефон</th>
+                <th>Имейл</th>
+                <th>Съобщение</th>
               </tr>
             </thead>
             <tbody id="leadsTableBody">
               <tr>
-                <td colspan="3" style="text-align: center; color: var(--text-muted);">Няма събрани контакти все още.</td>
+                <td colspan="5" style="text-align: center; color: var(--text-muted);">Няма събрани контакти все още.</td>
               </tr>
             </tbody>
           </table>
@@ -912,6 +948,7 @@
 
   <!-- ChartJS for rendering beautiful stats -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -946,6 +983,7 @@
     let currentBossUserId = null;
     let isCompanyAdminMode = false;
     let billingInterval = 'month';
+    let currentLeads = [];
 
     // Превключване Месечно / Годишно — обновява цените по картите.
     function setBillingInterval(iv) {
@@ -1020,6 +1058,16 @@
       document.getElementById('avatarInput').value = "assets/avatar-alexandar.webp";
       document.getElementById('avatarPreview').src = "assets/avatar-alexandar.webp";
       document.getElementById('myProfileLink').href = "profile.html?id=demo-profile";
+
+      // Настройки: работно време + споделяне (демо)
+      document.getElementById('shareEnabledInput').checked = true;
+      document.getElementById('hoursEnabledInput').checked = true;
+      applyWorkingHours('{"days":[1,2,3,4,5],"from":"09:00","to":"18:00"}');
+      toggleHoursBuilder();
+      currentLeads = [
+        { created_at: new Date().toISOString(), client_name: 'Иван Георгиев', client_phone: '+359887000111', client_email: 'ivan@example.com', client_message: 'Интересувам се от оферта за проект.' },
+        { created_at: new Date().toISOString(), client_name: 'Мария Петрова', client_phone: '+359888222333', client_email: '', client_message: '' }
+      ];
       
       // Populate demo stats
       document.getElementById('totalScans').innerText = "165";
@@ -1076,6 +1124,12 @@
           document.getElementById('companyLogoPlaceholder').style.display = 'block';
         }
 
+        // Работно време + споделяне
+        document.getElementById('shareEnabledInput').checked = !!profile.share_enabled;
+        document.getElementById('hoursEnabledInput').checked = !!profile.hours_enabled;
+        applyWorkingHours(profile.working_hours);
+        toggleHoursBuilder();
+
         // Портал или оферта — решава се от абонамента/фирмения статус, не от ръчен флаг
         loadTeamGate(profile.user_id, 0, profile.company_id);
 
@@ -1095,16 +1149,22 @@
         .order('created_at', { ascending: false });
       
       if (leads) {
+        currentLeads = leads;
         document.getElementById('leadsCount').innerText = leads.length;
         const tbody = document.getElementById('leadsTableBody');
         tbody.innerHTML = '';
+        if (leads.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Няма събрани контакти все още.</td></tr>';
+        }
         leads.forEach(lead => {
           const dateStr = new Date(lead.created_at).toLocaleDateString('bg-BG');
           tbody.innerHTML += `
             <tr>
               <td>${dateStr}</td>
-              <td>${lead.client_name}</td>
-              <td>${lead.client_phone}</td>
+              <td>${escapeHtml(lead.client_name)}</td>
+              <td>${escapeHtml(lead.client_phone)}</td>
+              <td>${escapeHtml(lead.client_email || '—')}</td>
+              <td>${escapeHtml(lead.client_message || '—')}</td>
             </tr>
           `;
         });
@@ -1132,6 +1192,104 @@
         convRate = ((leadsCountVal + savesCountVal) / totalScansVal) * 100;
       }
       document.getElementById('conversionRate').innerText = `${convRate.toFixed(1)}%`;
+    }
+
+    // ---- Working hours builder ----
+    const WORK_DAY_NAMES = ['', 'Пон', 'Вт', 'Ср', 'Чет', 'Пет', 'Съб', 'Нед'];
+
+    function buildWorkDaysUI() {
+      const wrap = document.getElementById('workDaysWrap');
+      if (!wrap || wrap.dataset.built === '1') return;
+      for (let d = 1; d <= 7; d++) {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'work-day-chip';
+        chip.dataset.day = String(d);
+        chip.innerText = WORK_DAY_NAMES[d];
+        chip.style.cssText = 'padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--text-muted);font-family:inherit;font-size:0.8rem;cursor:pointer;font-weight:600;';
+        chip.onclick = () => {
+          const on = chip.dataset.on === '1';
+          chip.dataset.on = on ? '0' : '1';
+          chip.style.background = on ? 'rgba(255,255,255,0.03)' : 'var(--primary)';
+          chip.style.color = on ? 'var(--text-muted)' : '#0b0f19';
+          chip.style.borderColor = on ? 'var(--border)' : 'var(--primary)';
+        };
+        wrap.appendChild(chip);
+      }
+      wrap.dataset.built = '1';
+    }
+
+    function setWorkDays(days) {
+      buildWorkDaysUI();
+      document.querySelectorAll('.work-day-chip').forEach(chip => {
+        const on = days.includes(Number(chip.dataset.day));
+        chip.dataset.on = on ? '1' : '0';
+        chip.style.background = on ? 'var(--primary)' : 'rgba(255,255,255,0.03)';
+        chip.style.color = on ? '#0b0f19' : 'var(--text-muted)';
+        chip.style.borderColor = on ? 'var(--primary)' : 'var(--border)';
+      });
+    }
+
+    function getWorkDays() {
+      const days = [];
+      document.querySelectorAll('.work-day-chip').forEach(chip => {
+        if (chip.dataset.on === '1') days.push(Number(chip.dataset.day));
+      });
+      return days;
+    }
+
+    function toggleHoursBuilder() {
+      buildWorkDaysUI();
+      const on = document.getElementById('hoursEnabledInput').checked;
+      document.getElementById('hoursBuilder').style.display = on ? 'block' : 'none';
+    }
+
+    function applyWorkingHours(json) {
+      buildWorkDaysUI();
+      let cfg = null;
+      try { cfg = json ? (typeof json === 'string' ? JSON.parse(json) : json) : null; } catch (e) {}
+      if (cfg && Array.isArray(cfg.days)) {
+        setWorkDays(cfg.days);
+        if (cfg.from) document.getElementById('workFromInput').value = cfg.from;
+        if (cfg.to) document.getElementById('workToInput').value = cfg.to;
+      } else {
+        setWorkDays([1, 2, 3, 4, 5]);
+      }
+    }
+
+    function gatherWorkingHours() {
+      if (!document.getElementById('hoursEnabledInput').checked) return null;
+      const days = getWorkDays();
+      const from = document.getElementById('workFromInput').value;
+      const to = document.getElementById('workToInput').value;
+      if (days.length === 0 || !from || !to) return null;
+      return JSON.stringify({ days, from, to });
+    }
+
+    // ---- Excel export ----
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function exportLeadsToExcel() {
+      if (!currentLeads || currentLeads.length === 0) {
+        alert('Няма събрани контакти за сваляне.');
+        return;
+      }
+      const rows = currentLeads.map(l => ({
+        'Дата': new Date(l.created_at).toLocaleDateString('bg-BG'),
+        'Име': l.client_name || '',
+        'Телефон': l.client_phone || '',
+        'Имейл': l.client_email || '',
+        'Съобщение': l.client_message || ''
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{ wch: 12 }, { wch: 22 }, { wch: 16 }, { wch: 26 }, { wch: 40 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Контакти');
+      const today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `kontakti-${today}.xlsx`);
     }
 
     // Save profile data
@@ -1170,6 +1328,14 @@
         avatar_url: document.getElementById('avatarInput').value,
       };
 
+      // Нови настройки — записват се отделно (best-effort), за да не чупят
+      // основния запис, ако SQL миграцията още не е пусната.
+      const settingsData = {
+        share_enabled: document.getElementById('shareEnabledInput').checked,
+        hours_enabled: document.getElementById('hoursEnabledInput').checked,
+        working_hours: gatherWorkingHours(),
+      };
+
       if (!supabaseClient) {
         if (newPassword) {
           alert("Паролата е променена успешно (демо режим)!\nПромените са запазени локално!");
@@ -1188,10 +1354,20 @@
         .from('profiles')
         .update(profileData)
         .eq('user_id', session.user.id);
-      
+
       if (error) {
         alert("Грешка при записване на профила: " + error.message);
         return;
+      }
+
+      // Best-effort запис на новите настройки (работно време + споделяне).
+      // Ако колоните още ги няма (миграцията не е пусната), просто ги пропускаме.
+      const { error: settingsError } = await supabaseClient
+        .from('profiles')
+        .update(settingsData)
+        .eq('user_id', session.user.id);
+      if (settingsError) {
+        console.warn("Настройките за работно време/споделяне не са записани (пуснете supabase/profile-enhancements.sql):", settingsError.message);
       }
 
       // Update password if entered
