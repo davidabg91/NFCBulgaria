@@ -108,13 +108,14 @@
 
     /* Layout structure */
     .dashboard-layout {
-      max-width: 1200px;
+      max-width: 1280px;
       width: 100%;
       margin: 2rem auto;
       padding: 0 1.5rem;
       display: grid;
-      grid-template-columns: 1.2fr 2fr;
+      grid-template-columns: 1.5fr 1.5fr;
       gap: 2rem;
+      align-items: start;
     }
 
     @media (max-width: 900px) {
@@ -245,6 +246,14 @@
 
     .leads-table tr:hover {
       background: rgba(255,255,255,0.01);
+    }
+
+    /* Дългите стойности пренасят реда вместо да избутват таблицата извън панела */
+    .leads-table td[data-label="Имейл"],
+    .leads-table td[data-label="Съобщение"] {
+      max-width: 200px;
+      word-break: break-word;
+      white-space: normal;
     }
 
     /* Lead action buttons (call / email) */
@@ -602,7 +611,7 @@
     <!-- LEFT COLUMN: Profile Data Editing -->
     <div class="dash-card">
       <h3 class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <span>👤 Редактирай Профила</span>
+        <span>Редактирай Профила</span>
         <a id="myProfileLink" href="profile.html" target="_blank" class="btn-logout" style="color: var(--primary); border-color: var(--glass-border); text-decoration: none; font-size: 0.75rem; padding: 0.4rem 0.8rem; background: rgba(0, 242, 255, 0.05); display: inline-flex; align-items: center; gap: 4px;">Виж моята визитка 📱</a>
       </h3>
       <form id="profileForm" onsubmit="saveProfile(event)">
