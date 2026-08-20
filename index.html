@@ -1821,6 +1821,70 @@ footer {
 }
 
 
+  
+    /* ---- Лента с клиентски лога (непрекъснато движение) ---------------- */
+    .clients-strip {
+      padding: 2.2rem 0 0.5rem;
+      /* Лентата е по-широка от екрана по замисъл — клипваме тук, за да не
+         връща хоризонталния скрол, който оправихме. */
+      overflow: hidden;
+    }
+    .clients-title {
+      text-align: center;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 1.3rem;
+    }
+    .clients-viewport {
+      position: relative;
+      overflow: hidden;
+      /* избледняване в двата края, вместо два припокриващи се градиента */
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+              mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+    }
+    .clients-track {
+      display: flex;
+      width: max-content;
+      animation: clients-scroll 44s linear infinite;
+    }
+    .clients-viewport:hover .clients-track { animation-play-state: paused; }
+    .client-logo {
+      flex: 0 0 auto;
+      width: 172px;
+      height: 86px;
+      margin: 0 0.55rem;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .client-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;   /* плочките вече са 2:1, така че пасват точно */
+      display: block;
+    }
+    .client-logo:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(0, 242, 255, 0.22);
+    }
+    @keyframes clients-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }   /* точно едното от двете копия */
+    }
+    /* Уважаваме настройката за намалено движение */
+    @media (prefers-reduced-motion: reduce) {
+      .clients-track { animation: none; }
+      .clients-viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+    }
+    @media (max-width: 600px) {
+      .client-logo { width: 138px; height: 70px; margin: 0 0.4rem; }
+      .clients-track { animation-duration: 32s; }
+    }
   </style>
 </head>
 <body>
@@ -1881,6 +1945,66 @@ footer {
       </div>
     </div>
   </header>
+
+  <!-- Лента с фирмите, с които работим -->
+  <section class="clients-strip" aria-label="Фирми, с които работим">
+    <div class="container">
+      <p class="clients-title">Фирми, с които работим</p>
+      <div class="clients-viewport">
+        <div class="clients-track">
+          <div class="client-logo">
+            <img src="assets/clients/elkabel.webp" alt="ЕЛКАБЕЛ" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo">
+            <img src="assets/clients/petrol.webp" alt="Petrol" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo">
+            <img src="assets/clients/nedelya.webp" alt="Неделя" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo">
+            <img src="assets/clients/ledenika.webp" alt="Бирария Леденика" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo">
+            <img src="assets/clients/dary-travel.webp" alt="DARY travel" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo">
+            <img src="assets/clients/modeva.webp" alt="MODEVA" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo">
+            <img src="assets/clients/tenorri.webp" alt="TENORRI" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo">
+            <img src="assets/clients/stapka-kam-zdrave.webp" alt="Стъпка към здраве" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+<!-- второто копие е само за безшевното завъртане, скрито за екранни четци -->
+          <div class="client-logo" aria-hidden="true">
+            <img src="assets/clients/elkabel.webp" alt="" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo" aria-hidden="true">
+            <img src="assets/clients/petrol.webp" alt="" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo" aria-hidden="true">
+            <img src="assets/clients/nedelya.webp" alt="" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo" aria-hidden="true">
+            <img src="assets/clients/ledenika.webp" alt="" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo" aria-hidden="true">
+            <img src="assets/clients/dary-travel.webp" alt="" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo" aria-hidden="true">
+            <img src="assets/clients/modeva.webp" alt="" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo" aria-hidden="true">
+            <img src="assets/clients/tenorri.webp" alt="" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+          <div class="client-logo" aria-hidden="true">
+            <img src="assets/clients/stapka-kam-zdrave.webp" alt="" width="172" height="86" loading="lazy" decoding="async">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="features" class="container">
     <div class="section-title" data-aos>
