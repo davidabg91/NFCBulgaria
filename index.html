@@ -1833,12 +1833,16 @@ footer {
     }
     .clients-title {
       text-align: center;
-      font-size: 0.78rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin-bottom: 1.3rem;
+      /* Syne (шрифтът на заглавията) е зареден само в 700/800 и надписът
+         излизаше натежал. Space Grotesk има истинско леко тегло, което дава
+         по-елегантен ред и приятен контраст с едрите главни букви на h2.
+         По-едро и разредено, за да чете като заглавие, а не като дребен етикет. */
+      font-family: 'Space Grotesk', var(--font-heading);
+      font-size: 1.22rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: #d5dee9;
+      margin-bottom: 1.7rem;
     }
     .clients-viewport {
       position: relative;
@@ -1872,7 +1876,8 @@ footer {
     }
     .client-logo:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 22px rgba(0, 242, 255, 0.22);
+      /* акцентът на тази страница е зелен (--primary), не циан */
+      box-shadow: 0 8px 22px color-mix(in srgb, var(--primary) 35%, transparent);
     }
     @keyframes clients-scroll {
       from { transform: translateX(0); }
@@ -1885,6 +1890,7 @@ footer {
     }
     @media (max-width: 600px) {
       .clients-strip { padding: 1.8rem 0 2.6rem; }
+      .clients-title { font-size: 1.05rem; margin-bottom: 1.3rem; }
       .client-logo { width: 138px; height: 70px; margin: 0 0.4rem; }
       .clients-track { animation-duration: 32s; }
     }
