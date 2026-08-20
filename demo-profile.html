@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Александър Петров - Дигитална Визитка | NFC Bulgaria</title>
+  <title id="pageTitle">Александър Петров - Дигитална Визитка | NFC Bulgaria</title>
   
 
   <!-- Favicon -->
@@ -556,8 +556,8 @@
 
   <!-- Demo Banner pointing to admin panel -->
   <div class="demo-top-banner">
-    <span>🎯 ДЕМО РЕЖИМ &mdash; Виж как изглежда клиентският панел</span>
-    <a href="demo-dashboard.html">📊 Виж панела &rarr;</a>
+    <span id="demoBannerText">🎯 ДЕМО РЕЖИМ &mdash; Виж как изглежда клиентският панел</span>
+    <a href="demo-dashboard.html" id="demoBannerLink">📊 Виж панела &rarr;</a>
   </div>
 
   <div class="profile-container">
@@ -570,14 +570,14 @@
         <button class="lang-btn" onclick="setLanguage('de')">DE</button>
         <button class="lang-btn" onclick="setLanguage('ro')">RO</button>
       </div>
-      <button class="share-btn" onclick="shareProfile()" aria-label="Сподели профила">
+      <button class="share-btn" id="shareBtn" onclick="shareProfile()" aria-label="Сподели профила">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-        <span>Сподели</span>
+        <span id="shareBtnText">Сподели</span>
       </button>
     </div>
     <div class="avatar-wrapper">
       <div class="avatar">
-        <img src="assets/avatar-alexandar.webp" alt="Александър Петров - Главен Архитект">
+        <img id="profileAvatar" src="assets/avatar-alexandar.webp" alt="Александър Петров - Главен Архитект">
       </div>
     </div>
 
@@ -591,11 +591,11 @@
       <!-- Working Hours (demo) -->
       <div class="work-hours" id="workHours">
         <span class="work-status" id="workStatus"></span>
-        <span class="work-schedule">Пон–Пет · 09:00–18:00</span>
+        <span class="work-schedule" id="workSchedule">Пон–Пет · 09:00–18:00</span>
       </div>
 
       <!-- Short Bio -->
-      <div class="profile-bio">Специализираме в архитектурно проектиране и строителен надзор на жилищни и офис згради за целия регион на Северна България.</div>
+      <div class="profile-bio" id="profileBio">Специализираме в архитектурно проектиране и строителен надзор на жилищни и офис згради за целия регион на Северна България.</div>
       
       <!-- Primary Save Button -->
       <button class="btn-save" onclick="downloadVCard()">
@@ -628,7 +628,7 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         </div>
         <div class="link-label" id="viberLabel">Viber</div>
-        <div class="link-value">Свържи се</div>
+        <div class="link-value" id="viberVal">Свържи се</div>
       </a>
 
       <a href="https://linkedin.com" target="_blank" class="link-item" id="linkedinLink">
@@ -636,7 +636,7 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
         </div>
         <div class="link-label" id="linkedinLabel">LinkedIn</div>
-        <div class="link-value">Профил</div>
+        <div class="link-value" id="linkedinVal">Профил</div>
       </a>
 
       <a href="https://www.arhproekt.bg" target="_blank" class="link-item link-item-website" style="grid-column: span 2;" id="websiteLink">
@@ -652,7 +652,7 @@
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
         </div>
-        <div class="link-label">Намерете ни на картата</div>
+        <div class="link-label" id="googleMapsLabel">Намерете ни на картата</div>
         <div class="link-value">Google Maps</div>
       </a>
 
@@ -713,7 +713,25 @@
         leadSuccess: "Контакта Ви е изпратен успешно! 👍",
         contactDownloaded: "Контакта е изтеглен!",
         titleDemo: "Главен Архитект",
-        companyDemo: "АРХПРОЕКТ"
+        companyDemo: "АРХПРОЕКТ",
+        nameDemo: "Александър Петров",
+        profileLink: "Профил",
+        connect: "Свържи се",
+        websiteCompany: "Уебсайт на компанията",
+        findUsMap: "Намерете ни на картата",
+        pageTitleSuffix: "Дигитална Визитка | NFC Bulgaria",
+        avatarAlt: "Профилна снимка",
+        share: "Сподели",
+        shareAria: "Сподели профила",
+        linkCopied: "Линкът е копиран! 🔗",
+        hoursOpen: "В момента е на работа",
+        hoursClosed: "Извън работно време",
+        hoursSchedule: "Пон–Пет · 09:00–18:00",
+        demoBanner: "🎯 ДЕМО РЕЖИМ — Виж как изглежда клиентският панел",
+        demoBannerLink: "📊 Виж панела →",
+        yourEmail: "Твоят имейл (незадължително)",
+        yourInquiry: "Запитване (незадължително)...",
+        bioDemo: "Специализираме в архитектурно проектиране и строителен надзор на жилищни и офис сгради за целия регион на Северна България."
       },
       en: {
         saveContact: "Save Contact",
@@ -731,7 +749,25 @@
         leadSuccess: "Your contact has been sent successfully! 👍",
         contactDownloaded: "Contact downloaded!",
         titleDemo: "Chief Architect",
-        companyDemo: "ARCHPROJECT"
+        companyDemo: "ARCHPROJECT",
+        nameDemo: "Aleksandar Petrov",
+        profileLink: "Profile",
+        connect: "Connect",
+        websiteCompany: "Company website",
+        findUsMap: "Find us on the map",
+        pageTitleSuffix: "Digital Business Card | NFC Bulgaria",
+        avatarAlt: "Profile photo",
+        share: "Share",
+        shareAria: "Share profile",
+        linkCopied: "Link copied! 🔗",
+        hoursOpen: "Currently at work",
+        hoursClosed: "Outside working hours",
+        hoursSchedule: "Mon–Fri · 09:00–18:00",
+        demoBanner: "🎯 DEMO MODE — See what the client dashboard looks like",
+        demoBannerLink: "📊 View dashboard →",
+        yourEmail: "Your email (optional)",
+        yourInquiry: "Your inquiry (optional)...",
+        bioDemo: "We specialize in architectural design and construction supervision of residential and office buildings across the whole of Northern Bulgaria."
       },
       de: {
         saveContact: "Kontakt speichern",
@@ -749,7 +785,25 @@
         leadSuccess: "Ihr Kontakt wurde erfolgreich gesendet! 👍",
         contactDownloaded: "Kontakt heruntergeladen!",
         titleDemo: "Chefarchitekt",
-        companyDemo: "ARCHPROJECT"
+        companyDemo: "ARCHPROJECT",
+        nameDemo: "Aleksandar Petrov",
+        profileLink: "Profil",
+        connect: "Kontakt aufnehmen",
+        websiteCompany: "Unternehmenswebseite",
+        findUsMap: "Finden Sie uns auf der Karte",
+        pageTitleSuffix: "Digitale Visitenkarte | NFC Bulgaria",
+        avatarAlt: "Profilfoto",
+        share: "Teilen",
+        shareAria: "Profil teilen",
+        linkCopied: "Link kopiert! 🔗",
+        hoursOpen: "Derzeit im Dienst",
+        hoursClosed: "Außerhalb der Geschäftszeiten",
+        hoursSchedule: "Mo–Fr · 09:00–18:00",
+        demoBanner: "🎯 DEMO-MODUS — So sieht das Kundenportal aus",
+        demoBannerLink: "📊 Zum Portal →",
+        yourEmail: "Ihre E-Mail (optional)",
+        yourInquiry: "Ihre Anfrage (optional)...",
+        bioDemo: "Wir sind spezialisiert auf Architekturplanung und Bauaufsicht für Wohn- und Bürogebäude in der gesamten Region Nordbulgarien."
       },
       ro: {
         saveContact: "Salvare contact",
@@ -766,8 +820,26 @@
         createYours: "Creat cu NFC Bulgaria",
         leadSuccess: "Contactul dvs. a fost trimis cu succes! 👍",
         contactDownloaded: "Contact descărcat!",
-        titleDemo: "Arhitect Şef",
-        companyDemo: "ARCHPROJECT"
+        titleDemo: "Arhitect-șef",
+        companyDemo: "ARCHPROJECT",
+        nameDemo: "Aleksandar Petrov",
+        profileLink: "Profil",
+        connect: "Contactează",
+        websiteCompany: "Site-ul companiei",
+        findUsMap: "Găsiți-ne pe hartă",
+        pageTitleSuffix: "Carte de vizită digitală | NFC Bulgaria",
+        avatarAlt: "Fotografie de profil",
+        share: "Distribuie",
+        shareAria: "Distribuie profilul",
+        linkCopied: "Link copiat! 🔗",
+        hoursOpen: "În prezent la lucru",
+        hoursClosed: "În afara programului",
+        hoursSchedule: "Lun–Vin · 09:00–18:00",
+        demoBanner: "🎯 MOD DEMO — Vezi cum arată panoul clientului",
+        demoBannerLink: "📊 Vezi panoul →",
+        yourEmail: "Email-ul dvs. (opțional)",
+        yourInquiry: "Solicitarea dvs. (opțional)...",
+        bioDemo: "Suntem specializați în proiectare arhitecturală și supraveghere a construcțiilor pentru clădiri rezidențiale și de birouri din întreaga regiune a Bulgariei de Nord."
       }
     };
 
@@ -804,7 +876,38 @@
       if (linkedinLabel) linkedinLabel.innerText = t.linkedin;
 
       const websiteLabel = document.getElementById('websiteLabel');
-      if (websiteLabel) websiteLabel.innerText = t.website;
+      if (websiteLabel) websiteLabel.innerText = t.websiteCompany;
+
+      const linkedinVal = document.getElementById('linkedinVal');
+      if (linkedinVal) linkedinVal.innerText = t.profileLink;
+
+      const viberVal = document.getElementById('viberVal');
+      if (viberVal) viberVal.innerText = t.connect;
+
+      const mapsLabel = document.getElementById('googleMapsLabel');
+      if (mapsLabel) mapsLabel.innerText = t.findUsMap;
+
+      const avatarImg = document.getElementById('profileAvatar');
+      if (avatarImg) avatarImg.alt = `${t.nameDemo} - ${t.titleDemo}`;
+
+      const shareTxt = document.getElementById('shareBtnText');
+      if (shareTxt) shareTxt.innerText = t.share;
+      const shareBtnEl = document.getElementById('shareBtn');
+      if (shareBtnEl) shareBtnEl.setAttribute('aria-label', t.shareAria);
+
+      const bannerTxt = document.getElementById('demoBannerText');
+      if (bannerTxt) bannerTxt.innerText = t.demoBanner;
+      const bannerLink = document.getElementById('demoBannerLink');
+      if (bannerLink) bannerLink.innerText = t.demoBannerLink;
+
+      const bioEl = document.getElementById('profileBio');
+      if (bioEl) bioEl.innerText = t.bioDemo;
+
+      const schedEl = document.getElementById('workSchedule');
+      if (schedEl) schedEl.innerText = t.hoursSchedule;
+      renderDemoWorkStatus();
+
+      document.documentElement.lang = lang;
 
       const leadTitle = document.getElementById('leadTitle');
       if (leadTitle) leadTitle.innerText = t.sendLeads;
@@ -818,17 +921,27 @@
       const leadSubmitBtn = document.getElementById('leadSubmitBtn');
       if (leadSubmitBtn) leadSubmitBtn.innerText = t.sendBack;
 
+      const clientEmailInput = document.getElementById('clientEmail');
+      if (clientEmailInput) clientEmailInput.placeholder = t.yourEmail;
+
+      const clientMessageInput = document.getElementById('clientMessage');
+      if (clientMessageInput) clientMessageInput.placeholder = t.yourInquiry;
+
 
       const brandLink = document.getElementById('brandFooterLink');
       if (brandLink) {
         brandLink.innerHTML = `${t.createYours.split('NFC Bulgaria')[0]} <div class="logo-mini"></div> <span>NFC Bulgaria</span>`;
       }
 
-      // Translate title and company for demo
+      // Translate name, title and company for demo
+      const nameEl = document.getElementById('profileName');
+      if (nameEl) nameEl.innerText = t.nameDemo;
       const titleEl = document.getElementById('profileTitle');
       if (titleEl) titleEl.innerText = t.titleDemo;
       const companyEl = document.getElementById('profileCompany');
       if (companyEl) companyEl.innerText = t.companyDemo;
+
+      document.title = `${t.nameDemo} - ${t.pageTitleSuffix}`;
     }
 
     function detectLanguage() {
@@ -865,20 +978,22 @@
       const working = isoDay >= 1 && isoDay <= 5 && nowMin >= 540 && nowMin < 1080; // 09:00–18:00
       statusEl.classList.toggle('is-open', working);
       statusEl.classList.toggle('is-closed', !working);
-      statusEl.innerText = working ? 'В момента е на работа' : 'Извън работно време';
+      const t = translations[activeLang];
+      statusEl.innerText = working ? t.hoursOpen : t.hoursClosed;
     }
 
     // Сподели профила (демо)
     async function shareProfile() {
       const url = window.location.href;
-      const title = 'Александър Петров — NFC Bulgaria';
+      const t = translations[activeLang];
+      const title = `${t.nameDemo} — NFC Bulgaria`;
       if (navigator.share) {
-        try { await navigator.share({ title, text: 'Александър Петров · АРХПРОЕКТ', url }); return; }
+        try { await navigator.share({ title, text: `${t.nameDemo} · ${t.companyDemo}`, url }); return; }
         catch (e) { if (e && e.name === 'AbortError') return; }
       }
       try {
         await navigator.clipboard.writeText(url);
-        showToast('Линкът е копиран! 🔗');
+        showToast(t.linkCopied);
       } catch (e) { showToast(url); }
     }
 

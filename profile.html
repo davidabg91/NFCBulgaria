@@ -760,12 +760,9 @@
       if (data) {
         currentProfile = data;
         
-        // Update DOM
-        document.getElementById('pageTitle').innerText = `${data.name} - Дигитална Визитка | NFC Bulgaria`;
-        document.getElementById('profileName').innerText = data.name;
-        document.getElementById('profileTitle').innerText = data.title || '';
-        document.getElementById('profileCompany').innerText = data.company || '';
-        
+        // Име / длъжност / фирма / заглавие — на активния език
+        applyProfileTexts();
+
         if (data.avatar_url) {
           document.getElementById('profileAvatar').src = data.avatar_url;
         }
@@ -795,8 +792,9 @@
 
         // Bio
         const bioEl = document.getElementById('profileBio');
-        if (data.bio && data.bio.trim() !== '') {
-          bioEl.innerText = data.bio;
+        const bioText = profileOverrides(data, activeLang).bio || data.bio;
+        if (bioText && bioText.trim() !== '') {
+          bioEl.innerText = bioText;
           bioEl.style.display = 'block';
         } else {
           bioEl.style.display = 'none';
@@ -883,8 +881,11 @@
       const url = OG_SHARE_URL
         ? `${OG_SHARE_URL}?id=${encodeURIComponent(profileId)}`
         : window.location.href;
-      const title = `${currentProfile.name || 'Дигитална визитка'} — NFC Bulgaria`;
-      const text = currentProfile.company ? `${currentProfile.name} · ${currentProfile.company}` : title;
+      const t = translations[activeLang];
+      const sName = shownProfile.name || currentProfile.name || '';
+      const sCompany = shownProfile.company || currentProfile.company || '';
+      const title = `${sName || t.digitalCard} — NFC Bulgaria`;
+      const text = sCompany ? `${sName} · ${sCompany}` : title;
       if (navigator.share) {
         try { await navigator.share({ title, text, url }); return; }
         catch (e) { if (e && e.name === 'AbortError') return; }
@@ -934,7 +935,7 @@
         }
 
         if (error) {
-          showToast(activeLang === 'bg' ? "Грешка при изпращане. Опитайте отново." : "Error sending contact. Please try again.");
+          showToast(translations[activeLang].sendError);
           return;
         }
 
@@ -959,13 +960,18 @@
           .catch(err => console.error("Error incrementing saves count:", err));
       }
 
-      const vcardData = 
+      // vCard-ът се сваля на езика, който посетителят вижда
+      const vName = shownProfile.name || currentProfile.name || '';
+      const vTitle = shownProfile.title || currentProfile.title || '';
+      const vCompany = shownProfile.company || currentProfile.company || '';
+
+      const vcardData =
 `BEGIN:VCARD
 VERSION:3.0
-N:${currentProfile.name};;;;
-FN:${currentProfile.name}
-ORG:${currentProfile.company}
-TITLE:${currentProfile.title}
+N:${vName};;;;
+FN:${vName}
+ORG:${vCompany}
+TITLE:${vTitle}
 TEL;TYPE=CELL:${currentProfile.phone}
 EMAIL;TYPE=PREF,INTERNET:${currentProfile.email}
 URL:${currentProfile.website}
@@ -974,7 +980,7 @@ END:VCARD`;
       const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `${currentProfile.name.replace(/\s+/g, '_')}.vcf`;
+      link.download = `${translit(vName).replace(/\s+/g, '_')}.vcf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1058,7 +1064,16 @@ END:VCARD`;
         inqEmail: "Вашият имейл (незадължително)",
         inqMessage: "Вашето запитване...",
         inquirySend: "Изпрати запитване",
-        inquirySuccess: "Запитването Ви е изпратено! ✅"
+        inquirySuccess: "Запитването Ви е изпратено! ✅",
+        profileLink: "Профил",
+        connect: "Свържи се",
+        websiteCompany: "Уебсайт на компанията",
+        findUsMap: "Намерете ни на картата",
+        pageTitleSuffix: "Дигитална Визитка | NFC Bulgaria",
+        digitalCard: "Дигитална визитка",
+        avatarAlt: "Профилна снимка",
+        shareAria: "Сподели профила",
+        sendError: "Грешка при изпращане. Опитайте отново."
       },
       en: {
         saveContact: "Save Contact",
@@ -1090,7 +1105,16 @@ END:VCARD`;
         inqEmail: "Your email (optional)",
         inqMessage: "Your inquiry...",
         inquirySend: "Send inquiry",
-        inquirySuccess: "Your inquiry has been sent! ✅"
+        inquirySuccess: "Your inquiry has been sent! ✅",
+        profileLink: "Profile",
+        connect: "Connect",
+        websiteCompany: "Company website",
+        findUsMap: "Find us on the map",
+        pageTitleSuffix: "Digital Business Card | NFC Bulgaria",
+        digitalCard: "Digital business card",
+        avatarAlt: "Profile photo",
+        shareAria: "Share profile",
+        sendError: "Error sending contact. Please try again."
       },
       de: {
         saveContact: "Kontakt speichern",
@@ -1122,7 +1146,16 @@ END:VCARD`;
         inqEmail: "Ihre E-Mail (optional)",
         inqMessage: "Ihre Anfrage...",
         inquirySend: "Anfrage senden",
-        inquirySuccess: "Ihre Anfrage wurde gesendet! ✅"
+        inquirySuccess: "Ihre Anfrage wurde gesendet! ✅",
+        profileLink: "Profil",
+        connect: "Kontakt aufnehmen",
+        websiteCompany: "Unternehmenswebseite",
+        findUsMap: "Finden Sie uns auf der Karte",
+        pageTitleSuffix: "Digitale Visitenkarte | NFC Bulgaria",
+        digitalCard: "Digitale Visitenkarte",
+        avatarAlt: "Profilfoto",
+        shareAria: "Profil teilen",
+        sendError: "Fehler beim Senden. Bitte versuchen Sie es erneut."
       },
       ro: {
         saveContact: "Salvare contact",
@@ -1154,9 +1187,155 @@ END:VCARD`;
         inqEmail: "Email-ul dvs. (opțional)",
         inqMessage: "Solicitarea dvs...",
         inquirySend: "Trimite solicitarea",
-        inquirySuccess: "Solicitarea dvs. a fost trimisă! ✅"
+        inquirySuccess: "Solicitarea dvs. a fost trimisă! ✅",
+        profileLink: "Profil",
+        connect: "Contactează",
+        websiteCompany: "Site-ul companiei",
+        findUsMap: "Găsiți-ne pe hartă",
+        pageTitleSuffix: "Carte de vizită digitală | NFC Bulgaria",
+        digitalCard: "Carte de vizită digitală",
+        avatarAlt: "Fotografie de profil",
+        shareAria: "Distribuie profilul",
+        sendError: "Eroare la trimitere. Vă rugăm încercați din nou."
       }
     };
+
+    // --- ЛОКАЛИЗАЦИЯ НА ДАННИТЕ ОТ БАЗАТА (име / длъжност / фирма) ---
+    // Три нива, в този ред:
+    //   1) profiles.i18n  → ръчен превод за конкретния човек (ако колоната я има)
+    //   2) речник TERMS/COMPANIES → готови преводи на често срещани длъжности
+    //   3) транслитерация на кирилицата (за имена и фирми)
+
+    const BG_LATIN = {
+      'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ж':'zh','з':'z','и':'i','й':'y',
+      'к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u',
+      'ф':'f','х':'h','ц':'ts','ч':'ch','ш':'sh','щ':'sht','ъ':'a','ь':'y','ю':'yu','я':'ya'
+    };
+
+    // Кирилица → латиница (Любомир Чернев Новаков → Lyubomir Chernev Novakov)
+    function translit(str) {
+      if (!str) return '';
+      return String(str).replace(/[Ѐ-ӿ]+/g, word => {
+        const allCaps = word.length > 1 && word === word.toUpperCase();
+        let out = '';
+        for (const ch of word) {
+          const low = ch.toLowerCase();
+          const m = BG_LATIN[low];
+          if (m === undefined) { out += ch; continue; }
+          if (ch === low) out += m;
+          else out += allCaps ? m.toUpperCase() : m.charAt(0).toUpperCase() + m.slice(1);
+        }
+        return out;
+      });
+    }
+
+    // Нормализира текст за търсене в речника (без кавички, малки букви)
+    function normKey(s) {
+      return String(s || '').toLowerCase()
+        .replace(/[„“”"'`«»]/g, '')
+        .replace(/\s+/g, ' ')
+        .replace(/[.,;:]+$/, '')
+        .trim();
+    }
+
+    // Речник на длъжности. Ключът е длъжността на български (нормализирана).
+    const TERMS = {
+      'изпълнителен директор':            { en:'Executive Director', de:'Geschäftsführer', ro:'Director executiv' },
+      'главен изпълнителен директор':     { en:'Chief Executive Officer', de:'Vorstandsvorsitzender', ro:'Director general executiv' },
+      'управител':                        { en:'Manager', de:'Geschäftsführer', ro:'Administrator' },
+      'собственик':                       { en:'Owner', de:'Inhaber', ro:'Proprietar' },
+      'търговски директор':               { en:'Commercial Director', de:'Vertriebsleiter', ro:'Director comercial' },
+      'търговски д/р местен пазар':       { en:'Commercial Director, Domestic Market', de:'Vertriebsleiter Inlandsmarkt', ro:'Director comercial, piața internă' },
+      'търговски директор местен пазар':  { en:'Commercial Director, Domestic Market', de:'Vertriebsleiter Inlandsmarkt', ro:'Director comercial, piața internă' },
+      'производствен директор и планиране':{ en:'Production and Planning Director', de:'Leiter Produktion und Planung', ro:'Director producție și planificare' },
+      'директор дирекция развойна дейност и иновации; длъжностно лице по защита на данните':
+        { en:'Director, R&D and Innovation; Data Protection Officer', de:'Direktor F&E und Innovation; Datenschutzbeauftragter', ro:'Director cercetare-dezvoltare și inovare; Responsabil cu protecția datelor' },
+      'мениджър развойна дейност, иновации и внедряване':
+        { en:'R&D, Innovation and Implementation Manager', de:'Manager F&E, Innovation und Umsetzung', ro:'Manager cercetare-dezvoltare, inovare și implementare' },
+      'главен инженер, предприятие':      { en:'Chief Engineer, Plant', de:'Chefingenieur, Werk', ro:'Inginer-șef, uzină' },
+      'главен инженер':                   { en:'Chief Engineer', de:'Chefingenieur', ro:'Inginer-șef' },
+      'мениджър продажби и маркетинг':    { en:'Sales and Marketing Manager', de:'Vertriebs- und Marketingmanager', ro:'Manager vânzări și marketing' },
+      'мениджър отдел износ':             { en:'Export Department Manager', de:'Leiter Exportabteilung', ro:'Manager departament export' },
+      'мениджър чр':                      { en:'HR Manager', de:'Personalleiter', ro:'Manager resurse umane' },
+      'главен счетоводител':              { en:'Chief Accountant', de:'Hauptbuchhalter', ro:'Contabil-șef' },
+      'началник на отдел кк':             { en:'Head of Quality Control Department', de:'Leiter Qualitätskontrolle', ro:'Șef departament control calitate' },
+      'н-к отдел процес контрол':         { en:'Head of Process Control Department', de:'Leiter Prozesskontrolle', ro:'Șef departament control proces' },
+      'началник отдел процес контрол':    { en:'Head of Process Control Department', de:'Leiter Prozesskontrolle', ro:'Șef departament control proces' },
+      'началник отдел доставки':          { en:'Head of Supply Department', de:'Leiter Einkauf', ro:'Șef departament aprovizionare' },
+      'началник отдел проектиране и лимитиране': { en:'Head of Design and Costing Department', de:'Leiter Konstruktion und Kalkulation', ro:'Șef departament proiectare și normare' },
+      'ръководител изпитвателна лаборатория': { en:'Head of Testing Laboratory', de:'Leiter Prüflabor', ro:'Șef laborator de încercări' },
+      'системен администратор':           { en:'System Administrator', de:'Systemadministrator', ro:'Administrator de sistem' },
+      'управител търговска база':         { en:'Trade Base Manager', de:'Leiter Handelsniederlassung', ro:'Manager bază comercială' },
+      'асистент':                         { en:'Assistant', de:'Assistent', ro:'Asistent' },
+      'офис мениджър':                    { en:'Office Manager', de:'Büroleiter', ro:'Manager de birou' },
+      'мениджър продажби':                { en:'Sales Manager', de:'Vertriebsmanager', ro:'Manager de vânzări' },
+      'маркетинг мениджър':               { en:'Marketing Manager', de:'Marketingmanager', ro:'Manager de marketing' },
+      'счетоводител':                     { en:'Accountant', de:'Buchhalter', ro:'Contabil' },
+      'юрист':                            { en:'Legal Counsel', de:'Justiziar', ro:'Consilier juridic' },
+      'инженер':                          { en:'Engineer', de:'Ingenieur', ro:'Inginer' },
+      'технолог':                         { en:'Process Engineer', de:'Verfahrenstechniker', ro:'Tehnolog' },
+      'главен архитект':                  { en:'Chief Architect', de:'Chefarchitekt', ro:'Arhitect-șef' },
+      'архитект':                         { en:'Architect', de:'Architekt', ro:'Arhitect' }
+    };
+
+    // Фирми с утвърдено име на латиница (иначе се транслитерира: Елкабел АД → Elkabel AD)
+    const COMPANIES = {
+      'архпроект': { en:'ARCHPROJECT', de:'ARCHPROJECT', ro:'ARCHPROJECT' }
+    };
+
+    // Ръчни преводи от базата: profiles.i18n = {"en":{"title":"...","company":"..."}, ...}
+    function profileOverrides(p, lang) {
+      let raw = p && p.i18n;
+      if (!raw) return {};
+      try { if (typeof raw === 'string') raw = JSON.parse(raw); } catch (e) { return {}; }
+      return (raw && raw[lang]) ? raw[lang] : {};
+    }
+
+    function translateTerm(txt, lang) {
+      if (!txt) return '';
+      if (lang === 'bg') return txt;
+      const hit = TERMS[normKey(txt)];
+      return (hit && hit[lang]) ? hit[lang] : txt;
+    }
+
+    function translateCompany(txt, lang) {
+      if (!txt) return '';
+      if (lang === 'bg') return txt;
+      const hit = COMPANIES[normKey(txt)];
+      if (hit && hit[lang]) return hit[lang];
+      return translit(txt);
+    }
+
+    // Версията на профила, показана в момента (ползва се и за vCard / споделяне)
+    let shownProfile = { name: '', title: '', company: '' };
+
+    // Прерисува име/длъжност/фирма/заглавие на страницата на активния език
+    function applyProfileTexts() {
+      const t = translations[activeLang];
+      const p = currentProfile || {};
+      const ov = profileOverrides(p, activeLang);
+
+      const name    = ov.name    || (activeLang === 'bg' ? (p.name || '') : translit(p.name));
+      const title   = ov.title   || translateTerm(p.title, activeLang);
+      const company = ov.company || translateCompany(p.company, activeLang);
+      const bio     = ov.bio     || p.bio || '';
+
+      shownProfile = { name, title, company };
+
+      const nameEl = document.getElementById('profileName');
+      if (nameEl && name) nameEl.innerText = name;
+
+      const titleEl = document.getElementById('profileTitle');
+      if (titleEl) titleEl.innerText = title || '';
+
+      const companyEl = document.getElementById('profileCompany');
+      if (companyEl) companyEl.innerText = company || '';
+
+      const bioEl = document.getElementById('profileBio');
+      if (bioEl && bio) bioEl.innerText = bio;
+
+      document.title = name ? `${name} - ${t.pageTitleSuffix}` : t.pageTitleSuffix;
+    }
 
     function setLanguage(lang) {
       if (!translations[lang]) return;
@@ -1200,7 +1379,28 @@ END:VCARD`;
       if (instagramLabel) instagramLabel.innerText = t.instagram;
 
       const websiteLabel = document.getElementById('websiteLabel');
-      if (websiteLabel) websiteLabel.innerText = t.website;
+      if (websiteLabel) websiteLabel.innerText = t.websiteCompany;
+
+      // Стойности под иконите (бяха твърдо на български)
+      ['linkedinVal', 'facebookVal', 'instagramVal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = t.profileLink;
+      });
+      ['viberVal', 'whatsappVal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = t.connect;
+      });
+
+      const mapsLabel = document.getElementById('googleMapsLabel');
+      if (mapsLabel) mapsLabel.innerText = t.findUsMap;
+
+      const avatarImg = document.getElementById('profileAvatar');
+      if (avatarImg) avatarImg.alt = t.avatarAlt;
+
+      const shareBtnEl = document.getElementById('shareBtn');
+      if (shareBtnEl) shareBtnEl.setAttribute('aria-label', t.shareAria);
+
+      document.documentElement.lang = lang;
 
       const leadTitle = document.getElementById('leadTitle');
       if (leadTitle) leadTitle.innerText = t.sendLeads;
@@ -1234,15 +1434,8 @@ END:VCARD`;
         brandLink.innerHTML = `${t.createYours.split('NFC Bulgaria')[0]} <div class="logo-mini"></div> <span>NFC Bulgaria</span>`;
       }
 
-      // Handle translation of demo data (Alexander Petrov)
-      const profileName = document.getElementById('profileName');
-      if (profileName && (profileName.innerText === 'Александър Petrov' || profileName.innerText === 'Александър Петров' || profileName.innerText === 'Alexandar Petrov')) {
-        // translate title/company for demo profile
-        const titleEl = document.getElementById('profileTitle');
-        if (titleEl) titleEl.innerText = t.titleDemo;
-        const companyEl = document.getElementById('profileCompany');
-        if (companyEl) companyEl.innerText = t.companyDemo;
-      }
+      // Име, длъжност, фирма и заглавие на страницата
+      applyProfileTexts();
     }
 
     function detectLanguage() {
