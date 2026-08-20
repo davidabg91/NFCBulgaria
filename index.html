@@ -1833,15 +1833,16 @@ footer {
     }
     .clients-title {
       text-align: center;
-      /* Syne (шрифтът на заглавията) е зареден само в 700/800 и надписът
-         излизаше натежал. Space Grotesk има истинско леко тегло, което дава
-         по-елегантен ред и приятен контраст с едрите главни букви на h2.
-         По-едро и разредено, за да чете като заглавие, а не като дребен етикет. */
-      font-family: 'Space Grotesk', var(--font-heading);
+      /* Същото оформление като h1/h2/h3 в сайта (Syne 800, главни букви,
+         −0.02em), за да си прилича с останалите заглавия. Различава се само
+         по размера — това е надзаглавие на лентата, не секционно заглавие. */
+      font-family: var(--font-heading);
       font-size: 1.22rem;
-      font-weight: 400;
-      letter-spacing: 0.04em;
-      color: #d5dee9;
+      font-weight: 800;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      color: var(--text);
       margin-bottom: 1.7rem;
     }
     .clients-viewport {
