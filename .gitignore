@@ -22,3 +22,10 @@ package-lock.json
 # Build (If added later)
 dist/
 build/
+
+# Файлове с достъпи на клиенти — НЕ се качват (репото е публично).
+# Ако някой от тях наистина трябва да влезе в git: git add -f <файла>
+supabase/*-setup.sql
+supabase/*-accounts.sql
+*credentials*
+*-достъпи.*
