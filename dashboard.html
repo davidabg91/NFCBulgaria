@@ -1095,6 +1095,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
+    // Превод на текстове, които не минават през DOM (alert). Виж i18n.js.
+    function __t(s) { return (window.I18N && window.I18N.t) ? window.I18N.t(s) : s; }
+
     // Supabase Credentials
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
@@ -1427,7 +1430,7 @@
 
     function exportLeadsToExcel() {
       if (!currentLeads || currentLeads.length === 0) {
-        alert('Няма събрани контакти за сваляне.');
+        alert(__t('Няма събрани контакти за сваляне.'));
         return;
       }
       const rows = currentLeads.map(l => ({
@@ -1454,11 +1457,11 @@
 
       if (newPassword || confirmPassword) {
         if (newPassword !== confirmPassword) {
-          alert("Грешка: Паролите за потвърждение не съвпадат!");
+          alert(__t("Грешка: Паролите за потвърждение не съвпадат!"));
           return;
         }
         if (newPassword.length < 6) {
-          alert("Грешка: Новата парола трябва да бъде поне 6 символа!");
+          alert(__t("Грешка: Новата парола трябва да бъде поне 6 символа!"));
           return;
         }
       }
@@ -1491,9 +1494,9 @@
 
       if (!supabaseClient) {
         if (newPassword) {
-          alert("Паролата е променена успешно (демо режим)!\nПромените са запазени локално!");
+          alert(__t("Паролата е променена успешно (демо режим)!\nПромените са запазени локално!"));
         } else {
-          alert("Промените са запазени локално (демо режим)!");
+          alert(__t("Промените са запазени локално (демо режим)!"));
         }
         document.getElementById('newPasswordInput').value = '';
         document.getElementById('confirmPasswordInput').value = '';
@@ -1509,7 +1512,7 @@
         .eq('user_id', session.user.id);
 
       if (error) {
-        alert("Грешка при записване на профила: " + error.message);
+        alert(__t("Грешка при записване на профила: ") + error.message);
         return;
       }
 
@@ -1529,14 +1532,14 @@
           password: newPassword
         });
         if (pwdError) {
-          alert("Данните на профила са обновени, но възникна грешка при смяната на паролата: " + pwdError.message);
+          alert(__t("Данните на профила са обновени, но възникна грешка при смяната на паролата: ") + pwdError.message);
           return;
         }
-        alert("Профилът и паролата бяха обновени успешно!");
+        alert(__t("Профилът и паролата бяха обновени успешно!"));
         document.getElementById('newPasswordInput').value = '';
         document.getElementById('confirmPasswordInput').value = '';
       } else {
-        alert("Данните бяха обновени успешно!");
+        alert(__t("Данните бяха обновени успешно!"));
       }
       
       loadRealData(session.user.id);
@@ -1635,7 +1638,7 @@
       if (file) {
         // Limit raw file selection to 5MB (we will compress it anyway)
         if (file.size > 5 * 1024 * 1024) {
-          alert("Файлът е твърде голям! Моля, изберете снимка до 5MB.");
+          alert(__t("Файлът е твърде голям! Моля, изберете снимка до 5MB."));
           fileInput.value = '';
           return;
         }
@@ -1690,7 +1693,7 @@
       const file = e.target.files[0];
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
-          alert("Файлът е твърде голям! Моля, изберете снимка до 5MB.");
+          alert(__t("Файлът е твърде голям! Моля, изберете снимка до 5MB."));
           logoFileInput.value = '';
           return;
         }
@@ -2091,7 +2094,7 @@
           });
 
       if (error) {
-        alert("Грешка при извличане на контакти: " + error.message);
+        alert(__t("Грешка при извличане на контакти: ") + error.message);
         return;
       }
 
@@ -2214,5 +2217,8 @@
       document.getElementById('employeeLeadsDetailSection').scrollIntoView({ behavior: 'smooth' });
     }
   </script>
+  <!-- Превод BG / EN / RO -->
+  <script src="i18n-data.js"></script>
+  <script src="i18n.js"></script>
 </body>
 </html>

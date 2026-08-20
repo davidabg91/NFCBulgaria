@@ -906,6 +906,9 @@
   <!-- ChartJS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    // Превод на текстове, които не минават през DOM (alert). Виж i18n.js.
+    function __t(s) { return (window.I18N && window.I18N.t) ? window.I18N.t(s) : s; }
+
     // Animated counters
     function animateCount(id, target, suffix, duration) {
       const el = document.getElementById(id);
@@ -1091,5 +1094,8 @@
       }
     });
   </script>
+  <!-- Превод BG / EN / RO -->
+  <script src="i18n-data.js"></script>
+  <script src="i18n.js"></script>
 </body>
 </html>
