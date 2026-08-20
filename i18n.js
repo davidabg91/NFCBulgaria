@@ -196,7 +196,22 @@
       '.i18n-switch button:hover:not(.active){color:#fff;background:rgba(255,255,255,.08)}' +
       '.i18n-switch button.active{background:#00f2ff;color:#0b0f19;' +
       'box-shadow:0 0 10px rgba(0,242,255,.35)}' +
-      '@media print{.i18n-switch{display:none}}';
+      '@media print{.i18n-switch{display:none}}' +
+      // Английските и румънските думи са по-дълги от българските и една
+      // дума в заглавие (напр. "Funcționalități" = 462px при екран 375px)
+      // изкарваше страницата извън екрана. Пречупването се задейства САМО
+      // когато думата иначе не се събира, така че българският не се променя.
+      // hyphens:auto ползва <html lang>, който сменяме при всеки превод.
+      'h1,h2,h3,h4,h5,h6,.gradient-text{overflow-wrap:break-word;hyphens:auto}' +
+      // Мобилното меню е position:fixed и стои извън екрана (right:-100%).
+      // Такива елементи НЕ се клипват от body{overflow-x:hidden} — избягват го
+      // и разширяват документа. При по-дългите EN/RO етикети това изкарваше
+      // страницата настрани. Клипваме на ниво <html>.
+      // "clip" не създава скролиращ контейнер и затова НЕ чупи position:sticky
+      // (има такъв в dashboard.html и demo-dashboard.html); "hidden" е само
+      // резерва за браузъри без поддръжка на clip.
+      'html{overflow-x:hidden}' +
+      '@supports (overflow-x:clip){html{overflow-x:clip}}';
     document.head.appendChild(css);
   }
 
