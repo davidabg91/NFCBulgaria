@@ -1824,7 +1824,9 @@ footer {
   
     /* ---- Лента с клиентски лога (непрекъснато движение) ---------------- */
     .clients-strip {
-      padding: 2.2rem 0 0.5rem;
+      /* Долният отстъп следва ритъма на останалите секции (~64-80px), иначе
+         лентата опира в следващото заглавие. */
+      padding: 2.4rem 0 3.6rem;
       /* Лентата е по-широка от екрана по замисъл — клипваме тук, за да не
          връща хоризонталния скрол, който оправихме. */
       overflow: hidden;
@@ -1882,6 +1884,7 @@ footer {
       .clients-viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
     }
     @media (max-width: 600px) {
+      .clients-strip { padding: 1.8rem 0 2.6rem; }
       .client-logo { width: 138px; height: 70px; margin: 0 0.4rem; }
       .clients-track { animation-duration: 32s; }
     }
