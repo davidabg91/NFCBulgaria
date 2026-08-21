@@ -19,6 +19,9 @@
   <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Ранна връзка към базата и CDN-а: данните на визитката тръгват веднага -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://upjwsqfrblxzhyuxeumj.supabase.co" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -111,7 +114,8 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: #1f2937;
+      /* Неутрален силует, докато (или ако) профилът няма своя снимка */
+      background: #1f2937 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='19' r='7.5' fill='%234b5563'/%3E%3Cpath d='M9.5 42.5c0-8 6.5-12.5 14.5-12.5s14.5 4.5 14.5 12.5z' fill='%234b5563'/%3E%3C/svg%3E") center / 78% no-repeat;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -536,11 +540,97 @@
       color: var(--text-muted);
       font-size: 0.82rem;
     }
+
+    /* --- Състояния на визитката ---------------------------------------
+       Докато данните от базата не пристигнат, съдържанието е скрито.
+       Иначе посетителят вижда чужд профил, докато заявката се върне. */
+    .profile-container.is-loading .profile-header-utils,
+    .profile-container.is-loading .avatar-wrapper,
+    .profile-container.is-loading .profile-info,
+    .profile-container.is-loading .links-grid,
+    .profile-container.is-loading .lead-section,
+    .profile-container.is-loading .brand-footer,
+    .profile-container.is-error .profile-header-utils,
+    .profile-container.is-error .avatar-wrapper,
+    .profile-container.is-error .profile-info,
+    .profile-container.is-error .links-grid,
+    .profile-container.is-error .lead-section {
+      display: none !important;
+    }
+
+    .profile-loader {
+      display: none;
+      padding: 4.5rem 1.5rem;
+    }
+    .profile-container.is-loading .profile-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .profile-spinner {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      animation: profileSpin 0.8s linear infinite;
+    }
+    @keyframes profileSpin { to { transform: rotate(360deg); } }
+    .profile-loader-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      letter-spacing: 0.3px;
+    }
+
+    .profile-error {
+      display: none;
+      padding: 3.5rem 1.8rem;
+      text-align: center;
+    }
+    .profile-container.is-error .profile-error { display: block; }
+    .profile-error-icon {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+    .profile-error h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .profile-error p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-bottom: 1.4rem;
+    }
+    .profile-error a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
   </style>
 </head>
 <body>
 
-  <div class="profile-container">
+  <div class="profile-container is-loading" id="profileCard">
+
+    <!-- Зареждане: показва се, докато данните на визитката дойдат от базата -->
+    <div class="profile-loader">
+      <div class="profile-spinner"></div>
+      <div class="profile-loader-text" id="loaderText">Зареждане на визитката...</div>
+    </div>
+
+    <!-- Липсващ / невалиден профил -->
+    <div class="profile-error">
+      <svg class="profile-error-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <h2 id="profileErrorTitle">Визитката не е намерена</h2>
+      <p id="profileErrorText">Този профил не съществува или връзката е непълна. Проверете линка и опитайте отново.</p>
+      <a href="index.html">NFC Bulgaria &rarr;</a>
+    </div>
 
     <!-- Utilities Row (Language translation + Saves count) -->
     <!-- Utilities Row (Language translation) -->
@@ -560,15 +650,15 @@
     <!-- Profile Head -->
     <div class="avatar-wrapper">
       <div class="avatar">
-        <img id="profileAvatar" src="assets/avatar-alexandar.webp" alt="Профилна снимка">
+        <img id="profileAvatar" alt="Профилна снимка" style="display: none;">
       </div>
     </div>
 
     <div class="profile-info">
-      <h1 class="profile-name" id="profileName">Александър Петров</h1>
-      <div class="profile-title" id="profileTitle">Главен Архитект</div>
+      <h1 class="profile-name" id="profileName"></h1>
+      <div class="profile-title" id="profileTitle"></div>
       <div class="profile-company">
-        <span id="profileCompany">АРХПРОЕКТ</span>
+        <span id="profileCompany"></span>
       </div>
 
       <!-- Working Hours (optional) -->
@@ -590,23 +680,23 @@
     <!-- Quick Links Grid -->
     <div class="links-grid">
       
-      <a href="tel:+359881234567" class="link-item" id="phoneLink">
+      <a href="#" class="link-item" id="phoneLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
         </div>
         <div class="link-label" id="phoneLabel">Телефон</div>
-        <div class="link-value" id="phoneVal">+359 88 123 4567</div>
+        <div class="link-value" id="phoneVal"></div>
       </a>
 
-      <a href="mailto:a.petrov@arhproekt.bg" class="link-item" id="emailLink">
+      <a href="#" class="link-item" id="emailLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
         </div>
         <div class="link-label" id="emailLabel">Имейл</div>
-        <div class="link-value" id="emailVal">a.petrov@arhproekt.bg</div>
+        <div class="link-value" id="emailVal"></div>
       </a>
 
-      <a href="https://viber.click/+359881234567" target="_blank" class="link-item" id="viberLink">
+      <a href="#" target="_blank" class="link-item" id="viberLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         </div>
@@ -622,7 +712,7 @@
         <div class="link-value" id="whatsappVal">Свържи се</div>
       </a>
 
-      <a href="https://linkedin.com" target="_blank" class="link-item" id="linkedinLink">
+      <a href="#" target="_blank" class="link-item" id="linkedinLink">
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
         </div>
@@ -646,13 +736,13 @@
         <div class="link-value" id="instagramVal">Профил</div>
       </a>
 
-      <a href="https://nfcbulgaria.com" target="_blank" class="link-item link-item-website" style="grid-column: span 2;" id="websiteLink">
+      <a href="#" target="_blank" class="link-item link-item-website" style="grid-column: span 2;" id="websiteLink">
         <div class="website-logo-bg" id="websiteLogoBg"></div>
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         </div>
         <div class="link-label" id="websiteLabel">Уебсайт на Компанията</div>
-        <div class="link-value" id="websiteVal">www.arhproekt.bg</div>
+        <div class="link-value" id="websiteVal"></div>
       </a>
 
       <a href="#" target="_blank" class="link-item" style="grid-column: span 2;" id="googleMapsLink">
@@ -715,39 +805,52 @@
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
-    // Live variables updated by DB or defaults
-    let profileId = "alexandar-petrov";
-    let currentProfile = {
-      name: "Александър Петров",
-      title: "Главен Архитект",
-      company: "АРХПРОЕКТ",
-      phone: "+359881234567",
-      email: "a.petrov@arhproekt.bg",
-      viber: "+359881234567",
-      linkedin: "https://linkedin.com",
-      website: "https://nfcbulgaria.com"
-    };
+    // Визитката се пълни единствено от базата — няма подразбиращ се профил,
+    // за да не се мерне чуждо име, докато заявката се върне.
+    let profileId = "";
+    let currentProfile = {};
+    let profileLoaded = false;
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Read URL Query for Profile ID, e.g. profile.html?id=alexandar-petrov
+      // Read URL Query for Profile ID, e.g. profile.html?id=ivan-petrov
       const params = new URLSearchParams(window.location.search);
-      const queryId = params.get('id');
-      
-      if (queryId) {
-        profileId = queryId;
-      }
+      const queryId = (params.get('id') || '').trim();
 
       // Auto-detect browser language and apply it
       const initialLang = detectLanguage();
       setLanguage(initialLang);
 
-      if (supabaseClient) {
-        fetchProfileData();
-        logScan();
-      } else {
-        console.log("Supabase not configured. Operating in demo mode.");
+      // Без id няма коя визитка да покажем — по-добре ясно съобщение,
+      // отколкото чужд профил.
+      if (!queryId || !supabaseClient) {
+        showProfileError();
+        return;
       }
+
+      profileId = queryId;
+      fetchProfileData();
     });
+
+    // Показва визитката чак когато данните ѝ са налични
+    function showProfileCard() {
+      const card = document.getElementById('profileCard');
+      if (card) card.classList.remove('is-loading', 'is-error');
+    }
+
+    // Празен / несъществуващ профил: съобщение вместо чужди данни
+    function showProfileError() {
+      const card = document.getElementById('profileCard');
+      if (card) {
+        card.classList.remove('is-loading');
+        card.classList.add('is-error');
+      }
+      const t = translations[activeLang] || translations.bg;
+      const titleEl = document.getElementById('profileErrorTitle');
+      const textEl = document.getElementById('profileErrorText');
+      if (titleEl) titleEl.innerText = t.notFoundTitle;
+      if (textEl) textEl.innerText = t.notFoundText;
+      document.title = t.pageTitleSuffix;
+    }
 
     // 1. Fetch Profile Details
     async function fetchProfileData() {
@@ -755,69 +858,86 @@
         .from('profiles')
         .select('*')
         .eq('id', profileId)
-        .single();
+        .maybeSingle();
 
-      if (data) {
-        currentProfile = data;
-        
-        // Име / длъжност / фирма / заглавие — на активния език
-        applyProfileTexts();
-
-        if (data.avatar_url) {
-          document.getElementById('profileAvatar').src = data.avatar_url;
-        }
-
-        // Links values setting
-        document.getElementById('phoneLink').href = `tel:${data.phone || ''}`;
-        document.getElementById('phoneVal').innerText = data.phone || '';
-
-        document.getElementById('emailLink').href = `mailto:${data.email || ''}`;
-        document.getElementById('emailVal').innerText = data.email || '';
-
-        document.getElementById('viberLink').href = data.viber ? `https://viber.click/${data.viber.replace('+', '')}` : '#';
-        document.getElementById('whatsappLink').href = data.whatsapp ? `https://wa.me/${normalizeWhatsApp(data.whatsapp)}` : '#';
-        document.getElementById('linkedinLink').href = formatExternalUrl(data.linkedin);
-        document.getElementById('facebookLink').href = formatExternalUrl(data.facebook);
-        document.getElementById('instagramLink').href = formatExternalUrl(data.instagram);
-        document.getElementById('websiteLink').href = formatExternalUrl(data.website);
-        document.getElementById('websiteVal').innerText = data.website ? data.website.replace('https://','').replace('http://','').replace('www.','') : '';
-
-        // Company logo as background on website button
-        if (data.company_logo) {
-          document.getElementById('websiteLogoBg').style.backgroundImage = `url('${data.company_logo}')`;
-        }
-
-        // Google Maps link
-        document.getElementById('googleMapsLink').href = formatExternalUrl(data.google_maps);
-
-        // Bio
-        const bioEl = document.getElementById('profileBio');
-        const bioText = profileOverrides(data, activeLang).bio || data.bio;
-        if (bioText && bioText.trim() !== '') {
-          bioEl.innerText = bioText;
-          bioEl.style.display = 'block';
-        } else {
-          bioEl.style.display = 'none';
-        }
-
-        // Dynamic visibility - only show links that are filled in!
-        toggleLinkVisibility('phoneLink', data.phone);
-        toggleLinkVisibility('emailLink', data.email);
-        toggleLinkVisibility('viberLink', data.viber);
-        toggleLinkVisibility('whatsappLink', data.whatsapp);
-        toggleLinkVisibility('linkedinLink', data.linkedin);
-        toggleLinkVisibility('facebookLink', data.facebook);
-        toggleLinkVisibility('instagramLink', data.instagram);
-        toggleLinkVisibility('websiteLink', data.website);
-        toggleLinkVisibility('googleMapsLink', data.google_maps);
-
-        // Share button (only if owner enabled it)
-        const shareBtn = document.getElementById('shareBtn');
-        if (shareBtn) shareBtn.style.display = data.share_enabled ? 'inline-flex' : 'none';
-
-        // Working hours (only if owner enabled it)
-        renderWorkingHours(data.hours_enabled, data.working_hours);
+      if (error || !data) {
+        console.error("Profile not found:", profileId, error);
+        showProfileError();
+        return;
       }
+
+      currentProfile = data;
+      profileLoaded = true;
+
+      // Име / длъжност / фирма / заглавие — на активния език
+      applyProfileTexts();
+
+      const avatarEl = document.getElementById('profileAvatar');
+      if (data.avatar_url) {
+        avatarEl.src = data.avatar_url;
+        avatarEl.style.display = 'block';
+      } else {
+        // Без своя снимка остава неутралният силует, а не чужда снимка
+        avatarEl.removeAttribute('src');
+        avatarEl.style.display = 'none';
+      }
+
+      // Links values setting
+      document.getElementById('phoneLink').href = `tel:${data.phone || ''}`;
+      document.getElementById('phoneVal').innerText = data.phone || '';
+
+      document.getElementById('emailLink').href = `mailto:${data.email || ''}`;
+      document.getElementById('emailVal').innerText = data.email || '';
+
+      document.getElementById('viberLink').href = data.viber ? `https://viber.click/${data.viber.replace('+', '')}` : '#';
+      document.getElementById('whatsappLink').href = data.whatsapp ? `https://wa.me/${normalizeWhatsApp(data.whatsapp)}` : '#';
+      document.getElementById('linkedinLink').href = formatExternalUrl(data.linkedin);
+      document.getElementById('facebookLink').href = formatExternalUrl(data.facebook);
+      document.getElementById('instagramLink').href = formatExternalUrl(data.instagram);
+      document.getElementById('websiteLink').href = formatExternalUrl(data.website);
+      document.getElementById('websiteVal').innerText = data.website ? data.website.replace('https://','').replace('http://','').replace('www.','') : '';
+
+      // Company logo as background on website button
+      if (data.company_logo) {
+        document.getElementById('websiteLogoBg').style.backgroundImage = `url('${data.company_logo}')`;
+      }
+
+      // Google Maps link
+      document.getElementById('googleMapsLink').href = formatExternalUrl(data.google_maps);
+
+      // Bio
+      const bioEl = document.getElementById('profileBio');
+      const bioText = profileOverrides(data, activeLang).bio || data.bio;
+      if (bioText && bioText.trim() !== '') {
+        bioEl.innerText = bioText;
+        bioEl.style.display = 'block';
+      } else {
+        bioEl.style.display = 'none';
+      }
+
+      // Dynamic visibility - only show links that are filled in!
+      toggleLinkVisibility('phoneLink', data.phone);
+      toggleLinkVisibility('emailLink', data.email);
+      toggleLinkVisibility('viberLink', data.viber);
+      toggleLinkVisibility('whatsappLink', data.whatsapp);
+      toggleLinkVisibility('linkedinLink', data.linkedin);
+      toggleLinkVisibility('facebookLink', data.facebook);
+      toggleLinkVisibility('instagramLink', data.instagram);
+      toggleLinkVisibility('websiteLink', data.website);
+      toggleLinkVisibility('googleMapsLink', data.google_maps);
+
+      // Share button (only if owner enabled it)
+      const shareBtn = document.getElementById('shareBtn');
+      if (shareBtn) shareBtn.style.display = data.share_enabled ? 'inline-flex' : 'none';
+
+      // Working hours (only if owner enabled it)
+      renderWorkingHours(data.hours_enabled, data.working_hours);
+
+      // Готово — чак сега визитката става видима
+      showProfileCard();
+
+      // Сканирането се отчита само за реално съществуващ профил
+      logScan();
     }
 
     // Render working hours + live status
@@ -877,6 +997,7 @@
 
     // Share profile (native share with clipboard fallback)
     async function shareProfile() {
+      if (!profileLoaded) return;
       // Споделяме OG линка (богат preview), с fallback към директния адрес
       const url = OG_SHARE_URL
         ? `${OG_SHARE_URL}?id=${encodeURIComponent(profileId)}`
@@ -908,6 +1029,7 @@
     // 3. Submit Lead form (name + phone, с по избор имейл и запитване)
     async function submitLead(e) {
       e.preventDefault();
+      if (!profileLoaded) return;
 
       const clientName = document.getElementById('clientName').value;
       const clientPhone = document.getElementById('clientPhone').value;
@@ -951,6 +1073,7 @@
 
     // Download VCard
     function downloadVCard() {
+      if (!profileLoaded) return;
       // Increment save counter in Supabase
       if (supabaseClient && profileId) {
         supabaseClient.rpc('increment_saves', { profile_id: profileId })
@@ -1052,8 +1175,6 @@ END:VCARD`;
         createYours: "Създай своята с NFC Bulgaria",
         leadSuccess: "Контакта Ви е изпратен успешно! 👍",
         contactDownloaded: "Контакта е изтеглен!",
-        titleDemo: "Главен Архитект",
-        companyDemo: "АРХПРОЕКТ",
         share: "Сподели",
         linkCopied: "Линкът е копиран! 🔗",
         hoursOpen: "В момента е на работа",
@@ -1073,7 +1194,10 @@ END:VCARD`;
         digitalCard: "Дигитална визитка",
         avatarAlt: "Профилна снимка",
         shareAria: "Сподели профила",
-        sendError: "Грешка при изпращане. Опитайте отново."
+        sendError: "Грешка при изпращане. Опитайте отново.",
+        loadingCard: "Зареждане на визитката...",
+        notFoundTitle: "Визитката не е намерена",
+        notFoundText: "Този профил не съществува или връзката е непълна. Проверете линка и опитайте отново."
       },
       en: {
         saveContact: "Save Contact",
@@ -1093,8 +1217,6 @@ END:VCARD`;
         createYours: "Create yours with NFC Bulgaria",
         leadSuccess: "Your contact has been sent successfully! 👍",
         contactDownloaded: "Contact downloaded!",
-        titleDemo: "Chief Architect",
-        companyDemo: "ARCHPROJECT",
         share: "Share",
         linkCopied: "Link copied! 🔗",
         hoursOpen: "Currently at work",
@@ -1114,7 +1236,10 @@ END:VCARD`;
         digitalCard: "Digital business card",
         avatarAlt: "Profile photo",
         shareAria: "Share profile",
-        sendError: "Error sending contact. Please try again."
+        sendError: "Error sending contact. Please try again.",
+        loadingCard: "Loading card...",
+        notFoundTitle: "Card not found",
+        notFoundText: "This profile does not exist or the link is incomplete. Please check the link and try again."
       },
       de: {
         saveContact: "Kontakt speichern",
@@ -1134,8 +1259,6 @@ END:VCARD`;
         createYours: "Erstellen Sie Ihre mit NFC Bulgaria",
         leadSuccess: "Ihr Kontakt wurde erfolgreich gesendet! 👍",
         contactDownloaded: "Kontakt heruntergeladen!",
-        titleDemo: "Chefarchitekt",
-        companyDemo: "ARCHPROJECT",
         share: "Teilen",
         linkCopied: "Link kopiert! 🔗",
         hoursOpen: "Derzeit im Dienst",
@@ -1155,7 +1278,10 @@ END:VCARD`;
         digitalCard: "Digitale Visitenkarte",
         avatarAlt: "Profilfoto",
         shareAria: "Profil teilen",
-        sendError: "Fehler beim Senden. Bitte versuchen Sie es erneut."
+        sendError: "Fehler beim Senden. Bitte versuchen Sie es erneut.",
+        loadingCard: "Visitenkarte wird geladen...",
+        notFoundTitle: "Visitenkarte nicht gefunden",
+        notFoundText: "Dieses Profil existiert nicht oder der Link ist unvollständig. Bitte prüfen Sie den Link und versuchen Sie es erneut."
       },
       ro: {
         saveContact: "Salvare contact",
@@ -1175,8 +1301,6 @@ END:VCARD`;
         createYours: "Creează-ți propria cu NFC Bulgaria",
         leadSuccess: "Contactul dvs. a fost trimis cu succes! 👍",
         contactDownloaded: "Contact descărcat!",
-        titleDemo: "Arhitect Şef",
-        companyDemo: "ARCHPROJECT",
         share: "Distribuie",
         linkCopied: "Link copiat! 🔗",
         hoursOpen: "În prezent la lucru",
@@ -1196,7 +1320,10 @@ END:VCARD`;
         digitalCard: "Carte de vizită digitală",
         avatarAlt: "Fotografie de profil",
         shareAria: "Distribuie profilul",
-        sendError: "Eroare la trimitere. Vă rugăm încercați din nou."
+        sendError: "Eroare la trimitere. Vă rugăm încercați din nou.",
+        loadingCard: "Se încarcă cartea de vizită...",
+        notFoundTitle: "Cartea de vizită nu a fost găsită",
+        notFoundText: "Acest profil nu există sau linkul este incomplet. Verificați linkul și încercați din nou."
       }
     };
 
@@ -1311,6 +1438,7 @@ END:VCARD`;
 
     // Прерисува име/длъжност/фирма/заглавие на страницата на активния език
     function applyProfileTexts() {
+      if (!profileLoaded) return;
       const t = translations[activeLang];
       const p = currentProfile || {};
       const ov = profileOverrides(p, activeLang);
@@ -1396,6 +1524,9 @@ END:VCARD`;
 
       const avatarImg = document.getElementById('profileAvatar');
       if (avatarImg) avatarImg.alt = t.avatarAlt;
+
+      const loaderText = document.getElementById('loaderText');
+      if (loaderText) loaderText.innerText = t.loadingCard;
 
       const shareBtnEl = document.getElementById('shareBtn');
       if (shareBtnEl) shareBtnEl.setAttribute('aria-label', t.shareAria);
