@@ -46,6 +46,12 @@ create table if not exists public.video_invites (
   sponsors_note  text,                              -- редът над логата на партньорите
   sponsors_url   text,                              -- лентата с логата (една картинка)
 
+  -- Разширена реалност (по избор): снимката от лицето на поканата оживява
+  -- през камерата. Изисква компилиран маркер (.mind) от същата снимка.
+  ar_enabled     boolean not null default false,
+  ar_target_url  text,                              -- компилираният маркер (.mind)
+  ar_image_url   text,                              -- същата снимка като картинка (за пропорцията и подсказката)
+
   -- Управление
   published      boolean not null default true,
   views          integer not null default 0,
@@ -73,7 +79,10 @@ alter table public.video_invites
   add column if not exists mode          text not null default 'page',
   add column if not exists bilingual     boolean not null default false,
   add column if not exists sponsors_note text,
-  add column if not exists sponsors_url  text;
+  add column if not exists sponsors_url  text,
+  add column if not exists ar_enabled    boolean not null default false,
+  add column if not exists ar_target_url text,
+  add column if not exists ar_image_url  text;
 
 -- ---------------------------------------------------------------------
 -- Лог на отварянията — за отчет към клиента ("колко пъти е сканирана")
@@ -128,6 +137,9 @@ grant select on public.video_invites to anon, authenticated;
 --   site      сайтът на организатора
 --   share     „Сподели"
 --   skip      прескочи клипа (кино режим)
+--   ar_open   отвори AR версията
+--   ar_found  камерата разпозна поканата
+--   ar_play   видеото тръгна върху поканата
 --
 -- Старата версия с два параметъра отпада, за да няма две функции с
 -- едно име — PostgREST се обърква коя да извика.
@@ -145,7 +157,8 @@ set search_path = public
 as $$
 begin
   if p_event not in ('open', 'play', 'sound', 'complete',
-                     'calendar', 'map', 'site', 'share', 'skip') then
+                     'calendar', 'map', 'site', 'share', 'skip',
+                     'ar_open', 'ar_found', 'ar_play') then
     return;
   end if;
 

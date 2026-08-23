@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>Оживете поканата | NFC Bulgaria</title>
+  <meta name="robots" content="noindex">
+
+  <link rel="icon" type="image/webp" href="assets/favicon.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://upjwsqfrblxzhyuxeumj.supabase.co" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root { --accent: #00aeef; --ink: #ffffff; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: #000;
+      color: var(--ink);
+      font-family: 'Sofia Sans', 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Камерата и триизмерната сцена живеят тук */
+    #ar { position: fixed; inset: 0; }
+    #ar video, #ar canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; object-fit: cover; }
+
+    .layer {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1.2rem;
+      padding: calc(1.5rem + env(safe-area-inset-top)) 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+      text-align: center;
+      z-index: 10;
+    }
+    .layer[hidden] { display: none; }
+    .layer.solid { background: #000; }
+    .layer.scrim { background: linear-gradient(180deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.72) 100%); }
+
+    h1 { font-weight: 900; font-size: clamp(1.5rem, 6.5vw, 2.1rem); line-height: 1.08; text-transform: uppercase; }
+    h1 .en { color: var(--accent); display: block; }
+    p { font-weight: 300; line-height: 1.6; font-size: clamp(.95rem, 3.6vw, 1.05rem); max-width: 26rem; }
+    p .en { display: block; color: rgba(255,255,255,.6); margin-top: .35rem; font-size: .88em; }
+
+    .thumb {
+      width: min(74vw, 20rem);
+      border: 2px solid rgba(255,255,255,.35);
+      border-radius: 4px;
+      display: block;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .95rem 1.8rem;
+      border: 0; border-radius: 999px;
+      background: var(--accent); color: #fff;
+      font: inherit; font-size: 1rem; font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 0 0 8px rgba(0, 174, 239, .18);
+    }
+    .btn.ghost {
+      background: transparent; color: rgba(255,255,255,.75);
+      border: 1px solid rgba(255,255,255,.3);
+      box-shadow: none; font-weight: 400; font-size: .9rem;
+      padding: .7rem 1.3rem;
+    }
+    .btn[hidden] { display: none; }
+
+    /* Рамка за насочване */
+    .frame {
+      width: min(78vw, 22rem);
+      aspect-ratio: 2.28 / 1;
+      border-radius: 3px;
+      position: relative;
+    }
+    .frame i {
+      position: absolute; width: 26px; height: 26px;
+      border: 3px solid var(--accent);
+    }
+    .frame i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+    .frame i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+    .frame i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+    .frame i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+    .frame::after {
+      content: ''; position: absolute; left: 6%; right: 6%; height: 2px;
+      background: var(--accent); opacity: .85;
+      animation: sweep 2.6s ease-in-out infinite;
+    }
+    @keyframes sweep { 0%, 100% { top: 8%; } 50% { top: 90%; } }
+
+    /* Долна лента, докато видеото върви */
+    .bar {
+      position: fixed; left: 0; right: 0;
+      bottom: calc(1rem + env(safe-area-inset-bottom));
+      display: flex; justify-content: center; gap: .6rem;
+      padding: 0 1rem;
+      z-index: 12;
+    }
+    .bar[hidden] { display: none; }
+
+    .spinner {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.2); border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .tiny { font-size: .78rem; color: rgba(255,255,255,.45); font-weight: 300; }
+  </style>
+</head>
+<body>
+  <div id="ar"></div>
+
+  <!-- 1. Зареждане -->
+  <div class="layer solid" id="stepLoading">
+    <div class="spinner"></div>
+    <p class="tiny" id="loadingText">Подготвяме камерата…</p>
+  </div>
+
+  <!-- 2. Покана към действие (тук се дава и разрешението за камера) -->
+  <div class="layer solid" id="stepIntro" hidden>
+    <h1 id="introTitle">Оживете поканата<span class="en">Bring the invitation to life</span></h1>
+    <img class="thumb" id="thumb" alt="" hidden>
+    <p>
+      Насочете камерата към снимката върху поканата и тя ще се раздвижи.
+      <span class="en">Point the camera at the picture on the invitation and it will come alive.</span>
+    </p>
+    <button class="btn" id="startBtn">Разреши камерата</button>
+    <a class="btn ghost" id="plainLink">Гледай без камера</a>
+  </div>
+
+  <!-- 3. Търсене на поканата -->
+  <div class="layer scrim" id="stepScan" hidden>
+    <div class="frame"><i></i><i></i><i></i><i></i></div>
+    <p>
+      Задръжте поканата в кадър
+      <span class="en">Hold the invitation in frame</span>
+    </p>
+  </div>
+
+  <!-- 4. Грешка -->
+  <div class="layer solid" id="stepError" hidden>
+    <h1 id="errTitle">Камерата не е достъпна</h1>
+    <p id="errText">Може да сте отказали достъп или устройството да не поддържа тази функция. Поканата се гледа и без камера.</p>
+    <a class="btn" id="errLink">Отвори поканата</a>
+  </div>
+
+  <div class="bar" id="bar" hidden>
+    <button class="btn ghost" id="soundBtn" hidden>🔇 Докоснете за звук</button>
+    <a class="btn ghost" id="exitLink">Към поканата</a>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const $ = id => document.getElementById(id);
+    const inviteId = (new URLSearchParams(location.search).get('id') || '').trim();
+    const plainUrl = 'pokana.html?id=' + encodeURIComponent(inviteId);
+
+    let invite = null;
+    let video = null;
+    let soundOn = false;
+    let foundLogged = false;
+
+    // ---------------------------------------------------------------
+    // Помощни
+    // ---------------------------------------------------------------
+    function step(id) {
+      ['stepLoading', 'stepIntro', 'stepScan', 'stepError'].forEach(s => { $(s).hidden = s !== id; });
+    }
+
+    let platformCache = null;
+    function platform() {
+      if (platformCache) return platformCache;
+      const ua = navigator.userAgent || '';
+      platformCache = /iPhone|iPad|iPod/i.test(ua) ? 'ios'
+                    : /Android/i.test(ua)          ? 'android'
+                    : /Macintosh|Windows|Linux|CrOS/i.test(ua) ? 'desktop' : 'other';
+      return platformCache;
+    }
+
+    function logEvent(event) {
+      if (!inviteId) return;
+      db.rpc('log_invite_view', { p_invite: inviteId, p_event: event, p_platform: platform() })
+        .then(() => {}, () => {});
+    }
+
+    function fail(title, text) {
+      if (title) $('errTitle').textContent = title;
+      if (text)  $('errText').textContent = text;
+      step('stepError');
+      $('bar').hidden = true;
+    }
+
+    // ---------------------------------------------------------------
+    // Зареждане на поканата
+    // ---------------------------------------------------------------
+    (async function init() {
+      $('plainLink').href = plainUrl;
+      $('errLink').href   = plainUrl;
+      $('exitLink').href  = plainUrl;
+
+      if (!inviteId) return fail('Липсва адрес на покана', 'Линкът е непълен.');
+
+      const { data, error } = await db
+        .from('video_invites')
+        .select('*')
+        .eq('id', inviteId)
+        .eq('published', true)
+        .maybeSingle();
+
+      if (error || !data) return fail('Поканата не е намерена', 'Проверете адреса или се свържете с организатора.');
+
+      invite = data;
+      if (invite.accent) document.documentElement.style.setProperty('--accent', invite.accent);
+      document.title = (invite.title || 'Покана') + ' | NFC Bulgaria';
+
+      if (!invite.ar_enabled || !invite.ar_target_url) {
+        return fail('Тази покана няма AR версия', 'Отворете я по обичайния начин.');
+      }
+
+      if (invite.ar_image_url) {
+        $('thumb').src = invite.ar_image_url;
+        $('thumb').hidden = false;
+      }
+
+      // Камерата иска сигурна връзка
+      if (!window.isSecureContext) {
+        return fail('Нужна е защитена връзка', 'Отворете страницата през https, за да се използва камерата.');
+      }
+
+      step('stepIntro');
+      logEvent('ar_open');
+    })();
+
+    // ---------------------------------------------------------------
+    // Стартиране — тук е и жестът, който отключва звука
+    // ---------------------------------------------------------------
+    $('startBtn').addEventListener('click', async () => {
+      step('stepLoading');
+      $('loadingText').textContent = 'Зареждаме…';
+
+      video = document.createElement('video');
+      video.src = invite.video_url;
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.preload = 'auto';
+      video.loop = false;
+
+      // Отключване: браузърите пускат видео със звук само след докосване.
+      // Пускаме и веднага спираме, докато жестът още е „пресен".
+      soundOn = await unlock(video);
+
+      try {
+        await startAR();
+      } catch (e) {
+        console.error('AR не тръгна:', e);
+        fail(null, (e && e.name === 'NotAllowedError')
+          ? 'Достъпът до камерата е отказан. Поканата се гледа и без камера.'
+          : 'Устройството не поддържа тази функция или камерата е заета. Поканата се гледа и без камера.');
+      }
+    });
+
+    async function unlock(v) {
+      try { v.muted = false; await v.play(); v.pause(); v.currentTime = 0; return true; }
+      catch (e) {
+        try { v.muted = true; await v.play(); v.pause(); v.currentTime = 0; } catch (e2) {}
+        return false;
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // Разширената реалност
+    // ---------------------------------------------------------------
+    async function startAR() {
+      const mindar = new MindARThree({
+        container: $('ar'),
+        imageTargetSrc: invite.ar_target_url,
+        uiLoading: 'no', uiScanning: 'no', uiError: 'no',
+        filterMinCF: 0.0001,   // по-малко трепкане при неподвижна ръка
+        filterBeta: 0.005
+      });
+
+      const { renderer, scene, camera } = mindar;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      const texture = new THREE.VideoTexture(video);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+
+      // Маркерът е лентата със снимката от лицето на поканата — по-широка
+      // от кадъра на видеото. Затова видеото се изрязва централно, точно
+      // както е изрязана и снимката за печат: движението застава върху
+      // отпечатаното, без да излиза извън него.
+      const markerAspect = await imageAspect(invite.ar_image_url) || 2.28;
+      await videoReady(video);
+      const videoAspect = (video.videoWidth && video.videoHeight)
+        ? video.videoWidth / video.videoHeight : 16 / 9;
+
+      const repeatX = Math.min(1, markerAspect / videoAspect);
+      const repeatY = Math.min(1, videoAspect / markerAspect);
+      texture.repeat.set(repeatX, repeatY);
+      texture.offset.set((1 - repeatX) / 2, (1 - repeatY) / 2);
+
+      const plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1 / markerAspect),
+        new THREE.MeshBasicMaterial({ map: texture, toneMapped: false })
+      );
+      plane.visible = false;
+
+      const anchor = mindar.addAnchor(0);
+      anchor.group.add(plane);
+
+      anchor.onTargetFound = () => {
+        plane.visible = true;
+        step('stepScan');
+        $('stepScan').hidden = true;
+        $('bar').hidden = false;
+        $('soundBtn').hidden = soundOn;
+        video.play().catch(() => {});
+        if (!foundLogged) { foundLogged = true; logEvent('ar_found'); }
+        logEvent('ar_play');
+      };
+
+      anchor.onTargetLost = () => {
+        plane.visible = false;
+        video.pause();
+        $('stepScan').hidden = false;
+      };
+
+      video.addEventListener('ended', () => { plane.visible = true; });
+
+      await mindar.start();
+      step('stepScan');
+      $('bar').hidden = false;
+      renderer.setAnimationLoop(() => renderer.render(scene, camera));
+    }
+
+    function imageAspect(src) {
+      return new Promise(resolve => {
+        if (!src) return resolve(null);
+        const i = new Image();
+        i.onload  = () => resolve(i.naturalWidth / i.naturalHeight);
+        i.onerror = () => resolve(null);
+        i.src = src;
+      });
+    }
+
+    function videoReady(v) {
+      return new Promise(resolve => {
+        if (v.readyState >= 1) return resolve();
+        v.addEventListener('loadedmetadata', resolve, { once: true });
+        setTimeout(resolve, 4000);   // да не увисне, ако метаданните закъснеят
+      });
+    }
+
+    $('soundBtn').addEventListener('click', () => {
+      if (!video) return;
+      video.muted = false;
+      video.volume = 1;
+      if (video.currentTime < 3) video.currentTime = 0;
+      video.play().catch(() => {});
+      soundOn = true;
+      $('soundBtn').hidden = true;
+      logEvent('sound');
+    });
+  </script>
+</body>
+</html>
