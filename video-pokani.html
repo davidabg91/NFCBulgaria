@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Видео Покани с NFC и WebAR — NFC Bulgaria</title>
+  <meta name="description" content="Печатна покана с вграден NFC чип, която отваря видео на телефона. Три режима на показване, включително WebAR — снимката върху хартията оживява през камерата. Без приложение, без абонамент, със статистика на живо.">
+
+  <meta property="og:title" content="Видео Покани с NFC и WebAR — NFC Bulgaria">
+  <meta property="og:description" content="Хартиена покана, която проговаря. Докосване с телефон отваря видеото; при WebAR режима снимката върху картона се раздвижва през камерата.">
+  <meta property="og:image" content="https://nfcbulgaria.com/assets/og-image.jpg">
+  <meta property="og:url" content="https://nfcbulgaria.com/video-pokani.html">
+  <meta property="og:type" content="website">
+
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/spacegrotesk-400-latin.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-800-latin.woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="index.css">
+
+  <style>
+    /* Само вертикално — иначе съкращаваме страничния отстъп на .container
+       и на телефон текстът опира в ръба на екрана. */
+    .vp-page { padding-top: 7.5rem; padding-bottom: 6rem; }
+
+    .vp-hero {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 4rem;
+      align-items: center;
+      margin-bottom: 7rem;
+    }
+    @media (max-width: 900px) {
+      .vp-hero { grid-template-columns: 1fr; gap: 3rem; }
+    }
+
+    .vp-eyebrow {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: var(--font-mono);
+      font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--primary);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      padding: .4rem 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .vp-hero h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      line-height: 1.08;
+      margin-bottom: 1.3rem;
+    }
+    .vp-lead { font-size: 1.15rem; line-height: 1.7; color: var(--text-muted); margin-bottom: 1.4rem; }
+    .vp-lead strong { color: var(--text); font-weight: 600; }
+
+    .vp-cta-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; }
+    .vp-btn-ghost {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .8rem 1.6rem;
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      color: var(--text); text-decoration: none;
+      font-weight: 600; font-size: .95rem;
+      transition: all .3s ease;
+    }
+    .vp-btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ---------- анимираният макет ---------- */
+    .vp-demo { display: flex; justify-content: center; }
+    .phone {
+      width: min(300px, 80vw);
+      aspect-ratio: 9 / 19;
+      border-radius: 34px;
+      border: 2px solid rgba(255,255,255,.16);
+      background: #05070d;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 8px rgba(255,255,255,.02);
+    }
+    .phone::before {
+      content: ''; position: absolute; top: 10px; left: 50%;
+      transform: translateX(-50%);
+      width: 34%; height: 18px; border-radius: 0 0 12px 12px;
+      background: rgba(255,255,255,.1); z-index: 6;
+    }
+    /* „кадърът от камерата" */
+    .cam {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(116,124,146,.35), transparent 60%),
+        linear-gradient(160deg, #1a1f2e 0%, #0d1119 100%);
+    }
+    /* поканата в кадър */
+    .card-in-view {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 78%;
+      transform: translate(-50%, -50%) rotate(-4deg);
+      border-radius: 3px;
+      background: #fff;
+      padding: 6px;
+      box-shadow: 0 14px 34px rgba(0,0,0,.55);
+      animation: cardFloat 9s ease-in-out infinite;
+    }
+    @keyframes cardFloat {
+      0%, 100% { transform: translate(-50%, -50%) rotate(-4deg) scale(1); }
+      50%      { transform: translate(-50%, -52%) rotate(2deg) scale(1.03); }
+    }
+    .card-art {
+      position: relative;
+      aspect-ratio: 2.28 / 1;
+      border-radius: 1px;
+      overflow: hidden;
+      background: linear-gradient(115deg, #6b4a26 0%, #b8863f 38%, #8a5f2c 62%, #4a3218 100%);
+    }
+    /* „движението", което се появява върху отпечатаното */
+    .card-art::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(115deg, #c8963f 0%, #f0c274 30%, #9a6c33 55%, #dcae62 100%);
+      opacity: 0;
+      animation: artAlive 9s ease-in-out infinite;
+    }
+    @keyframes artAlive {
+      0%, 42%   { opacity: 0; }
+      52%, 88%  { opacity: 1; }
+      100%      { opacity: 0; }
+    }
+    .card-meta { padding: 7px 4px 3px; }
+    .card-meta b { display: block; height: 5px; width: 52%; background: #231f20; border-radius: 1px; }
+    .card-meta i { display: block; height: 4px; width: 38%; background: #00aeef; border-radius: 1px; margin-top: 4px; }
+
+    /* ъгли на разпознаването */
+    .brackets { position: absolute; inset: -9px; pointer-events: none; }
+    .brackets span {
+      position: absolute; width: 18px; height: 18px;
+      border: 2px solid var(--primary);
+      opacity: 0;
+      animation: lock 9s ease-in-out infinite;
+    }
+    .brackets span:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+    .brackets span:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+    .brackets span:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+    .brackets span:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+    @keyframes lock {
+      0%, 30%  { opacity: 0; transform: scale(1.5); }
+      42%      { opacity: 1; transform: scale(1); }
+      86%      { opacity: 1; transform: scale(1); }
+      100%     { opacity: 0; transform: scale(1.5); }
+    }
+
+    /* лъчът, който сканира */
+    .sweep {
+      position: absolute; left: 8%; right: 8%; height: 2px;
+      background: var(--primary);
+      box-shadow: 0 0 14px var(--primary);
+      animation: sweepMove 9s ease-in-out infinite;
+    }
+    @keyframes sweepMove {
+      0%       { top: 22%; opacity: 0; }
+      6%       { opacity: .9; }
+      30%      { top: 74%; opacity: .9; }
+      38%      { opacity: 0; }
+      100%     { opacity: 0; }
+    }
+
+    .phone-hint {
+      position: absolute; left: 0; right: 0; bottom: 22px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(255,255,255,.72);
+      z-index: 5;
+    }
+    .phone-hint span { display: block; animation: hintSwap 9s ease-in-out infinite; }
+    .phone-hint span:nth-child(2) { position: absolute; left: 0; right: 0; animation-name: hintSwap2; }
+    @keyframes hintSwap  { 0%, 36% { opacity: 1; } 44%, 100% { opacity: 0; } }
+    @keyframes hintSwap2 { 0%, 40% { opacity: 0; } 50%, 88% { opacity: 1; } 96%, 100% { opacity: 0; } }
+
+
+    /* обяснителното видео */
+    .vp-video {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      background: #0b1020;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .vp-video video { display: block; width: 100%; height: auto; }
+    .vp-video .play-over {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(6,10,20,.35);
+      border: 0; cursor: pointer;
+      transition: opacity .25s ease;
+    }
+    .vp-video .play-over[hidden] { display: none; }
+    .vp-video .play-over span {
+      width: 84px; height: 84px; border-radius: 50%;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 0 12px rgba(161,232,175,.18);
+    }
+    .vp-video .play-over svg { width: 30px; height: 30px; fill: #0f172a; margin-left: 5px; }
+    .vp-video-note {
+      text-align: center; color: var(--text-muted);
+      font-size: .85rem; margin-top: 1rem;
+    }
+
+    /* ---------- общи секции ---------- */
+    .vp-section { margin-bottom: 6.5rem; }
+    .vp-section > h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.8rem, 3.6vw, 2.5rem);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .vp-section > .vp-sub {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 44rem;
+      margin: 0 auto 3.5rem;
+      line-height: 1.7;
+    }
+
+    .vp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.6rem;
+    }
+    .vp-card {
+      background: rgba(17, 24, 39, .55);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      transition: transform .3s ease, border-color .3s ease;
+    }
+    .vp-card:hover { transform: translateY(-4px); border-color: rgba(161,232,175,.4); }
+    .vp-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      margin-bottom: .8rem;
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .vp-card p { color: var(--text-muted); line-height: 1.7; font-size: .95rem; }
+    .vp-num {
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      color: var(--primary);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      width: 30px; height: 30px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* режимите */
+    .mode {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.4rem;
+      align-items: start;
+      background: rgba(17,24,39,.4);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 1.8rem;
+    }
+    .mode-letter {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--primary);
+      width: 54px; height: 54px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      flex-shrink: 0;
+    }
+    .mode h3 { font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: .5rem; }
+    .mode p { color: var(--text-muted); line-height: 1.7; font-size: .95rem; }
+    .mode .tag {
+      display: inline-block; margin-top: .8rem;
+      font-family: var(--font-mono); font-size: .7rem;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--primary);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px; padding: .25rem .8rem;
+    }
+
+    /* приложения */
+    .uses { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    .use {
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 1.3rem 1.4rem;
+      background: rgba(17,24,39,.35);
+    }
+    .use b { display: block; font-family: var(--font-heading); font-size: 1rem; margin-bottom: .4rem; }
+    .use span { color: var(--text-muted); font-size: .88rem; line-height: 1.6; }
+
+    /* списък с функции */
+    .feats { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: .9rem 2.5rem; }
+    .feat { display: grid; grid-template-columns: auto 1fr; gap: .9rem; align-items: start; padding: .7rem 0; }
+    .feat .tick {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1px solid var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--primary); font-size: .7rem; flex-shrink: 0; margin-top: 2px;
+    }
+    .feat b { display: block; font-weight: 600; margin-bottom: .2rem; }
+    .feat span { color: var(--text-muted); font-size: .9rem; line-height: 1.6; }
+
+    /* таблица техн. данни */
+    .specs { width: 100%; border-collapse: collapse; }
+    .specs td {
+      padding: .95rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      vertical-align: top;
+      font-size: .95rem;
+    }
+    .specs td:first-child { color: var(--text-muted); width: 42%; padding-right: 1.5rem; }
+    .specs tr:last-child td { border-bottom: 0; }
+
+    .vp-note {
+      border-left: 3px solid var(--primary);
+      background: rgba(161,232,175,.05);
+      padding: 1.2rem 1.5rem;
+      border-radius: 0 12px 12px 0;
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-size: .95rem;
+      margin-top: 2rem;
+    }
+    .vp-note b { color: var(--text); }
+
+    .vp-final {
+      text-align: center;
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 3.5rem 2rem;
+      background: rgba(17,24,39,.5);
+    }
+    .vp-final h2 { font-family: var(--font-heading); font-size: clamp(1.6rem, 3.4vw, 2.2rem); margin-bottom: 1rem; }
+    .vp-final p { color: var(--text-muted); max-width: 40rem; margin: 0 auto 2rem; line-height: 1.7; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card-in-view, .card-art::after, .brackets span, .sweep, .phone-hint span { animation: none; }
+      .card-art::after { opacity: 1; }
+      .brackets span { opacity: 1; }
+      .sweep { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <nav>
+    <div class="container nav-content">
+      <div class="logo">
+        <svg class="logo-svg" viewBox="0 0 40 30" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="36" height="26" rx="4" class="card-outline" />
+          <rect x="8" y="10" width="8" height="8" rx="1" class="chip" />
+          <path d="M22 8 Q30 15 22 22 M26 5 Q38 15 26 25" class="waves" />
+        </svg>
+        NFC<span>Bulgaria</span>
+      </div>
+      <a href="index.html" class="btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+        <span>←</span> Назад
+      </a>
+    </div>
+  </nav>
+
+  <main class="container vp-page">
+
+    <!-- ============================ ГЕРОЙ ============================ -->
+    <section class="vp-hero">
+      <div>
+        <div class="vp-eyebrow">Ново · Видео покани</div>
+        <h1>Хартиена покана, която <span class="gradient-text">проговаря</span></h1>
+        <p class="vp-lead">
+          Печатна покана с вграден NFC чип. Гостът доближава телефона си и
+          видеото тръгва веднага — <strong>без приложение, без сканиране на код,
+          без обяснения</strong>.
+        </p>
+        <p class="vp-lead">
+          А в най-силния режим камерата разпознава самата снимка върху картона
+          и я раздвижва: отпечатаният кадър оживява в ръцете на госта.
+        </p>
+        <div class="vp-cta-row">
+          <a href="index.html#contact" class="btn-primary" style="text-decoration: none;">Поискайте оферта</a>
+          <a href="#kak-raboti" class="vp-btn-ghost">Как работи ↓</a>
+        </div>
+      </div>
+
+      <div class="vp-demo">
+        <div class="phone">
+          <div class="cam">
+            <div class="card-in-view">
+              <div class="card-art">
+                <div class="brackets"><span></span><span></span><span></span><span></span></div>
+              </div>
+              <div class="card-meta"><b></b><i></i></div>
+            </div>
+            <div class="sweep"></div>
+          </div>
+          <div class="phone-hint">
+            <span>Насочете към поканата</span>
+            <span>Поканата оживя</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===================== ОБЯСНИТЕЛНО ВИДЕО ====================== -->
+    <section class="vp-section">
+      <h2>Вижте го за 24 секунди</h2>
+      <p class="vp-sub">
+        От печатния картон до момента, в който снимката върху него се раздвижва
+        в ръцете на госта.
+      </p>
+
+      <div class="vp-video">
+        <video id="explainer" playsinline preload="none" controls
+               poster="assets/video/webar-obyasnenie.jpg">
+          <source src="assets/video/webar-obyasnenie.mp4" type="video/mp4">
+          Браузърът ви не поддържа видео.
+        </video>
+        <button class="play-over" id="explainerPlay" aria-label="Пусни видеото">
+          <span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        </button>
+      </div>
+      <p class="vp-video-note">Без звук — обяснението е изцяло визуално.</p>
+    </section>
+
+    <!-- ========================= КАК РАБОТИ ========================= -->
+    <section class="vp-section" id="kak-raboti">
+      <h2>Как работи</h2>
+      <p class="vp-sub">
+        Четири стъпки, от които гостът вижда само първата. Всичко останало се
+        случва само, за секунди.
+      </p>
+
+      <div class="vp-grid">
+        <div class="vp-card">
+          <h3><span class="vp-num">1</span> Докосване</h3>
+          <p>
+            В поканата е вграден NFC чип — видим стикер върху лицето или напълно
+            скрит между два слепени картона. Гостът доближава телефона си и на
+            екрана изскача известие. Не се инсталира нищо, не се сканира код.
+          </p>
+        </div>
+        <div class="vp-card">
+          <h3><span class="vp-num">2</span> Отваряне</h3>
+          <p>
+            Чипът носи един постоянен адрес към страница на нашия сървър. Тя се
+            отваря в браузъра на телефона за части от секундата и започва да
+            върти видеото още преди да се е заредило докрай.
+          </p>
+        </div>
+        <div class="vp-card">
+          <h3><span class="vp-num">3</span> Гледане</h3>
+          <p>
+            Видеото тръгва само, беззвучно — така изискват iOS и Android. Едно
+            докосване по екрана го връща в началото вече със звук. Под клипа
+            стоят датата, мястото, картата и бутоните.
+          </p>
+        </div>
+        <div class="vp-card">
+          <h3><span class="vp-num">4</span> Отчитане</h3>
+          <p>
+            Всяко отваряне се брои. Организаторът вижда на живо колко покани са
+            сканирани, колко души са гледали докрай и какво са направили после —
+            без да събираме каквито и да е лични данни.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== ТРИТЕ РЕЖИМА ======================== -->
+    <section class="vp-section">
+      <h2>Три режима на показване</h2>
+      <p class="vp-sub">
+        Едно и също съдържание, три различни преживявания. Изборът се прави
+        веднъж и се сменя по всяко време — дори след като чиповете са заключени.
+      </p>
+
+      <div class="vp-grid">
+        <div class="mode">
+          <div class="mode-letter">А</div>
+          <div>
+            <h3>Поканата с видеото в нея</h3>
+            <p>
+              Гостът вижда всичко наведнъж: видеото горе, а под него заглавието,
+              датите, откриването, адресът и бутоните. Най-прекият път до
+              информацията — работи на всяко устройство, при всякаква връзка.
+            </p>
+            <span class="tag">Най-сигурният</span>
+          </div>
+        </div>
+
+        <div class="mode">
+          <div class="mode-letter">Б</div>
+          <div>
+            <h3>Клипът пръв, на цял екран</h3>
+            <p>
+              Видеото заема целия екран още при отварянето. Щом свърши,
+              поканата се появява отдолу с всички данни. Има и бутон за
+              прескачане, за да не чака онзи, който бърза.
+            </p>
+            <span class="tag">Най-въздействащият</span>
+          </div>
+        </div>
+
+        <div class="mode">
+          <div class="mode-letter">В</div>
+          <div>
+            <h3>WebAR — снимката оживява</h3>
+            <p>
+              Камерата разпознава отпечатаната снимка и пуска видеото точно
+              върху нея, залепено за картона. Наклони ли се поканата, кадърът се
+              накланя с нея. Работи в браузъра, без приложение.
+            </p>
+            <span class="tag">Най-запомнящият се</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="vp-note">
+        <b>Нашата препоръка:</b> режим А с бутон „Оживете поканата“ вътре в него.
+        Чипът отваря поканата мигновено и сигурно за всички, а AR ефектът остава
+        на едно докосване разстояние за онези, които искат да го пробват. Никой
+        не остава пред празен екран, а новостта е налична.
+      </div>
+    </section>
+
+    <!-- ========================== ЗА КАКВО ========================== -->
+    <section class="vp-section">
+      <h2>За какво се използва</h2>
+      <p class="vp-sub">
+        Навсякъде, където хартията носи покана, разказ или обещание — и където
+        едно движещо се изображение казва повече от текста върху нея.
+      </p>
+
+      <div class="uses">
+        <div class="use">
+          <b>Изложби и галерии</b>
+          <span>Поканата показва творбите в движение и гласа на автора още преди
+          посетителят да е стигнал до залата.</span>
+        </div>
+        <div class="use">
+          <b>Театър, концерти, фестивали</b>
+          <span>Откъс от постановката или репетицията директно върху програмата
+          или билета.</span>
+        </div>
+        <div class="use">
+          <b>Сватбени покани</b>
+          <span>Личното обръщение на младоженците, картата до мястото и формата
+          за потвърждение — в един картон.</span>
+        </div>
+        <div class="use">
+          <b>Корпоративни събития</b>
+          <span>Приветствие от управителя, програма на деня и бутон „Добави в
+          календара“ за всеки поканен.</span>
+        </div>
+        <div class="use">
+          <b>Продуктови опаковки</b>
+          <span>Как се използва продуктът, откъде идва, кой го е направил — на
+          самата кутия, без листовка.</span>
+        </div>
+        <div class="use">
+          <b>Вино и специалитети</b>
+          <span>Етикет, който показва лозето и разказа на винаря. Особено силно
+          при подаръчни серии.</span>
+        </div>
+        <div class="use">
+          <b>Музеи и обекти</b>
+          <span>Табела до експоната, която пуска обяснение на два езика, без
+          слушалки и без чакане на екскурзовод.</span>
+        </div>
+        <div class="use">
+          <b>Недвижими имоти</b>
+          <span>Брошурата на обекта отваря видео обиколка, вместо купувачът да
+          търси линк или да звъни.</span>
+        </div>
+        <div class="use">
+          <b>Автомобили и техника</b>
+          <span>Табелка в купето или до машината, която показва обзор,
+          инструкция или история на конкретния екземпляр.</span>
+        </div>
+        <div class="use">
+          <b>Поздравителни картички</b>
+          <span>Видео послание, което остава завинаги на един адрес и може да се
+          гледа отново след години.</span>
+        </div>
+        <div class="use">
+          <b>Визитки с видео</b>
+          <span>Представяне на човека или екипа, вместо статичен списък с
+          контакти.</span>
+        </div>
+        <div class="use">
+          <b>Меню и заведения</b>
+          <span>Как изглежда ястието и как се приготвя — до реда в менюто, без
+          снимки, които заемат половин страница.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================== ФУНКЦИИ =========================== -->
+    <section class="vp-section">
+      <h2>Какво включва</h2>
+      <p class="vp-sub">
+        Всичко изброено е част от изработката. Няма отделни модули, няма
+        доплащане за функция, няма месечна такса.
+      </p>
+
+      <div class="feats">
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Постоянен адрес</b>
+            <span>Един и същ във всички чипове, кратък колкото да се събере в
+            NTAG213. Чиповете могат да се заключат срещу презапис веднага след
+            одобрението на мострите.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Сменяемо съдържание след заключване</b>
+            <span>Грешна дата, нов монтаж на клипа, друг текст — сменя се за
+            минути от наша страна, без да се пипа нито един таг и без нов
+            тираж.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Дизайнът на печата, пренесен точно</b>
+            <span>Същият шрифт, същите цветове, същата подредба. Дигиталната
+            покана изглежда като продължение на хартиената, а не като чужда
+            страница.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Двуезичност</b>
+            <span>Български и английски един до друг, както в печата, или
+            превключване по избор на посетителя.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Добавяне в календара</b>
+            <span>Едно докосване вписва събитието в телефона на госта — с час,
+            място и адрес.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Посоки и карта</b>
+            <span>Бутон, който отваря навигацията директно към входа на
+            мястото.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Споделяне</b>
+            <span>Гостът препраща поканата на приятел с един бутон. Всяко
+            споделяне се отчита отделно.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Логата на партньорите</b>
+            <span>Лентата със спонсори и финансиращи организации стои и в
+            дигиталната покана — важно при проекти с публично финансиране.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Отчет за организатора</b>
+            <span>Отделен адрес само за четене, който се препраща свободно в
+            екипа и към финансиращите. Без акаунт и без парола.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Хостинг на видеото</b>
+            <span>Файлът стои на нашия сървър и се раздава през мрежа за бързо
+            доставяне. Без Vimeo, без YouTube, без чужди реклами след клипа.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Мостри преди тиража</b>
+            <span>Две-три напълно завършени покани за одобрение, с тест на
+            прочитането и при видим, и при скрит монтаж.</span>
+          </div>
+        </div>
+        <div class="feat">
+          <span class="tick">✓</span>
+          <div>
+            <b>Без абонамент</b>
+            <span>Плаща се веднъж, при изработката. Адресът остава активен и
+            след събитието — поканата служи като архив на проекта.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= СТАТИСТИКА ========================= -->
+    <section class="vp-section">
+      <h2>Отчет, който се препраща на финансиращите</h2>
+      <p class="vp-sub">
+        Хартиената покана не може да каже колко души са я погледнали. Тази може —
+        и точно това я прави различна за проекти с отчетност.
+      </p>
+
+      <div class="vp-grid">
+        <div class="vp-card">
+          <h3>Достигане</h3>
+          <p>
+            Колко пъти е сканирана поканата, колко души са пуснали видеото и
+            колко са го изгледали докрай. Разбивка по дни и по час на деня —
+            вижда се дали хората сканират на самото събитие, или вечерта вкъщи.
+          </p>
+        </div>
+        <div class="vp-card">
+          <h3>Внимание</h3>
+          <p>
+            Колко души са докоснали екрана, за да чуят звука. По-честен
+            измерител от броя отваряния: показва кой е спрял и е пожелал да
+            слуша, а не просто е погледнал.
+          </p>
+        </div>
+        <div class="vp-card">
+          <h3>Действия</h3>
+          <p>
+            Кой е добавил събитието в календара си, потърсил е посоки, отворил е
+            сайта на организатора или е препратил поканата на друг. Това вече не
+            е интерес, а намерение.
+          </p>
+        </div>
+        <div class="vp-card">
+          <h3>Устройства</h3>
+          <p>
+            iPhone, Android или компютър, в проценти. Отчита се само видът
+            устройство — без IP адреси, без бисквитки за проследяване, без нищо,
+            по което човек може да бъде разпознат.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== ТЕХНИЧЕСКИ ========================== -->
+    <section class="vp-section">
+      <h2>Технически данни</h2>
+      <p class="vp-sub">За тези, които четат спецификации преди офертата.</p>
+
+      <table class="specs">
+        <tr><td>Чип</td><td>NTAG213 или технически еквивалентен, 13.56 MHz, NDEF съвместим</td></tr>
+        <tr><td>Памет за адреса</td><td>144 байта — достатъчно за адрес с дължина около 130 знака</td></tr>
+        <tr><td>Заключване</td><td>Възможно веднага след одобрението на мострите; адресът остава непроменим завинаги</td></tr>
+        <tr><td>Монтаж</td><td>Видим стикер върху лицето или скрит чип между два слепени картона</td></tr>
+        <tr><td>Съвместимост</td><td>iOS и Android с вградено четене на NFC, без инсталиране на приложение</td></tr>
+        <tr><td>Видео</td><td>MP4, H.264 / AAC, подготвено да тръгва при първите килобайти, без чакане на пълно зареждане</td></tr>
+        <tr><td>Звук</td><td>Тръгва след едно докосване по екрана — правило на браузърите в iOS и Android, не ограничение на решението</td></tr>
+        <tr><td>WebAR</td><td>Разпознаване на изображение в браузъра. Изисква разрешение за камера и около 2 MB зареждане при първо отваряне</td></tr>
+        <tr><td>Изисквания към снимката за AR</td><td>Богата на детайл и контраст. Едноцветни или силно замъглени изображения не се проследяват надеждно</td></tr>
+        <tr><td>Хостинг</td><td>Включен, без месечна такса, с мрежа за бързо доставяне</td></tr>
+      </table>
+
+      <div class="vp-note">
+        <b>Честно за WebAR:</b> ефектът е силен, но изисква разрешение за камера,
+        добра светлина и две ръце. Част от гостите отказват достъпа по навик.
+        Затова не го предлагаме като единствен път, а като допълнение към режим
+        А или Б — така никой не остава без покана, а желаещите получават
+        ефекта.
+      </div>
+    </section>
+
+    <!-- =========================== ФИНАЛ ============================ -->
+    <section class="vp-final">
+      <h2>Изпратете ни дизайна и видеото</h2>
+      <p>
+        Връщаме мостри за одобрение, а след това целия тираж с програмирани и
+        заключени чипове. Цената зависи от тиража, картона и вида монтаж —
+        пишете ни с бройката и ще получите оферта с разбивка по пера.
+      </p>
+      <div class="vp-cta-row" style="justify-content: center;">
+        <a href="index.html#contact" class="btn-primary" style="text-decoration: none;">Свържете се с нас</a>
+        <a href="tel:0876141826" class="vp-btn-ghost">0876141826</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="logo" style="margin-bottom: 1rem;">
+        <div class="logo-icon"></div>
+        NFC<span>Bulgaria</span>
+      </div>
+      <p>гр. Плевен, ж.к. Сторгозия, бл. 133, офис | <strong>ДАВИДА БГ ЕООД</strong> | <a href="tel:0876141826" style="color: inherit; text-decoration: none;">0876141826</a> | <a href="mailto:office@nfcbulgaria.com" style="color: inherit; text-decoration: none;">office@nfcbulgaria.com</a></p>
+      <p style="margin-top: 0.8rem; font-size: 0.9rem; opacity: 0.85;">
+        <a href="faq.html" style="color: var(--primary); text-decoration: none; margin-right: 1.5rem; transition: color 0.3s ease;">Често Задавани Въпроси</a>
+        <a href="terms.html" style="color: var(--primary); text-decoration: none; margin-right: 1.5rem; transition: color 0.3s ease;">Общи Условия</a>
+        <a href="privacy.html" style="color: var(--primary); text-decoration: none; transition: color 0.3s ease;">Политика за Поверителност</a>
+      </p>
+      <p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.6;">&copy; 2026 NFC Bulgaria. Всички права запазени. Партньор на DavidaX.org</p>
+    </div>
+  </footer>
+
+  <script>
+    // Видеото се тегли чак при докосване на бутона — 2,6 MB не бива да
+    // тръгват при всяко отваряне на страницата.
+    (function () {
+      var v = document.getElementById('explainer');
+      var b = document.getElementById('explainerPlay');
+      if (!v || !b) return;
+      b.addEventListener('click', function () {
+        v.play();
+        b.hidden = true;
+      });
+      v.addEventListener('pause', function () { if (v.currentTime === 0) b.hidden = false; });
+    })();
+  </script>
+
+  <script src="index.js"></script>
+  <!-- Превод BG / EN / RO -->
+  <script src="i18n-data.js"></script>
+  <script src="i18n.js"></script>
+</body>
+</html>
