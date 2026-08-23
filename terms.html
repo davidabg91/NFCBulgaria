@@ -71,9 +71,14 @@
         </svg>
         NFC<span>Bulgaria</span>
       </div>
-      <a href="index.html" class="btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
-        <span>←</span> Назад
-      </a>
+      <div style="display: flex; gap: 0.8rem; align-items: center;">
+        <!-- Езиковите бутони стоят ТУК. Без този контейнер i18n.js ги слага
+             да плуват горе вдясно и падат върху бутона „Назад". -->
+        <div id="langSwitch"></div>
+        <a href="index.html" class="btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+          <span>←</span> Назад
+        </a>
+      </div>
     </div>
   </nav>
 
