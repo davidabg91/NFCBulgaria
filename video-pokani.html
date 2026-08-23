@@ -48,6 +48,9 @@
     .vp-wordmark span { color: var(--primary); }
     .vp-wordmark + .vp-eyebrow { margin-top: 0; }
 
+    /* Езиковите бутони — най-горе в съдържанието, вдясно */
+    .vp-lang { display: flex; justify-content: flex-end; margin-bottom: 1.4rem; }
+
     /* Текущата страница в менюто */
     .nav-links a.is-current { color: var(--primary); }
 
@@ -376,9 +379,6 @@
         <span></span>
       </div>
       <div style="display: flex; gap: 0.8rem; align-items: center; margin-left: 1.5rem;">
-        <!-- Езиковите бутони стоят ТУК. Без този контейнер i18n.js ги слага
-             да плуват горе вдясно, върху останалото в лентата. -->
-        <div id="langSwitch"></div>
         <a href="login.html" class="btn-primary nav-cta-desktop" style="padding: 0.5rem 1.4rem; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; box-shadow: none;">Вход</a>
         <a href="index.html#contact" class="btn-primary nav-cta-desktop" style="padding: 0.5rem 1.4rem; font-size: 0.9rem;">Поръчай</a>
       </div>
@@ -388,6 +388,11 @@
   <main class="container vp-page">
 
     <!-- ============================ ГЕРОЙ ============================ -->
+    <!-- Езиковите бутони стоят ТУК, а не в лентата — там заемат място,
+         което трябва на табовете. Без този контейнер i18n.js ги слага да
+         плуват горе вдясно, върху лентата. -->
+    <div id="langSwitch" class="vp-lang"></div>
+
     <section class="vp-hero">
       <div class="vp-wordmark">Web<span>AR</span></div>
       <div class="vp-eyebrow">Ново в платформата</div>
