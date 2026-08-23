@@ -36,6 +36,7 @@
 
     /* Надписът от видеото — запълва мястото над „Ново в платформата" */
     .vp-wordmark {
+      margin-top: -.4rem;
       font-family: 'Sofia Sans', var(--font-heading), sans-serif;
       font-weight: 900;
       font-size: clamp(4rem, 15vw, 9.5rem);
@@ -48,13 +49,16 @@
     .vp-wordmark span { color: var(--primary); }
     .vp-wordmark + .vp-eyebrow { margin-top: 0; }
 
-    /* Езиковите бутони — най-горе в съдържанието, вдясно */
-    .vp-lang { display: flex; justify-content: flex-end; margin-bottom: 1.4rem; }
-
     /* Текущата страница в менюто */
     .nav-links a.is-current { color: var(--primary); }
 
-    .vp-page { padding-top: 6rem; padding-bottom: 4rem; }
+        .vp-page { padding-top: 7.5rem; padding-bottom: 4rem; }
+
+    /* Сайтът дава на всеки <section> по 8rem отгоре и отдолу — тук това
+       правеше 320px между заглавията. Занулява се, за да се управляват
+       разстоянията само с margin и да са предвидими. */
+    .vp-page > section { padding-top: 0; padding-bottom: 0; }
+    .vp-page > section.vp-final { padding: 3rem 2rem; }
 
     .vp-hero { max-width: 52rem; margin: 0 auto 4rem; text-align: center; }
     .vp-hero .vp-lead { margin-left: auto; margin-right: auto; max-width: 40rem; }
@@ -203,7 +207,7 @@
     }
 
     /* ---------- общи секции ---------- */
-    .vp-section { margin-bottom: 4rem; }
+    .vp-section { margin-bottom: 4.5rem; }
     .vp-section > h2 {
       font-family: var(--font-heading);
       font-size: clamp(1.8rem, 3.6vw, 2.5rem);
@@ -385,14 +389,14 @@
     </div>
   </nav>
 
+  <!-- Езиковите бутони стоят ИЗВЪН лентата, за да не заемат място там.
+       Позиционирани са абсолютно, така че не разместват съдържанието.
+       Без този контейнер i18n.js ги слага да плуват върху лентата. -->
+  <div class="container site-lang"><div id="langSwitch"></div></div>
+
   <main class="container vp-page">
 
     <!-- ============================ ГЕРОЙ ============================ -->
-    <!-- Езиковите бутони стоят ТУК, а не в лентата — там заемат място,
-         което трябва на табовете. Без този контейнер i18n.js ги слага да
-         плуват горе вдясно, върху лентата. -->
-    <div id="langSwitch" class="vp-lang"></div>
-
     <section class="vp-hero">
       <div class="vp-wordmark">Web<span>AR</span></div>
       <div class="vp-eyebrow">Ново в платформата</div>

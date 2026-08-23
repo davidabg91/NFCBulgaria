@@ -1934,12 +1934,16 @@ footer {
         <span></span>
       </div>
       <div style="display: flex; gap: 0.8rem; align-items: center; margin-left: 1.5rem;">
-        <div id="langSwitch"></div>
         <a href="login.html" class="btn-primary nav-cta-desktop" style="padding: 0.5rem 1.4rem; font-size: 0.9rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; box-shadow: none;">Вход</a>
         <a href="#contact" class="btn-primary nav-cta-desktop" style="padding: 0.5rem 1.4rem; font-size: 0.9rem;">Поръчай</a>
       </div>
     </div>
   </nav>
+
+  <!-- Езиковите бутони стоят ИЗВЪН лентата, за да не заемат място там.
+       Позиционирани са абсолютно, така че не разместват съдържанието.
+       Без този контейнер i18n.js ги слага да плуват върху лентата. -->
+  <div class="container site-lang"><div id="langSwitch"></div></div>
 
   <header class="hero container" id="home">
     <div class="hero-content">
