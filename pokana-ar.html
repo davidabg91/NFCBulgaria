@@ -27,9 +27,13 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Камерата и триизмерната сцена живеят тук */
-    #ar { position: fixed; inset: 0; }
-    #ar video, #ar canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; object-fit: cover; }
+    /* Камерата и триизмерната сцена живеят тук.
+       ВАЖНО: не пипаме размерите на <video> и <canvas> отвътре. MindAR ги
+       оразмерява сам — образът от камерата се показва по-голям от екрана и
+       се измества с отрицателни отстъпи, а зрителният ъгъл на виртуалната
+       камера се нагажда точно спрямо това. Всяко наше правило върху тях
+       разминава наслагването спрямо реалния кадър. */
+    #ar { position: fixed; inset: 0; overflow: hidden; }
 
     .layer {
       position: fixed; inset: 0;
