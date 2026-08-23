@@ -29,3 +29,6 @@ supabase/*-setup.sql
 supabase/*-accounts.sql
 *credentials*
 *-достъпи.*
+
+# Локален преглед на видео поканите (генерира се от pokana.html)
+_preview-*.html

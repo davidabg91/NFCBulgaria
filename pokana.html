@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title id="pageTitle">Видео покана | NFC Bulgaria</title>
+  <meta name="robots" content="noindex">
+
+  <!-- Open Graph (общи; за персонални preview-та виж edge функцията `og`) -->
+  <meta property="og:title" content="Видео покана">
+  <meta property="og:description" content="Докоснете с телефон и гледайте поканата.">
+  <meta property="og:image" content="https://nfcbulgaria.com/assets/share-preview.png">
+  <meta property="og:type" content="video.other">
+
+  <link rel="icon" type="image/webp" href="assets/favicon.webp">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://upjwsqfrblxzhyuxeumj.supabase.co" crossorigin>
+  <!-- Sofia Sans — шрифтът на печатната покана; има кирилица -->
+  <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* Тъмна тема — по подразбиране за платформата */
+    :root {
+      --bg: #0b0b0d;
+      --ink: #f4f1ea;
+      --accent: #c9a227;
+      --muted: rgba(244, 241, 234, .55);
+      --line: rgba(244, 241, 234, .14);
+      --panel: rgba(255, 255, 255, .04);
+      --panel-hover: rgba(255, 255, 255, .08);
+      --shadow: 0 24px 60px rgba(0, 0, 0, .55);
+    }
+
+    /* Светла тема — за покани, чийто печатен оригинал е на бяло */
+    body.theme-light {
+      --bg: #ffffff;
+      --ink: #231f20;
+      --accent: #00aeef;
+      --muted: #58595b;
+      --line: rgba(35, 31, 32, .16);
+      --panel: rgba(35, 31, 32, .03);
+      --panel-hover: rgba(35, 31, 32, .07);
+      --shadow: 0 14px 40px rgba(35, 31, 32, .14);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Sofia Sans', 'Segoe UI', sans-serif;
+      font-weight: 400;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      padding: clamp(1.1rem, 4vw, 2.5rem) 1rem calc(1.5rem + env(safe-area-inset-bottom));
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Мек акцентен ореол — само в тъмната тема */
+    body:not(.theme-light)::before {
+      content: '';
+      position: fixed;
+      inset: -30% 0 auto -20%;
+      height: 60vh;
+      background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ---------- състояния ---------- */
+    .wrap > .content, .wrap > .error { display: none; }
+    .wrap.is-ready > .content { display: flex; flex-direction: column; gap: clamp(1.3rem, 3.5vw, 2rem); }
+    .wrap.is-error > .error { display: block; }
+    .wrap.is-loading > .loader { display: flex; }
+    .loader { display: none; justify-content: center; padding: 25vh 0; }
+    .spinner {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--line); border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error { text-align: center; padding: 20vh 1rem; color: var(--muted); font-weight: 300; }
+    .error h1 { font-size: 1.7rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; }
+
+    /* ---------- шапка: галерия BG | лого | галерия EN ---------- */
+    .gallery {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: clamp(.8rem, 3vw, 1.6rem);
+      font-size: clamp(.72rem, 2.4vw, .84rem);
+      line-height: 1.45;
+    }
+    .gallery .bg-side { text-align: right; }
+    .gallery .en-side { text-align: left; color: var(--muted); }
+    .gallery .en-side a { color: inherit; text-decoration: none; }
+    .gallery .en-side a:hover { text-decoration: underline; }
+    .gallery img { display: block; height: clamp(30px, 8vw, 42px); width: auto; }
+    .gallery[hidden] { display: none; }
+
+    /* На тесен екран трите колони не се събират — логото минава отгоре.
+       Същото важи и когато няма английска страна (едноезична покана). */
+    .gallery.single {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+      gap: .7rem;
+    }
+    .gallery.single .bg-side { text-align: center; }
+    .gallery.single .logo-cell { order: -1; }
+
+    @media (max-width: 560px) {
+      .gallery {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        gap: .7rem;
+      }
+      .gallery .bg-side, .gallery .en-side { text-align: center; }
+      .gallery .logo-cell { order: -1; }
+    }
+
+    /* ---------- плеър ---------- */
+    .player {
+      position: relative;
+      width: 100%;
+      margin-inline: auto;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    body:not(.theme-light) .player { border-radius: 14px; }
+    .player video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+
+    /* Голям бутон „пусни“ — резервният вариант, когато авто-стартът е блокиран */
+    .overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0, 0, 0, .32);
+      border: 0; cursor: pointer;
+    }
+    .overlay[hidden] { display: none; }
+    .overlay .play {
+      width: 74px; height: 74px; border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    .overlay .play svg { width: 26px; height: 26px; margin-left: 4px; fill: #fff; }
+
+    /* Хапче „докоснете за звук“ */
+    .sound {
+      position: absolute; left: 50%; bottom: 14px;
+      transform: translateX(-50%);
+      display: inline-flex; align-items: center; gap: .45rem;
+      padding: .5rem .95rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .25);
+      background: rgba(0, 0, 0, .62);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font: inherit; font-size: .82rem;
+      cursor: pointer;
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+    .sound[hidden] { display: none; }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent); } }
+
+    /* ---------- основен блок ---------- */
+    .main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(1.2rem, 3.5vw, 1.8rem);
+    }
+    @media (min-width: 700px) {
+      .main { grid-template-columns: 1.05fr 1fr; align-items: start; gap: 2.2rem; }
+    }
+
+    .name {
+      font-weight: 900;
+      font-size: clamp(1.75rem, 7.2vw, 2.6rem);
+      line-height: 1.02;
+      letter-spacing: -.005em;
+      text-transform: uppercase;
+    }
+    .exhibition {
+      font-weight: 400;
+      font-size: clamp(1.25rem, 5.2vw, 1.85rem);
+      line-height: 1.12;
+      text-transform: uppercase;
+    }
+    .titles > * + * { margin-top: .18rem; }
+    .titles .en { color: var(--accent); }
+
+    .when { font-size: clamp(.95rem, 3.4vw, 1.05rem); line-height: 1.5; }
+    .when .lead { font-weight: 700; }
+    .when .gap { height: .85rem; }
+    .when .en-block { color: var(--accent); margin-top: 1.15rem; }
+
+    .desc {
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--muted);
+      white-space: pre-line;
+    }
+
+    /* ---------- бутони ---------- */
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      grid-auto-rows: 1fr;   /* по-дългият надпис не прави реда по-висок от другия */
+      gap: .55rem;
+    }
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .8rem 1rem;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      font: inherit; font-size: .92rem;
+      text-decoration: none; cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    body:not(.theme-light) .btn { border-radius: 10px; }
+    .btn:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); background: var(--panel-hover); }
+    .btn[hidden] { display: none; }
+    .btn svg { width: 17px; height: 17px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
+
+    /* ---------- партньори ---------- */
+    .sponsors { text-align: center; }
+    .sponsors[hidden] { display: none; }
+    .sponsors .note { font-size: clamp(.66rem, 2.2vw, .76rem); line-height: 1.5; }
+    .sponsors .note .en { color: var(--accent); }
+    .sponsors img { width: 100%; max-width: 680px; height: auto; margin-top: .9rem; }
+
+    footer {
+      text-align: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+    }
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .7rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .lang { position: fixed; top: calc(.7rem + env(safe-area-inset-top)); right: .8rem; z-index: 5; display: flex; gap: .3rem; }
+    .lang[hidden] { display: none; }
+    .lang button {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: .2rem .5rem;
+      font: inherit; font-size: .68rem; letter-spacing: .06em;
+      cursor: pointer;
+    }
+    .lang button.active { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 1.5rem;
+      transform: translate(-50%, 130%);
+      background: var(--ink); color: var(--bg);
+      padding: .7rem 1.1rem; border-radius: 10px;
+      font-size: .85rem;
+      transition: transform .3s;
+      z-index: 10;
+    }
+    .toast.show { transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+  <div class="lang" id="langSwitch" hidden>
+    <button data-lang="bg" class="active" onclick="setLang('bg')">BG</button>
+    <button data-lang="en" onclick="setLang('en')">EN</button>
+  </div>
+
+  <div class="wrap is-loading" id="wrap">
+    <div class="loader"><div class="spinner"></div></div>
+
+    <div class="error">
+      <h1 id="errTitle">Поканата не е намерена</h1>
+      <p id="errText">Проверете адреса или се свържете с организатора.</p>
+    </div>
+
+    <div class="content">
+      <div class="gallery" id="gallery" hidden>
+        <div class="bg-side">
+          <div id="venueBg"></div>
+          <div id="addressBg"></div>
+        </div>
+        <div class="logo-cell"><img id="logo" alt="" hidden></div>
+        <div class="en-side">
+          <div id="venueEn"></div>
+          <a id="siteLink" target="_blank" rel="noopener"></a>
+        </div>
+      </div>
+
+      <div class="player" id="player">
+        <video id="video" playsinline webkit-playsinline preload="auto" muted></video>
+        <button class="overlay" id="overlay" aria-label="Пусни видеото">
+          <span class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        </button>
+        <button class="sound" id="soundBtn" hidden>🔇 <span id="soundLabel">Докоснете за звук</span></button>
+      </div>
+
+      <div class="main">
+        <div class="titles" id="titles"></div>
+        <div class="when" id="when"></div>
+      </div>
+
+      <p class="desc" id="desc"></p>
+
+      <div class="actions">
+        <button class="btn" id="calBtn" hidden onclick="addToCalendar()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          <span id="calLabel">Добави в календара</span>
+        </button>
+        <a class="btn" id="mapBtn" hidden target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+          <span id="mapLabel">Как да стигна</span>
+        </a>
+        <a class="btn" id="siteBtn" hidden target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18"/></svg>
+          <span id="siteLabel">Уебсайт</span>
+        </a>
+        <button class="btn" onclick="shareInvite()">
+          <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>
+          <span id="shareLabel">Сподели</span>
+        </button>
+      </div>
+
+      <div class="sponsors" id="sponsors" hidden>
+        <div class="note">
+          <div id="sponsorsNoteBg"></div>
+          <div class="en" id="sponsorsNoteEn"></div>
+        </div>
+        <img id="sponsorsImg" alt="" hidden>
+      </div>
+
+      <footer><a href="https://nfcbulgaria.com" target="_blank" rel="noopener">NFC Bulgaria</a></footer>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const T = {
+      bg: {
+        notFound: 'Поканата не е намерена',
+        notFoundText: 'Проверете адреса или се свържете с организатора.',
+        sound: 'Докоснете за звук',
+        calendar: 'Добави в календара',
+        map: 'Как да стигна',
+        site: 'Уебсайт',
+        share: 'Сподели',
+        copied: 'Линкът е копиран',
+        videoError: 'Видеото не може да се зареди. Опитайте отново.'
+      },
+      en: {
+        notFound: 'Invitation not found',
+        notFoundText: 'Please check the link or contact the organiser.',
+        sound: 'Tap for sound',
+        calendar: 'Add to calendar',
+        map: 'Directions',
+        site: 'Website',
+        share: 'Share',
+        copied: 'Link copied',
+        videoError: 'The video could not be loaded. Please try again.'
+      }
+    };
+
+    let lang = 'bg';
+    let invite = null;
+    let inviteId = '';
+    let playLogged = false;
+    let playerReady = false;
+
+    const $ = id => document.getElementById(id);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lang = (navigator.language || 'bg').toLowerCase().startsWith('bg') ? 'bg' : 'en';
+      markLang();
+
+      inviteId = (new URLSearchParams(location.search).get('id') || '').trim();
+      if (!inviteId) return showError();
+      load();
+    });
+
+    async function load() {
+      const { data, error } = await db
+        .from('video_invites')
+        .select('*')
+        .eq('id', inviteId)
+        .eq('published', true)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.error('Invite not found:', inviteId, error);
+        return showError();
+      }
+
+      invite = data;
+      render();
+      db.rpc('log_invite_view', { p_invite: inviteId, p_event: 'open' });
+    }
+
+    // Български текст от самата колона; английският — от колоната i18n
+    function bg(field) { return (invite && invite[field]) || ''; }
+    function en(field) {
+      return (invite && invite.i18n && invite.i18n.en && invite.i18n.en[field]) || '';
+    }
+    // В едноезичен режим показваме само активния език
+    function txt(field) { return (lang === 'en' && en(field)) || bg(field); }
+
+    function render() {
+      applyTheme();
+
+      const twoLang = !!invite.bilingual;
+      $('langSwitch').hidden = twoLang;
+
+      document.title = (txt('title') || 'Видео покана') + ' | NFC Bulgaria';
+
+      renderGallery(twoLang);
+      renderTitles(twoLang);
+      renderWhen(twoLang);
+      renderSponsors(twoLang);
+      setText('desc', txt('description'));
+
+      setupPlayer();
+
+      toggleLink('mapBtn', invite.maps_url);
+      toggleLink('siteBtn', invite.website_url);
+      $('calBtn').hidden = !invite.event_start;
+
+      applyLang();
+      $('wrap').className = 'wrap is-ready';
+      startPlayback();
+    }
+
+    function applyTheme() {
+      document.body.classList.toggle('theme-light', invite.theme === 'light');
+      const root = document.documentElement.style;
+      // Цветовете от базата бият темата
+      if (invite.accent)   root.setProperty('--accent', invite.accent);
+      if (invite.bg_color) root.setProperty('--bg', invite.bg_color);
+    }
+
+    // Шапката повтаря печатната покана: галерия на български отляво,
+    // логото по средата, английският отдясно.
+    function renderGallery(twoLang) {
+      const hasLogo = !!invite.logo_url;
+      const showEn  = twoLang && (en('venue') || invite.website_url);
+
+      if (invite.logo_url) {
+        $('logo').src = invite.logo_url;
+        $('logo').alt = bg('venue') || '';
+        $('logo').hidden = false;
+      }
+      setText('venueBg',   txt('venue'));
+      setText('addressBg', txt('address'));
+
+      if (showEn) {
+        setText('venueEn', [en('venue'), en('address')].filter(Boolean).join(', '));
+        const link = $('siteLink');
+        link.textContent = invite.website_url || '';
+        link.href = invite.website_url || '#';
+        link.hidden = !invite.website_url;
+      } else {
+        setText('venueEn', '');
+        $('siteLink').hidden = true;
+      }
+
+      $('gallery').classList.toggle('single', !showEn);
+      $('gallery').hidden = !(hasLogo || txt('venue') || showEn);
+    }
+
+    // Печатният ред: име (BG) → изложба (BG) → изложба (EN) → име (EN)
+    function renderTitles(twoLang) {
+      const box = $('titles');
+      box.innerHTML = '';
+      const add = (text, cls) => {
+        if (!text) return;
+        const el = document.createElement('div');
+        el.className = cls;
+        el.textContent = text;
+        box.appendChild(el);
+      };
+
+      if (twoLang) {
+        add(bg('title'),    'name');
+        add(bg('subtitle'), 'exhibition');
+        add(en('subtitle'), 'exhibition en');
+        add(en('title'),    'name en');
+      } else {
+        add(txt('title'),    'name');
+        add(txt('subtitle'), 'exhibition');
+      }
+    }
+
+    // Дати/часове. Ред, ограден с ** **, е получер (както в печата);
+    // празен ред прави отстъп.
+    function renderWhen(twoLang) {
+      const box = $('when');
+      box.innerHTML = '';
+      const block = (text, cls) => {
+        if (!text) return;
+        const wrap = document.createElement('div');
+        if (cls) wrap.className = cls;
+        text.split('\n').forEach(raw => {
+          const line = raw.trim();
+          const el = document.createElement('div');
+          if (!line) {
+            el.className = 'gap';
+          } else if (line.startsWith('**') && line.endsWith('**')) {
+            el.className = 'lead';
+            el.textContent = line.slice(2, -2).trim();
+          } else {
+            el.textContent = line;
+          }
+          wrap.appendChild(el);
+        });
+        box.appendChild(wrap);
+      };
+
+      if (twoLang) {
+        block(bg('event_text'));
+        block(en('event_text'), 'en-block');
+      } else {
+        block(txt('event_text'));
+      }
+    }
+
+    function renderSponsors(twoLang) {
+      const noteBg = bg('sponsors_note');
+      const noteEn = twoLang ? en('sponsors_note') : '';
+      setText('sponsorsNoteBg', twoLang ? noteBg : txt('sponsors_note'));
+      setText('sponsorsNoteEn', noteEn);
+
+      if (invite.sponsors_url) {
+        $('sponsorsImg').src = invite.sponsors_url;
+        $('sponsorsImg').hidden = false;
+      }
+      $('sponsors').hidden = !(invite.sponsors_url || noteBg);
+    }
+
+    // Плеърът се сглобява веднъж — при смяна на езика само текстовете се
+    // пренаписват, видеото не се презарежда и не тръгва отначало.
+    function setupPlayer() {
+      if (playerReady) return;
+      playerReady = true;
+
+      const v = $('video');
+      v.poster = invite.poster_url || '';
+      v.loop   = !!invite.loop_video;
+      if (invite.video_url_webm) v.appendChild(source(invite.video_url_webm, 'video/webm'));
+      v.appendChild(source(invite.video_url, 'video/mp4'));
+      v.load();
+
+      v.addEventListener('loadedmetadata', fitPlayer);
+      window.addEventListener('resize', fitPlayer);
+      v.addEventListener('playing', () => { $('overlay').hidden = true; logPlay(); });
+      v.addEventListener('pause',   () => { if (!v.ended) $('overlay').hidden = false; });
+      v.addEventListener('ended',   () => {
+        $('overlay').hidden = false;
+        $('soundBtn').hidden = true;
+        db.rpc('log_invite_view', { p_invite: inviteId, p_event: 'complete' });
+      });
+      v.addEventListener('error', () => toast(T[lang].videoError));
+
+      $('overlay').onclick  = () => playWithSound();
+      $('soundBtn').onclick = e => { e.stopPropagation(); playWithSound(); };
+    }
+
+    // Авто-стартът е позволен само без звук — затова тръгваме тихо и
+    // предлагаме звука с едно докосване (правило на iOS и Android).
+    function startPlayback() {
+      if (!invite.autoplay) return;
+      const v = $('video');
+      v.muted = true;
+      v.play().then(() => {
+        $('overlay').hidden = true;
+        $('soundBtn').hidden = false;
+      }).catch(() => {
+        // Режим „ниска батерия“ или строг браузър: остава големият бутон
+        $('overlay').hidden = false;
+      });
+    }
+
+    // Рамката следва кадъра на видеото, но не превзема целия екран:
+    // при вертикален клип заглавието и бутоните трябва да остават видими.
+    function fitPlayer() {
+      const v = $('video'), p = $('player');
+      if (!v.videoWidth || !v.videoHeight) return;
+      const ratio = v.videoWidth / v.videoHeight;
+      p.style.aspectRatio = v.videoWidth + ' / ' + v.videoHeight;
+      p.style.maxWidth = Math.round(window.innerHeight * 0.7 * ratio) + 'px';
+    }
+
+    function source(src, type) {
+      const s = document.createElement('source');
+      s.src = src;
+      s.type = type;
+      return s;
+    }
+
+    // Пускане със звук след докосване. Ако едва е започнало — от начало,
+    // за да не се изпусне началото на клипа.
+    function playWithSound() {
+      const v = $('video');
+      v.muted = false;
+      v.volume = 1;
+      if (v.currentTime < 3) v.currentTime = 0;
+      v.play().catch(() => {});
+      $('overlay').hidden = true;
+      $('soundBtn').hidden = true;
+    }
+
+    function logPlay() {
+      if (playLogged) return;
+      playLogged = true;
+      db.rpc('log_invite_view', { p_invite: inviteId, p_event: 'play' });
+    }
+
+    // ------------------------------------------------------------------
+    // Бутони
+    // ------------------------------------------------------------------
+    function addToCalendar() {
+      if (!invite || !invite.event_start) return;
+      const start = new Date(invite.event_start);
+      const end   = invite.event_end ? new Date(invite.event_end)
+                                     : new Date(start.getTime() + 2 * 3600 * 1000);
+      const stamp = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const esc   = s => String(s || '').replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
+      const name  = [txt('title'), txt('subtitle')].filter(Boolean).join(' — ');
+
+      const ics = [
+        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//NFC Bulgaria//Pokana//BG',
+        'BEGIN:VEVENT',
+        'UID:' + inviteId + '@nfcbulgaria.com',
+        'DTSTAMP:' + stamp(new Date()),
+        'DTSTART:' + stamp(start),
+        'DTEND:' + stamp(end),
+        'SUMMARY:' + esc(name),
+        'LOCATION:' + esc([txt('venue'), txt('address')].filter(Boolean).join(', ')),
+        'DESCRIPTION:' + esc(txt('description')),
+        'URL:' + location.href,
+        'END:VEVENT', 'END:VCALENDAR'
+      ].join('\r\n');
+
+      const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = inviteId + '.ics';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+
+    async function shareInvite() {
+      const url   = location.href;
+      const title = [txt('title'), txt('subtitle')].filter(Boolean).join(' — ') || 'Покана';
+      if (navigator.share) {
+        try { await navigator.share({ title, text: txt('event_text') || title, url }); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      try { await navigator.clipboard.writeText(url); toast(T[lang].copied); }
+      catch (e) { toast(url); }
+    }
+
+    // ------------------------------------------------------------------
+    // Език / помощни
+    // ------------------------------------------------------------------
+    function setLang(l) {
+      lang = l;
+      markLang();
+      if (invite) render();
+      else applyLang();
+    }
+
+    function markLang() {
+      document.querySelectorAll('.lang button').forEach(b =>
+        b.classList.toggle('active', b.dataset.lang === lang));
+      document.documentElement.lang = lang;
+    }
+
+    function applyLang() {
+      const t = T[lang];
+      setText('errTitle',   t.notFound);
+      setText('errText',    t.notFoundText);
+      setText('soundLabel', t.sound);
+      setText('calLabel',   t.calendar);
+      setText('mapLabel',   t.map);
+      setText('shareLabel', t.share);
+      setText('siteLabel', (invite && invite.website_label) || t.site);
+    }
+
+    // Празните полета се скриват, за да не остават дупки в оформлението
+    const HIDE_WHEN_EMPTY = ['venueBg', 'addressBg', 'venueEn', 'desc',
+                             'sponsorsNoteBg', 'sponsorsNoteEn'];
+
+    function setText(id, value) {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = value || '';
+      if (HIDE_WHEN_EMPTY.includes(id)) el.style.display = value ? '' : 'none';
+    }
+
+    function toggleLink(id, href) {
+      const el = $(id);
+      if (href) { el.href = href; el.hidden = false; }
+      else { el.hidden = true; }
+    }
+
+    function showError() {
+      applyLang();
+      $('wrap').className = 'wrap is-error';
+      document.title = T[lang].notFound;
+    }
+
+    let toastTimer = null;
+    function toast(msg) {
+      const el = $('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
