@@ -450,6 +450,7 @@
     let invite = null;
     let inviteId = '';
     let playLogged = false;
+    let soundLogged = false;
     let playerReady = false;
     let cinema = false;        // клипът пръв, поканата след него
     let cinemaDone = false;
@@ -520,6 +521,9 @@
 
       toggleLink('mapBtn', invite.maps_url);
       toggleLink('siteBtn', invite.website_url);
+      // Отварят се в нов таб, затова заявката успява да тръгне
+      $('mapBtn').onclick  = () => logEvent('map');
+      $('siteBtn').onclick = () => logEvent('site');
       $('calBtn').hidden = !invite.event_start;
 
       applyLang();
@@ -667,7 +671,7 @@
 
       $('overlay').onclick  = () => playWithSound();
       $('soundBtn').onclick = e => { e.stopPropagation(); playWithSound(); };
-      $('skipBtn').onclick  = e => { e.stopPropagation(); revealInvitation(); };
+      $('skipBtn').onclick  = e => { e.stopPropagation(); logEvent('skip'); revealInvitation(); };
     }
 
     // Авто-стартът е позволен само без звук — затова тръгваме тихо и
@@ -712,6 +716,7 @@
     // за да не се изпусне началото на клипа.
     function playWithSound() {
       const v = $('video');
+      if (v.muted && !soundLogged) { soundLogged = true; logEvent('sound'); }
       v.muted = false;
       v.volume = 1;
       if (v.currentTime < 3) v.currentTime = 0;
@@ -760,8 +765,26 @@
     // Заявките на supabase-js са „мързеливи" — тръгват чак при .then().
     // Без него броячът мълчи, а грешка тук не бива да стига до госта.
     function logEvent(event) {
-      db.rpc('log_invite_view', { p_invite: inviteId, p_event: event })
-        .then(() => {}, () => {});
+      db.rpc('log_invite_view', {
+        p_invite: inviteId,
+        p_event: event,
+        p_platform: platform()
+      }).then(() => {}, () => {});
+    }
+
+    // Само вид устройство — нищо, по което човек може да бъде разпознат.
+    // Полезно е за отчета: покана на хартия се сканира почти само с телефон,
+    // а споделеният линк се отваря и от компютър.
+    let platformCache = null;
+    function platform() {
+      if (platformCache) return platformCache;
+      const ua = navigator.userAgent || '';
+      platformCache =
+        /iPhone|iPad|iPod/i.test(ua)                        ? 'ios'
+        : /Android/i.test(ua)                               ? 'android'
+        : /Macintosh|Windows|Linux|CrOS/i.test(ua)          ? 'desktop'
+        :                                                     'other';
+      return platformCache;
     }
 
     function logPlay() {
@@ -796,6 +819,8 @@
         'END:VEVENT', 'END:VCALENDAR'
       ].join('\r\n');
 
+      logEvent('calendar');
+
       const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
       const a = document.createElement('a');
       a.href = url;
@@ -807,6 +832,7 @@
     }
 
     async function shareInvite() {
+      logEvent('share');
       const url   = location.href;
       const title = [txt('title'), txt('subtitle')].filter(Boolean).join(' — ') || 'Покана';
       if (navigator.share) {

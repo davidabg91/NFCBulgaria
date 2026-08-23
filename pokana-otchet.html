@@ -97,6 +97,47 @@
     .day .n { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
     .empty { padding: 1.6rem .9rem; color: var(--muted); font-weight: 300; text-align: center; }
 
+    section { margin-top: 2.2rem; }
+
+    /* Действия след клипа */
+    .acts { border: 1px solid var(--line); }
+    .act {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      gap: .8rem;
+      padding: .7rem .9rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .act:last-child { border-bottom: 0; }
+    .act .name { font-size: .92rem; }
+    .act .name small { display: block; color: var(--muted); font-weight: 300; font-size: .76rem; margin-top: .1rem; }
+    .act .v { font-weight: 900; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+    .act .v span { font-size: .74rem; font-weight: 400; color: var(--muted); margin-left: .35rem; }
+
+    /* Устройства */
+    .plats { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .plat {
+      border: 1px solid var(--line);
+      padding: .7rem 1rem;
+      flex: 1 1 8rem;
+    }
+    .plat .p { font-weight: 900; font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+    .plat .l { font-size: .78rem; color: var(--muted); margin-top: .2rem; }
+
+    /* По часове */
+    .hours { display: flex; align-items: flex-end; gap: 2px; height: 90px; border-bottom: 1px solid var(--line); }
+    .hours .h { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+    .hours .h i { display: block; background: var(--accent); min-height: 1px; }
+    .hoursAxis { display: flex; justify-content: space-between; margin-top: .35rem; font-size: .68rem; color: var(--muted); }
+
+    .peak {
+      margin-top: .9rem; padding: .8rem .9rem;
+      border-left: 3px solid var(--accent); background: var(--panel);
+      font-size: .88rem; font-weight: 300; line-height: 1.5;
+    }
+    .peak b { font-weight: 700; }
+
     .foot {
       margin-top: 2rem; padding-top: 1.2rem;
       border-top: 1px solid var(--line);
@@ -148,6 +189,23 @@
 
       <h2>По дни</h2>
       <div class="days" id="days"></div>
+      <div class="peak" id="peak" hidden></div>
+
+      <section id="actsSection" hidden>
+        <h2>Какво направиха след поканата</h2>
+        <div class="acts" id="acts"></div>
+      </section>
+
+      <section id="hoursSection" hidden>
+        <h2>По часове на деня</h2>
+        <div class="hours" id="hours"></div>
+        <div class="hoursAxis"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+      </section>
+
+      <section id="platsSection" hidden>
+        <h2>С какво отварят поканата</h2>
+        <div class="plats" id="plats"></div>
+      </section>
 
       <div class="foot">
         <span id="period"></span>
@@ -166,18 +224,25 @@
 
     const $ = id => document.getElementById(id);
 
+    let reportToken = '';
+
     document.addEventListener('DOMContentLoaded', () => {
-      const token = (new URLSearchParams(location.search).get('t') || '').trim();
-      if (!token) return fail();
-      load(token);
+      reportToken = (new URLSearchParams(location.search).get('t') || '').trim();
+      if (!reportToken) return fail();
+      load();
+      // Отчетът често стои отворен на екрана — сам се освежава
+      setInterval(() => load(true), 60000);
     });
 
-    async function load(token) {
+    async function load(silent) {
       // .rpc е „мързелив" — без await заявката изобщо не тръгва
-      const { data, error } = await db.rpc('invite_report', { p_token: token });
+      const { data, error } = await db.rpc('invite_report', { p_token: reportToken });
       if (error || !data) {
-        console.error('Report unavailable:', error);
-        return fail();
+        if (!silent) {
+          console.error('Report unavailable:', error);
+          fail();
+        }
+        return;
       }
       render(data);
     }
@@ -202,6 +267,10 @@
       setText('complPct', plays ? pct(compl, plays) + ' от пусналите' : '');
 
       renderDays(r.daily || []);
+      renderPeak(r.daily || []);
+      renderActions(r.events || {}, views);
+      renderHours(r.hours || {});
+      renderPlatforms(r.platforms || {});
 
       if (r.first_view) {
         setText('period', 'Периодът обхваща от ' + date(r.first_view) +
@@ -247,6 +316,114 @@
         row.append(label, track, num);
         box.appendChild(row);
       });
+    }
+
+    // Най-силният ден — първото нещо, което всеки пита
+    function renderPeak(days) {
+      if (days.length < 2) return;
+      const best = days.reduce((a, b) => (b.opens || 0) > (a.opens || 0) ? b : a);
+      if (!best.opens) return;
+      const el = $('peak');
+      el.innerHTML = '';
+      el.append('Най-силен ден: ');
+      const b = document.createElement('b');
+      b.textContent = dayLabel(best.day) + ' — ' + best.opens +
+                      (best.opens === 1 ? ' сканиране' : ' сканирания');
+      el.append(b, '.');
+      el.hidden = false;
+    }
+
+    // Действията по бутоните: най-ясният знак, че поканата е свършила работа
+    const ACTIONS = [
+      ['sound',    'Пуснаха звука',        'докоснаха видеото, за да го чуят'],
+      ['calendar', 'Добавиха в календара', 'откриването влезе в телефона им'],
+      ['map',      'Потърсиха посоки',     'отвориха картата към галерията'],
+      ['site',     'Отвориха sghg.bg',     'продължиха към сайта на галерията'],
+      ['share',    'Споделиха поканата',   'препратиха я на друг човек'],
+      ['skip',     'Прескочиха клипа',     'отидоха направо към данните']
+    ];
+
+    function renderActions(events, views) {
+      const box = $('acts');
+      box.innerHTML = '';
+      let any = false;
+
+      ACTIONS.forEach(([key, name, hint]) => {
+        const n = events[key] || 0;
+        if (!n) return;
+        any = true;
+
+        const row = document.createElement('div');
+        row.className = 'act';
+
+        const left = document.createElement('div');
+        left.className = 'name';
+        left.textContent = name;
+        const small = document.createElement('small');
+        small.textContent = hint;
+        left.appendChild(small);
+
+        const right = document.createElement('div');
+        right.className = 'v';
+        right.textContent = n;
+        if (views) {
+          const pc = document.createElement('span');
+          pc.textContent = pct(n, views);
+          right.appendChild(pc);
+        }
+
+        row.append(left, right);
+        box.appendChild(row);
+      });
+
+      $('actsSection').hidden = !any;
+    }
+
+    // Кога сканират — вечер вкъщи или на самото откриване
+    function renderHours(hours) {
+      const box = $('hours');
+      box.innerHTML = '';
+      const vals = [];
+      for (let h = 0; h < 24; h++) vals.push(hours[String(h)] || 0);
+      const total = vals.reduce((a, b) => a + b, 0);
+      if (!total) { $('hoursSection').hidden = true; return; }
+
+      const max = Math.max(...vals);
+      vals.forEach((n, h) => {
+        const col = document.createElement('div');
+        col.className = 'h';
+        col.title = String(h).padStart(2, '0') + ':00 — ' + n;
+        const bar = document.createElement('i');
+        bar.style.height = Math.round(n / max * 100) + '%';
+        if (!n) bar.style.opacity = '.18';
+        col.appendChild(bar);
+        box.appendChild(col);
+      });
+      $('hoursSection').hidden = false;
+    }
+
+    const PLATFORMS = { ios: 'iPhone / iPad', android: 'Android', desktop: 'Компютър', other: 'Друго' };
+
+    function renderPlatforms(plats) {
+      const box = $('plats');
+      box.innerHTML = '';
+      const entries = Object.entries(plats).filter(([, n]) => n > 0);
+      if (!entries.length) { $('platsSection').hidden = true; return; }
+
+      const total = entries.reduce((a, [, n]) => a + n, 0);
+      entries.sort((a, b) => b[1] - a[1]).forEach(([key, n]) => {
+        const el = document.createElement('div');
+        el.className = 'plat';
+        const p = document.createElement('div');
+        p.className = 'p';
+        p.textContent = pct(n, total);
+        const l = document.createElement('div');
+        l.className = 'l';
+        l.textContent = (PLATFORMS[key] || key) + ' · ' + n;
+        el.append(p, l);
+        box.appendChild(el);
+      });
+      $('platsSection').hidden = false;
     }
 
     // ------------------------------------------------------------------

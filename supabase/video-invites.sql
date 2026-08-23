@@ -81,9 +81,12 @@ alter table public.video_invites
 create table if not exists public.invite_views (
   id         bigserial primary key,
   invite_id  text not null references public.video_invites(id) on delete cascade,
-  event      text not null default 'open',   -- open | play | complete
+  event      text not null default 'open',   -- виж списъка в log_invite_view
+  platform   text,                           -- ios | android | desktop | other
   created_at timestamptz not null default now()
 );
+
+alter table public.invite_views add column if not exists platform text;
 
 create index if not exists invite_views_invite_idx on public.invite_views (invite_id, created_at desc);
 
@@ -115,14 +118,34 @@ grant select on public.video_invites to anon, authenticated;
 -- ---------------------------------------------------------------------
 -- Броене на отваряния/гледания
 -- ---------------------------------------------------------------------
-create or replace function public.log_invite_view(p_invite text, p_event text default 'open')
+-- Видове събития:
+--   open      отворена покана (сканиране)
+--   play      видеото тръгна
+--   sound     гостът докосна, за да чуе звука
+--   complete  видеото изгледано докрай
+--   calendar  „Добави в календара"
+--   map       „Как да стигна"
+--   site      сайтът на организатора
+--   share     „Сподели"
+--   skip      прескочи клипа (кино режим)
+--
+-- Старата версия с два параметъра отпада, за да няма две функции с
+-- едно име — PostgREST се обърква коя да извика.
+drop function if exists public.log_invite_view(text, text);
+
+create or replace function public.log_invite_view(
+  p_invite   text,
+  p_event    text default 'open',
+  p_platform text default null
+)
 returns void
 language plpgsql
 security definer
 set search_path = public
 as $$
 begin
-  if p_event not in ('open', 'play', 'complete') then
+  if p_event not in ('open', 'play', 'sound', 'complete',
+                     'calendar', 'map', 'site', 'share', 'skip') then
     return;
   end if;
 
@@ -131,7 +154,12 @@ begin
     return;
   end if;
 
-  insert into public.invite_views (invite_id, event) values (p_invite, p_event);
+  insert into public.invite_views (invite_id, event, platform)
+  values (
+    p_invite,
+    p_event,
+    case when p_platform in ('ios', 'android', 'desktop', 'other') then p_platform end
+  );
 
   if p_event = 'open' then
     update public.video_invites set views = views + 1 where id = p_invite;
@@ -141,7 +169,7 @@ begin
 end;
 $$;
 
-grant execute on function public.log_invite_view(text, text) to anon, authenticated;
+grant execute on function public.log_invite_view(text, text, text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- Отчет по дни (за нас / за клиента)

@@ -59,8 +59,11 @@ security definer
 set search_path = public
 as $$
 declare
-  v      public.video_invites%rowtype;
-  v_days jsonb;
+  v          public.video_invites%rowtype;
+  v_days     jsonb;
+  v_events   jsonb;
+  v_hours    jsonb;
+  v_plats    jsonb;
 begin
   if p_token is null or length(p_token) < 16 then
     return null;
@@ -87,6 +90,37 @@ begin
     group by 1
   ) x;
 
+  -- брой по вид събитие: {"open":137,"play":118,"calendar":9,...}
+  select coalesce(jsonb_object_agg(e.event, e.n), '{}'::jsonb)
+  into v_events
+  from (
+    select w.event, count(*) as n
+    from public.invite_views w
+    where w.invite_id = v.id
+    group by w.event
+  ) e;
+
+  -- сканирания по час на деня (българско време)
+  select coalesce(jsonb_object_agg(h.hh::text, h.n), '{}'::jsonb)
+  into v_hours
+  from (
+    select extract(hour from (w.created_at at time zone 'Europe/Sofia'))::int as hh,
+           count(*) as n
+    from public.invite_views w
+    where w.invite_id = v.id and w.event = 'open'
+    group by 1
+  ) h;
+
+  -- с какво устройство отварят
+  select coalesce(jsonb_object_agg(p.plat, p.n), '{}'::jsonb)
+  into v_plats
+  from (
+    select coalesce(w.platform, 'other') as plat, count(*) as n
+    from public.invite_views w
+    where w.invite_id = v.id and w.event = 'open'
+    group by 1
+  ) p;
+
   return jsonb_build_object(
     'title',       v.title,
     'subtitle',    v.subtitle,
@@ -99,7 +133,10 @@ begin
                     where w.invite_id = v.id and w.event = 'complete'),
     'first_view',  (select min(created_at) from public.invite_views w where w.invite_id = v.id),
     'last_view',   (select max(created_at) from public.invite_views w where w.invite_id = v.id),
-    'daily',       v_days
+    'daily',       v_days,
+    'events',      v_events,
+    'hours',       v_hours,
+    'platforms',   v_plats
   );
 end;
 $$;
