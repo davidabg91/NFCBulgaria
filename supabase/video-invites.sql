@@ -151,23 +151,31 @@ from public.video_invites v;
 revoke all on public.invite_stats from anon, authenticated;
 
 -- ---------------------------------------------------------------------
--- Storage: публичен bucket за видеата (ако решим да ги качваме тук)
+-- Storage: публичен bucket, ако решим да качваме видеата тук
 -- ---------------------------------------------------------------------
--- Внимание: безплатният план на Supabase вдига до 50 MB на файл. Ако
--- готовият клип е по-голям, или го компресираме, или го качваме другаде
--- (Cloudflare R2 / Bunny) и просто слагаме адреса му във video_url.
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('invites', 'invites', true, 52428800,
-        array['video/mp4', 'video/webm', 'image/jpeg', 'image/png', 'image/webp'])
-on conflict (id) do update set
-  public             = true,
-  file_size_limit    = excluded.file_size_limit,
-  allowed_mime_types = excluded.allowed_mime_types;
+-- НЕ Е ЗАДЪЛЖИТЕЛЕН. Поканата на Койчев се раздава от самия сайт
+-- (assets/invites/koychev/), затова bucket-ът е само за бъдещи клиенти.
+-- Ако проектът не дава права върху storage схемата, блокът се пропуска
+-- тихо, вместо да събори целия скрипт.
+--
+-- Внимание: безплатният план вдига до 50 MB на файл. По-голям клип или
+-- се компресира, или се качва другаде (GitHub Pages / R2) и в base се
+-- слага само адресът му.
+do $$
+begin
+  insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  values ('invites', 'invites', true, 52428800,
+          array['video/mp4', 'video/webm', 'image/jpeg', 'image/png', 'image/webp'])
+  on conflict (id) do update set
+    public             = true,
+    file_size_limit    = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
 
-drop policy if exists "invites public read" on storage.objects;
-create policy "invites public read"
-  on storage.objects for select
-  using (bucket_id = 'invites');
+  execute 'drop policy if exists "invites public read" on storage.objects';
+  execute 'create policy "invites public read" on storage.objects for select using (bucket_id = ''invites'')';
+exception when insufficient_privilege or undefined_table then
+  raise notice 'Storage bucket-ът е пропуснат (няма права) — не е нужен за поканата на Койчев.';
+end $$;
 
 -- Проверка:
 -- select id, title, views, plays from public.video_invites;
