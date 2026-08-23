@@ -1,0 +1,245 @@
+<meta charset="utf-8">
+<title>NFC Bulgaria — Ръководство за вашата дигитална визитка</title>
+<style>
+  @page { size: A4; margin: 14mm 14mm 12mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --purple:#372772; --green:#A1E8AF; --green-dark:#3fae63;
+    --ink:#0f172a; --slate:#475569; --muted:#64748b;
+    --line:#e2e8f0; --soft:#f8fafc; --softer:#f1f5f9;
+  }
+  html,body{ background:#fff; }
+  body{
+    font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); font-size:11.2pt; line-height:1.5;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .page{ max-width:186mm; margin:0 auto; }
+
+  /* ---------- Header ---------- */
+  .head{
+    display:flex; align-items:center; gap:14px;
+    background:linear-gradient(120deg,#372772 0%,#4b338f 55%,#2e2160 100%);
+    color:#fff; padding:18px 22px; border-radius:14px;
+  }
+  .badge{
+    width:54px;height:40px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.10); border:1px solid rgba(161,232,175,.55);
+    border-radius:9px;
+  }
+  .brand-name{ font-size:19pt; font-weight:800; letter-spacing:.3px; line-height:1; }
+  .brand-name span{ color:var(--green); }
+  .brand-sub{ font-size:9pt; color:#d7d0f0; margin-top:3px; letter-spacing:2px; text-transform:uppercase; }
+  .head .site{ margin-left:auto; text-align:right; font-size:9.5pt; color:#e5e0f6; }
+  .head .site b{ color:#fff; }
+
+  /* ---------- Titles ---------- */
+  .doc-title{ margin:22px 0 4px; font-size:20pt; font-weight:800; color:var(--purple); }
+  .doc-sub{ color:var(--muted); font-size:10.5pt; margin-bottom:16px; }
+  .gift-tag{
+    display:inline-block; background:var(--green); color:#123a20;
+    font-weight:700; font-size:9pt; padding:4px 11px; border-radius:999px;
+    letter-spacing:.4px; margin-bottom:14px;
+  }
+
+  h2{
+    font-size:12.5pt; color:var(--purple); margin:20px 0 8px;
+    padding-left:11px; border-left:4px solid var(--green); line-height:1.2;
+  }
+  p{ margin:0 0 8px; color:#1e293b; }
+  .lead{ font-size:11.5pt; }
+
+  /* ---------- Two column ---------- */
+  .row{ display:flex; gap:16px; align-items:stretch; }
+  .col{ flex:1; }
+
+  /* ---------- Card / boxes ---------- */
+  .card{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:var(--soft); }
+  .qrbox{ text-align:center; display:flex;flex-direction:column;align-items:center;justify-content:center; }
+  .qrbox img{ width:128px;height:128px;border:6px solid #fff;border-radius:10px;box-shadow:0 0 0 1px var(--line); }
+  .qrbox .cap{ font-size:8.6pt;color:var(--muted); margin-top:8px; }
+  .link{ font-weight:700; color:var(--purple); word-break:break-all; font-size:10.5pt; }
+
+  .creds{ background:#fbfaff; border:1px solid #ddd6f3; }
+  .creds h3{ font-size:11pt;color:var(--purple);margin-bottom:8px; }
+  .creds table{ width:100%; border-collapse:collapse; }
+  .creds td{ padding:5px 2px; vertical-align:top; font-size:10.4pt; }
+  .creds td.k{ color:var(--muted); width:96px; white-space:nowrap; }
+  .creds td.v{ font-weight:700; color:var(--ink); }
+  .creds .mono{ font-family:"Consolas",monospace; background:#efeafc; padding:2px 7px; border-radius:5px; }
+
+  /* ---------- Steps ---------- */
+  .steps{ counter-reset:s; margin:6px 0 4px; }
+  .step{ position:relative; padding:6px 0 6px 40px; border-bottom:1px dashed var(--line); }
+  .step:last-child{ border-bottom:0; }
+  .step::before{
+    counter-increment:s; content:counter(s);
+    position:absolute; left:0; top:7px;
+    width:26px;height:26px; background:var(--purple); color:#fff;
+    border-radius:50%; display:flex;align-items:center;justify-content:center;
+    font-weight:800; font-size:10.5pt;
+  }
+  .step b{ color:var(--purple); }
+
+  /* ---------- Feature chips ---------- */
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  .chip{ background:#eef7f1; border:1px solid #cfe9d8; color:#1c6b3a;
+    font-size:9pt; font-weight:600; padding:4px 10px; border-radius:999px; }
+
+  ul.tips{ list-style:none; margin:4px 0; }
+  ul.tips li{ padding:5px 0 5px 22px; position:relative; color:#1e293b; }
+  ul.tips li::before{ content:"✓"; position:absolute; left:0; top:5px; color:var(--green-dark); font-weight:800; }
+
+  .note{ background:#fffdf3; border:1px solid #f3e8bf; border-radius:10px; padding:10px 14px; font-size:9.8pt; color:#7a5b12; }
+
+  .foot{
+    margin-top:22px; padding-top:12px; border-top:2px solid var(--purple);
+    display:flex; align-items:center; gap:10px; font-size:9.3pt; color:var(--muted);
+  }
+  .foot .fbrand{ font-weight:800; color:var(--purple); }
+  .foot .r{ margin-left:auto; text-align:right; }
+
+  .pb{ page-break-before:always; }
+  @media screen{ body{ padding:24px; background:#e9edf3; } .page{ background:#fff; padding:26px; border-radius:12px; box-shadow:0 10px 40px rgba(15,23,42,.12); } }
+</style>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="head">
+    <div class="badge">
+      <svg viewBox="0 0 40 30" width="34" height="26" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="36" height="26" rx="4" fill="none" stroke="#A1E8AF" stroke-width="2"/>
+        <rect x="8" y="10" width="8" height="8" rx="1" fill="#A1E8AF"/>
+        <path d="M22 8 Q30 15 22 22 M26 5 Q38 15 26 25" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">NFC<span>Bulgaria</span></div>
+      <div class="brand-sub">Дигитални визитни карти</div>
+    </div>
+    <div class="site">
+      <div><b>nfcbulgaria.com</b></div>
+      <div>office@nfcbulgaria.com</div>
+    </div>
+  </div>
+
+  <span class="gift-tag" style="margin-top:18px;">🎁 ПОДАРЪК ЗА ВАС</span>
+  <div class="doc-title">Вашата дигитална NFC визитна карта е готова</div>
+  <div class="doc-sub">Ръководство за активиране, споделяне и управление на профила</div>
+
+  <p class="lead">Уважаеми г-н&nbsp;Гиков,</p>
+  <p>Благодарим Ви, че сте част от <b>NFC Bulgaria</b>! С удоволствие Ви поднасяме Вашата персонална
+  <b>дигитална визитна карта</b> — модерен начин да представите себе си и бизнеса си с едно докосване.
+  По-долу ще намерите всичко необходимо, за да я използвате и управлявате сами.</p>
+
+  <h2>Какво представлява NFC визитната карта?</h2>
+  <p>Това е физическа карта с вграден <b>NFC чип</b> и <b>QR код</b>, свързана с Вашия личен онлайн профил.
+  Когато допрете картата до смартфон (или сканирате QR кода), профилът Ви се отваря веднага — без приложения и без инсталации.
+  Отсрещният човек може с едно натискане да <b>запази контакта Ви</b>, да Ви се обади, да пише имейл или да отвори
+  социалните Ви мрежи. Една карта — всичките Ви контакти на едно място, винаги актуални.</p>
+
+  <div class="row">
+    <div class="col card qrbox">
+      <img src="data:image/png;base64,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" alt="QR код към профила">
+      <div class="cap">Сканирайте, за да видите профила</div>
+    </div>
+    <div class="col card" style="display:flex;flex-direction:column;justify-content:center;">
+      <p style="margin-bottom:4px;color:var(--muted);font-size:9.5pt;">ВАШИЯТ ПРОФИЛ (адрес):</p>
+      <p class="link">nfcbulgaria.com/profile.html?id=gikov</p>
+      <div class="chips">
+        <span class="chip">📇 Запазване на контакт</span>
+        <span class="chip">📞 Обаждане</span>
+        <span class="chip">✉️ Имейл</span>
+        <span class="chip">🌐 Уебсайт</span>
+        <span class="chip">📍 Google Maps</span>
+        <span class="chip">in Соц. мрежи</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>Как се използва? (3 лесни начина за споделяне)</h2>
+  <div class="steps">
+    <div class="step"><b>Докосване (Tap).</b> Допрете картата до горната част на нечий смартфон — профилът Ви се отваря автоматично.</div>
+    <div class="step"><b>QR код.</b> Ако телефонът няма NFC, другият човек просто насочва камерата към QR кода на картата.</div>
+    <div class="step"><b>Линк.</b> Може да изпратите адреса на профила си по месинджър, имейл или да го сложите в подписа си.</div>
+  </div>
+
+  <div class="foot">
+    <div class="fbrand">NFC Bulgaria</div>
+    <div>· Дигитални визитни карти с едно докосване</div>
+    <div class="r"><b>nfcbulgaria.com</b><br>office@nfcbulgaria.com</div>
+  </div>
+
+  <!-- ===================== PAGE 2 ===================== -->
+  <div class="pb"></div>
+
+  <h2>Управление на профила — данни за вход</h2>
+  <p>Профилът е изцяло Ваш и можете да го редактирате по всяко време от компютър или телефон.
+  Влизате в личното си табло на адрес <b>nfcbulgaria.com/login.html</b> със следните данни:</p>
+
+  <div class="card creds" style="margin:8px 0 4px; display:flex; gap:16px; align-items:center;">
+    <div style="flex:1;">
+      <h3>🔐 Данни за вход в таблото</h3>
+      <table>
+        <tr><td class="k">Адрес за вход:</td><td class="v">nfcbulgaria.com/login.html</td></tr>
+        <tr><td class="k">Имейл:</td><td class="v"><span class="mono">gikov@nedelya.com</span></td></tr>
+        <tr><td class="k">Парола:</td><td class="v"><span class="mono">123456</span></td></tr>
+      </table>
+    </div>
+    <div style="flex:0 0 auto; text-align:center;">
+      <img src="data:image/png;base64,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" alt="QR код за вход" style="width:104px;height:104px;border:5px solid #fff;border-radius:9px;box-shadow:0 0 0 1px #ddd6f3;">
+      <div style="font-size:8.4pt;color:var(--muted);margin-top:6px;max-width:104px;">Сканирайте за директен вход</div>
+    </div>
+  </div>
+  <div class="note" style="margin:6px 0 10px;">⚠️ Препоръчваме след първото влизане да смените паролата с Ваша, за да е профилът защитен.</div>
+
+  <h2>Как да редактирате профила си (стъпка по стъпка)</h2>
+  <div class="steps">
+    <div class="step">Отворете <b>nfcbulgaria.com/login.html</b> и въведете имейла и паролата отгоре.</div>
+    <div class="step">Натиснете <b>„👤 Редактирай Профила“</b>, за да отворите формата с Вашите данни.</div>
+    <div class="step">Попълнете или променете полетата — име, длъжност, телефон, имейл, снимка/лого, социални мрежи.</div>
+    <div class="step">Натиснете <b>„Запази Промените“</b>. Готово — профилът се обновява веднага за всички.</div>
+    <div class="step">Проверете резултата с бутона <b>„Виж моята визитка 📱“</b> или като сканирате QR кода.</div>
+  </div>
+
+  <h2>Какво можете да добавяте и променяте</h2>
+  <div class="chips" style="margin-bottom:6px;">
+    <span class="chip">Име и длъжност</span>
+    <span class="chip">Профилна снимка / лого</span>
+    <span class="chip">Телефон · Viber · WhatsApp</span>
+    <span class="chip">Имейл</span>
+    <span class="chip">Уебсайт</span>
+    <span class="chip">LinkedIn · Facebook · Instagram</span>
+    <span class="chip">Google Maps локация</span>
+    <span class="chip">Google отзиви</span>
+  </div>
+  <p style="font-size:10.2pt;color:var(--slate);">Всяка промяна е моментална — не е нужно да преиздавате картата. Един и същ NFC чип винаги сочи към актуалния профил.</p>
+
+  <h2 style="margin-top:12px;">Какви данни можете да следите</h2>
+  <div style="display:flex; gap:9px; margin:2px 0 5px;">
+    <div style="flex:1; text-align:center; background:#f3f0fc; border:1px solid #ddd6f3; border-radius:9px; padding:7px 6px;">
+      <div style="font-weight:800; color:var(--purple); font-size:10pt;">👁️ Общо сканирания</div>
+      <div style="font-size:8.6pt; color:var(--muted);">колко пъти е отваряна визитката</div>
+    </div>
+    <div style="flex:1; text-align:center; background:#eef7f1; border:1px solid #cfe9d8; border-radius:9px; padding:7px 6px;">
+      <div style="font-weight:800; color:#1c6b3a; font-size:10pt;">🤝 Събрани контакти</div>
+      <div style="font-size:8.6pt; color:var(--muted);">имена и телефони на лийдовете</div>
+    </div>
+    <div style="flex:1; text-align:center; background:#f3f0fc; border:1px solid #ddd6f3; border-radius:9px; padding:7px 6px;">
+      <div style="font-weight:800; color:var(--purple); font-size:10pt;">📥 Запазвания</div>
+      <div style="font-size:8.6pt; color:var(--muted);">колко души Ви добавиха в телефона</div>
+    </div>
+  </div>
+  <p style="font-size:9.4pt;color:var(--muted);">Списъкът с контактите е в раздел <b>„🤝 Получени Контакти (Leads)“</b> — с име, телефон и дата.</p>
+
+  <div class="note">Нужна е помощ или още карти за екипа? Свържете се с нас — с радост ще Ви съдействаме.</div>
+
+  <div class="foot">
+    <div class="fbrand">NFC Bulgaria</div>
+    <div>· Благодарим Ви за доверието!</div>
+    <div class="r"><b>nfcbulgaria.com</b> · office@nfcbulgaria.com</div>
+  </div>
+
+</div>

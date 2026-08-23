@@ -15,8 +15,8 @@
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/sofiasans-latin.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/spacegrotesk-400-latin.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-800-latin.woff2" crossorigin>
-  <link rel="stylesheet" href="fonts.css">
-  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="fonts.css?v=20260824">
+  <link rel="stylesheet" href="index.css?v=20260824">
 
   <style>
     /* Само вертикално — иначе съкращаваме страничния отстъп на .container
@@ -389,10 +389,9 @@
     </div>
   </nav>
 
-  <!-- Езиковите бутони стоят ИЗВЪН лентата, за да не заемат място там.
-       Позиционирани са абсолютно, така че не разместват съдържанието.
-       Без този контейнер i18n.js ги слага да плуват върху лентата. -->
-  <div class="container site-lang"><div id="langSwitch"></div></div>
+  <!-- Езикът се избира на началната страница и се помни. Тук контейнерът
+       стои скрит само за да не създаде i18n.js плаващи бутони. -->
+  <div class="container site-lang" hidden><div id="langSwitch"></div></div>
 
   <main class="container vp-page">
 
@@ -448,19 +447,19 @@
           </p>
           <div class="case-links">
             <a href="pokana.html?id=koychev" target="_blank" rel="noopener">
-              <b>Вариант А — поканата с видеото</b><span>отвори →</span>
+              <b>Вариант A — поканата с видеото</b><span>отвори →</span>
             </a>
             <a href="pokana.html?id=koychev&amp;kino=1" target="_blank" rel="noopener">
-              <b>Вариант Б — клипът на цял екран</b><span>отвори →</span>
+              <b>Вариант B — клипът на цял екран</b><span>отвори →</span>
             </a>
             <a href="pokana-ar.html?id=koychev" target="_blank" rel="noopener">
-              <b>Вариант В — WebAR</b><span>отвори →</span>
+              <b>Вариант C — WebAR</b><span>отвори →</span>
             </a>
           </div>
           <p class="case-hint">
             <b style="color: var(--primary); font-weight: 600;">Проба без отпечатана покана:</b>
             от компютър натиснете снимката вляво — тя се отваря на цял екран.
-            После с телефона отворете Вариант В и насочете камерата към монитора.
+            После с телефона отворете Вариант C и насочете камерата към монитора.
           </p>
         </div>
       </div>
@@ -520,7 +519,7 @@
 
       <div class="vp-grid">
         <div class="mode">
-          <div class="mode-letter">А</div>
+          <div class="mode-letter">A</div>
           <div>
             <h3>Поканата с видеото в нея</h3>
             <p>
@@ -533,7 +532,7 @@
         </div>
 
         <div class="mode">
-          <div class="mode-letter">Б</div>
+          <div class="mode-letter">B</div>
           <div>
             <h3>Клипът пръв, на цял екран</h3>
             <p>
@@ -546,7 +545,7 @@
         </div>
 
         <div class="mode">
-          <div class="mode-letter">В</div>
+          <div class="mode-letter">C</div>
           <div>
             <h3>WebAR — снимката оживява</h3>
             <p>
@@ -560,7 +559,7 @@
       </div>
 
       <div class="vp-note">
-        <b>Нашата препоръка:</b> режим А с бутон „Оживете поканата“ вътре в него.
+        <b>Нашата препоръка:</b> режим A с бутон „Оживете поканата“ вътре в него.
         Чипът отваря поканата мигновено и сигурно за всички, а AR ефектът остава
         на едно докосване разстояние за онези, които искат да го пробват. Никой
         не остава пред празен екран, а новостта е налична.
@@ -816,7 +815,7 @@
         <b>Честно за WebAR:</b> ефектът е силен, но изисква разрешение за камера,
         добра светлина и две ръце. Част от гостите отказват достъпа по навик.
         Затова не го предлагаме като единствен път, а като допълнение към режим
-        А или Б — така никой не остава без покана, а желаещите получават
+        A или B — така никой не остава без покана, а желаещите получават
         ефекта.
       </div>
     </section>
@@ -857,11 +856,11 @@
   <div class="shotbox" id="shotbox" hidden>
     <img src="assets/invites/koychev/ar-target.jpg" alt="Снимката от поканата в голям размер">
     <p>
-      Насочете телефона към <b>този екран</b> и отворете Вариант В.
+      Насочете телефона към <b>този екран</b> и отворете Вариант C.
       Дръжте картината в кадър, докато се раздвижи.
     </p>
     <div class="row">
-      <a class="btn-primary" style="text-decoration: none;" href="pokana-ar.html?id=koychev" target="_blank" rel="noopener">Отвори Вариант В</a>
+      <a class="btn-primary" style="text-decoration: none;" href="pokana-ar.html?id=koychev" target="_blank" rel="noopener">Отвори Вариант C</a>
       <button class="vp-btn-ghost" id="shotClose" style="cursor: pointer; background: none;">Затвори</button>
     </div>
   </div>
@@ -886,9 +885,9 @@
     })();
   </script>
 
-  <script src="index.js"></script>
+  <script src="index.js?v=20260824"></script>
   <!-- Превод BG / EN / RO -->
-  <script src="i18n-data.js"></script>
-  <script src="i18n.js"></script>
+  <script src="i18n-data.js?v=20260824"></script>
+  <script src="i18n.js?v=20260824"></script>
 </body>
 </html>

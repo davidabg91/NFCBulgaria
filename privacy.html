@@ -7,8 +7,8 @@
   <meta name="description" content="Политика за защита на личните данни и поверителност на потребителите на NFC Bulgaria. Научете как събираме и съхраняваме данните ви.">
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/spacegrotesk-400-latin.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-800-latin.woff2" crossorigin>
-  <link rel="stylesheet" href="fonts.css">
-  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="fonts.css?v=20260824">
+  <link rel="stylesheet" href="index.css?v=20260824">
   <style>
     .legal-content {
       padding: 7.5rem 0 8rem;
@@ -79,10 +79,9 @@
     </div>
   </nav>
 
-  <!-- Езиковите бутони стоят ИЗВЪН лентата, за да не заемат място там.
-       Позиционирани са абсолютно, така че не разместват съдържанието.
-       Без този контейнер i18n.js ги слага да плуват върху лентата. -->
-  <div class="container site-lang"><div id="langSwitch"></div></div>
+  <!-- Езикът се избира на началната страница и се помни. Тук контейнерът
+       стои скрит само за да не създаде i18n.js плаващи бутони. -->
+  <div class="container site-lang" hidden><div id="langSwitch"></div></div>
 
   <main class="container legal-content">
     <div class="legal-header">
@@ -190,9 +189,9 @@
     </div>
   </footer>
 
-  <script src="index.js"></script>
+  <script src="index.js?v=20260824"></script>
   <!-- Превод BG / EN / RO -->
-  <script src="i18n-data.js"></script>
-  <script src="i18n.js"></script>
+  <script src="i18n-data.js?v=20260824"></script>
+  <script src="i18n.js?v=20260824"></script>
 </body>
 </html>
