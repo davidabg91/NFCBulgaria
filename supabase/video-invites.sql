@@ -39,6 +39,7 @@ create table if not exists public.video_invites (
 
   -- Вид
   theme          text not null default 'dark',      -- dark | light
+  mode           text not null default 'page',      -- page | cinema (клипът пръв, цял екран)
   accent         text not null default '#c9a227',   -- акцентен цвят
   bg_color       text not null default '#0b0b0d',
   bilingual      boolean not null default false,    -- BG и EN един до друг (както в печата)
@@ -59,6 +60,8 @@ comment on table  public.video_invites is 'Видео покани, отваря
 comment on column public.video_invites.video_url is 'Публичен адрес на MP4 файла (Storage/R2/CDN), а не самият файл';
 comment on column public.video_invites.i18n is
   'Английски текстове: {"en":{"title","subtitle","description","event_text","venue","address","sponsors_note"}}';
+comment on column public.video_invites.mode is
+  'page = поканата с видеото в нея; cinema = клипът пръв на цял екран, поканата се показва след края му';
 comment on column public.video_invites.bilingual is
   'true = двата езика се показват заедно (за покани, чийто печатен оригинал е двуезичен)';
 comment on column public.video_invites.event_text is
@@ -67,6 +70,7 @@ comment on column public.video_invites.event_text is
 -- Ако таблицата вече съществува от по-ранно пускане
 alter table public.video_invites
   add column if not exists theme         text not null default 'dark',
+  add column if not exists mode          text not null default 'page',
   add column if not exists bilingual     boolean not null default false,
   add column if not exists sponsors_note text,
   add column if not exists sponsors_url  text;

@@ -183,6 +183,40 @@
     .sound[hidden] { display: none; }
     @keyframes pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent); } }
 
+    /* „Към поканата“ — за да не чака 16 секунди, който не иска */
+    .skip {
+      position: absolute; right: 12px;
+      top: calc(12px + env(safe-area-inset-top));
+      padding: .45rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .3);
+      background: rgba(0, 0, 0, .55);
+      backdrop-filter: blur(6px);
+      color: #fff; font: inherit; font-size: .8rem;
+      cursor: pointer;
+    }
+    .skip[hidden] { display: none; }
+
+    /* ---------- кино режим: клипът пръв, поканата след него ---------- */
+    body.mode-cinema:not(.cinema-done) { padding: 0; }
+    body.mode-cinema:not(.cinema-done) .wrap { max-width: none; }
+    body.mode-cinema:not(.cinema-done) .content > *:not(.player) { display: none; }
+    body.mode-cinema:not(.cinema-done) .player {
+      position: fixed; inset: 0;
+      width: 100vw; height: 100dvh;
+      max-width: none;
+      aspect-ratio: auto;
+      border: 0; border-radius: 0; box-shadow: none;
+      z-index: 20;
+    }
+    body.mode-cinema:not(.cinema-done) .overlay .play { width: 92px; height: 92px; }
+    body.mode-cinema:not(.cinema-done) .overlay .play svg { width: 32px; height: 32px; }
+    body.mode-cinema:not(.cinema-done) .sound {
+      bottom: calc(2rem + env(safe-area-inset-bottom));
+      font-size: .95rem;
+      padding: .75rem 1.4rem;
+    }
+
     /* ---------- основен блок ---------- */
     .main {
       display: grid;
@@ -208,11 +242,22 @@
     }
     .titles > * + * { margin-top: .18rem; }
     .titles .en { color: var(--accent); }
+    /* Английската двойка започва тук — малко въздух я отделя от българската */
+    .titles .lang-break { margin-top: .7rem; }
 
     .when { font-size: clamp(.95rem, 3.4vw, 1.05rem); line-height: 1.5; }
     .when .lead { font-weight: 700; }
     .when .gap { height: .85rem; }
     .when .en-block { color: var(--accent); margin-top: 1.15rem; }
+
+    /* На телефон двете колони стават една отдолу под видеото. Подравнени
+       вляво увисват накриво под центрираната шапка — затова се центрират. */
+    @media (max-width: 699px) {
+      .main { text-align: center; gap: 1.5rem; }
+      .titles .lang-break { margin-top: .85rem; }
+      .when .en-block { margin-top: 1.3rem; }
+      .desc { text-align: center; }
+    }
 
     .desc {
       font-weight: 300;
@@ -276,16 +321,20 @@
     }
     .lang button.active { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
 
+    /* Празната кутийка се крие изцяло — иначе на някои екрани надничаше
+       като черна точка долу по средата. */
     .toast {
       position: fixed; left: 50%; bottom: 1.5rem;
       transform: translate(-50%, 130%);
       background: var(--ink); color: var(--bg);
       padding: .7rem 1.1rem; border-radius: 10px;
       font-size: .85rem;
-      transition: transform .3s;
-      z-index: 10;
+      opacity: 0;
+      visibility: hidden;
+      transition: transform .3s, opacity .3s, visibility .3s;
+      z-index: 30;
     }
-    .toast.show { transform: translate(-50%, 0); }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
   </style>
 </head>
 <body>
@@ -321,6 +370,7 @@
           <span class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
         </button>
         <button class="sound" id="soundBtn" hidden>🔇 <span id="soundLabel">Докоснете за звук</span></button>
+        <button class="skip" id="skipBtn" hidden><span id="skipLabel">Към поканата</span> ›</button>
       </div>
 
       <div class="main">
@@ -378,6 +428,7 @@
         map: 'Как да стигна',
         site: 'Уебсайт',
         share: 'Сподели',
+        skip: 'Към поканата',
         copied: 'Линкът е копиран',
         videoError: 'Видеото не може да се зареди. Опитайте отново.'
       },
@@ -389,6 +440,7 @@
         map: 'Directions',
         site: 'Website',
         share: 'Share',
+        skip: 'Skip to invitation',
         copied: 'Link copied',
         videoError: 'The video could not be loaded. Please try again.'
       }
@@ -399,6 +451,8 @@
     let inviteId = '';
     let playLogged = false;
     let playerReady = false;
+    let cinema = false;        // клипът пръв, поканата след него
+    let cinemaDone = false;
 
     const $ = id => document.getElementById(id);
 
@@ -442,6 +496,17 @@
 
       const twoLang = !!invite.bilingual;
       $('langSwitch').hidden = twoLang;
+
+      // Кино режим: страницата е само клипът, докато той не свърши.
+      // Режимът идва от базата, но ?kino=1 / ?kino=0 го налага — така
+      // клиентът сравнява двата варианта на един и същи адрес, без да
+      // пипаме нищо, а после избраният се записва в базата.
+      const forced = new URLSearchParams(location.search).get('kino');
+      cinema = forced === '1' ? true
+             : forced === '0' ? false
+             : invite.mode === 'cinema';
+      document.body.classList.toggle('mode-cinema', cinema);
+      $('skipBtn').hidden = !cinema || cinemaDone;
 
       document.title = (txt('title') || 'Видео покана') + ' | NFC Bulgaria';
 
@@ -514,8 +579,13 @@
       if (twoLang) {
         add(bg('title'),    'name');
         add(bg('subtitle'), 'exhibition');
-        add(en('subtitle'), 'exhibition en');
+        // първият английски ред носи разделителя, за да не се слеят езиците
+        add(en('subtitle'), 'exhibition en lang-break');
         add(en('title'),    'name en');
+        if (!en('subtitle')) {
+          const first = box.querySelector('.en');
+          if (first) first.classList.add('lang-break');
+        }
       } else {
         add(txt('title'),    'name');
         add(txt('subtitle'), 'exhibition');
@@ -589,11 +659,15 @@
         $('overlay').hidden = false;
         $('soundBtn').hidden = true;
         logEvent('complete');
+        revealInvitation();
       });
+      // iOS затваря собствения си плеър — това също значи „край на клипа"
+      v.addEventListener('webkitendfullscreen', revealInvitation);
       v.addEventListener('error', () => toast(T[lang].videoError));
 
       $('overlay').onclick  = () => playWithSound();
       $('soundBtn').onclick = e => { e.stopPropagation(); playWithSound(); };
+      $('skipBtn').onclick  = e => { e.stopPropagation(); revealInvitation(); };
     }
 
     // Авто-стартът е позволен само без звук — затова тръгваме тихо и
@@ -615,6 +689,12 @@
     // при вертикален клип заглавието и бутоните трябва да остават видими.
     function fitPlayer() {
       const v = $('video'), p = $('player');
+      if (cinema && !cinemaDone) {
+        // в кино режим рамката е целият екран — вградените стилове пречат
+        p.style.maxWidth = '';
+        p.style.aspectRatio = '';
+        return;
+      }
       if (!v.videoWidth || !v.videoHeight) return;
       const ratio = v.videoWidth / v.videoHeight;
       p.style.aspectRatio = v.videoWidth + ' / ' + v.videoHeight;
@@ -638,6 +718,43 @@
       v.play().catch(() => {});
       $('overlay').hidden = true;
       $('soundBtn').hidden = true;
+      if (cinema && !cinemaDone) goFullscreen();
+    }
+
+    // Цял екран става САМО при докосване — браузърите не го дават сами.
+    function goFullscreen() {
+      const v = $('video'), p = $('player');
+      if (typeof v.webkitEnterFullscreen === 'function') {
+        try { v.webkitEnterFullscreen(); return; } catch (e) {}   // iOS: собствен плеър
+      }
+      const req = p.requestFullscreen || p.webkitRequestFullscreen;
+      if (!req) return;
+      try {
+        const r = req.call(p);
+        if (r && r.catch) r.catch(() => {});
+      } catch (e) {}
+    }
+
+    // Клипът свърши или гостът го прескочи — показваме поканата.
+    function revealInvitation() {
+      if (!cinema || cinemaDone) return;
+      cinemaDone = true;
+      exitFullscreen();
+      document.body.classList.add('cinema-done');
+      $('skipBtn').hidden = true;
+      fitPlayer();
+      window.scrollTo(0, 0);
+    }
+
+    function exitFullscreen() {
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          const r = document.exitFullscreen();
+          if (r && r.catch) r.catch(() => {});
+        } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      } catch (e) {}
     }
 
     // Заявките на supabase-js са „мързеливи" — тръгват чак при .then().
@@ -724,6 +841,7 @@
       setText('calLabel',   t.calendar);
       setText('mapLabel',   t.map);
       setText('shareLabel', t.share);
+      setText('skipLabel',  t.skip);
       setText('siteLabel', (invite && invite.website_label) || t.site);
     }
 
