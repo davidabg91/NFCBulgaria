@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Отчет — видео покана | NFC Bulgaria</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/webp" href="assets/favicon.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://upjwsqfrblxzhyuxeumj.supabase.co" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --ink: #231f20;
+      --muted: #58595b;
+      --line: rgba(35, 31, 32, .14);
+      --panel: rgba(35, 31, 32, .035);
+      --accent: #00aeef;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Sofia Sans', 'Segoe UI', sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      padding: clamp(1.2rem, 4vw, 3rem) 1rem 3rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { width: 100%; max-width: 760px; }
+    .wrap > .content, .wrap > .error { display: none; }
+    .wrap.is-ready > .content { display: block; }
+    .wrap.is-error > .error { display: block; }
+    .wrap.is-loading > .loader { display: flex; }
+
+    .loader { display: none; justify-content: center; padding: 25vh 0; }
+    .spinner {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid var(--line); border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error { text-align: center; padding: 20vh 1rem; color: var(--muted); font-weight: 300; }
+    .error h1 { font-size: 1.5rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; }
+
+    /* ---------- шапка ---------- */
+    header { border-bottom: 1px solid var(--line); padding-bottom: 1.4rem; margin-bottom: 1.8rem; }
+    header img { height: 38px; width: auto; display: block; margin-bottom: 1rem; }
+    .kicker {
+      font-size: .68rem; letter-spacing: .24em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: .5rem;
+    }
+    h1 { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: 900; line-height: 1.1; text-transform: uppercase; }
+    .sub { font-size: clamp(1rem, 3.6vw, 1.2rem); font-weight: 400; margin-top: .1rem; text-transform: uppercase; }
+    .venue { color: var(--muted); font-weight: 300; margin-top: .5rem; font-size: .92rem; }
+
+    /* ---------- числа ---------- */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: .7rem;
+      margin-bottom: 2rem;
+    }
+    .card { border: 1px solid var(--line); padding: 1.1rem 1.2rem; background: var(--panel); }
+    .card .num { font-size: clamp(2rem, 8vw, 2.6rem); font-weight: 900; line-height: 1; }
+    .card .lbl { font-size: .8rem; color: var(--muted); margin-top: .45rem; line-height: 1.35; }
+    .card .pct { font-size: .78rem; color: var(--accent); margin-top: .2rem; }
+
+    /* ---------- по дни ---------- */
+    h2 {
+      font-size: .74rem; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--muted); font-weight: 600;
+      margin: 0 0 .9rem;
+    }
+    .days { border: 1px solid var(--line); }
+    .day {
+      display: grid;
+      grid-template-columns: 6.5rem 1fr 2.5rem;
+      align-items: center;
+      gap: .8rem;
+      padding: .6rem .9rem;
+      border-bottom: 1px solid var(--line);
+      font-size: .88rem;
+    }
+    .day:last-child { border-bottom: 0; }
+    .day .d { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .day .bar { height: 10px; background: var(--accent); min-width: 2px; }
+    .day .n { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .empty { padding: 1.6rem .9rem; color: var(--muted); font-weight: 300; text-align: center; }
+
+    .foot {
+      margin-top: 2rem; padding-top: 1.2rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted); font-size: .8rem; font-weight: 300; line-height: 1.6;
+    }
+    .foot a { color: var(--muted); }
+    .foot .updated { display: block; margin-top: .5rem; font-size: .74rem; }
+
+    @media print {
+      body { padding: 0; }
+      .foot a { text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap is-loading" id="wrap">
+    <div class="loader"><div class="spinner"></div></div>
+
+    <div class="error">
+      <h1>Отчетът не е достъпен</h1>
+      <p>Линкът е непълен или вече не е валиден. Поискайте нов от NFC Bulgaria.</p>
+    </div>
+
+    <div class="content">
+      <header>
+        <img id="logo" alt="" hidden>
+        <div class="kicker">Отчет по видео поканата</div>
+        <h1 id="title"></h1>
+        <div class="sub" id="subtitle"></div>
+        <div class="venue" id="venue"></div>
+      </header>
+
+      <div class="cards">
+        <div class="card">
+          <div class="num" id="views">0</div>
+          <div class="lbl">сканирания на поканата</div>
+        </div>
+        <div class="card">
+          <div class="num" id="plays">0</div>
+          <div class="lbl">пуснали видеото</div>
+          <div class="pct" id="playsPct"></div>
+        </div>
+        <div class="card">
+          <div class="num" id="completions">0</div>
+          <div class="lbl">изгледали го докрай</div>
+          <div class="pct" id="complPct"></div>
+        </div>
+      </div>
+
+      <h2>По дни</h2>
+      <div class="days" id="days"></div>
+
+      <div class="foot">
+        <span id="period"></span>
+        Числата се обновяват сами — страницата може да се отваря по всяко време.
+        <span class="updated" id="updated"></span>
+        <span class="updated">Отчетът се изготвя от <a href="https://nfcbulgaria.com" target="_blank" rel="noopener">NFC Bulgaria</a>.</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const $ = id => document.getElementById(id);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = (new URLSearchParams(location.search).get('t') || '').trim();
+      if (!token) return fail();
+      load(token);
+    });
+
+    async function load(token) {
+      // .rpc е „мързелив" — без await заявката изобщо не тръгва
+      const { data, error } = await db.rpc('invite_report', { p_token: token });
+      if (error || !data) {
+        console.error('Report unavailable:', error);
+        return fail();
+      }
+      render(data);
+    }
+
+    function render(r) {
+      if (r.accent) document.documentElement.style.setProperty('--accent', r.accent);
+
+      if (r.logo_url) { $('logo').src = r.logo_url; $('logo').hidden = false; }
+      setText('title', r.title);
+      setText('subtitle', r.subtitle);
+      setText('venue', r.venue);
+      document.title = 'Отчет — ' + (r.title || 'видео покана');
+
+      const views = r.views || 0;
+      const plays = r.plays || 0;
+      const compl = r.completions || 0;
+
+      setText('views', views);
+      setText('plays', plays);
+      setText('completions', compl);
+      setText('playsPct', views ? pct(plays, views) + ' от сканиралите' : '');
+      setText('complPct', plays ? pct(compl, plays) + ' от пусналите' : '');
+
+      renderDays(r.daily || []);
+
+      if (r.first_view) {
+        setText('period', 'Периодът обхваща от ' + date(r.first_view) +
+                          ' до ' + date(r.last_view) + '. ');
+      }
+      setText('updated', 'Показаното е към ' + dateTime(new Date().toISOString()) + ' ч.');
+
+      $('wrap').className = 'wrap is-ready';
+    }
+
+    function renderDays(days) {
+      const box = $('days');
+      box.innerHTML = '';
+
+      if (!days.length) {
+        const e = document.createElement('div');
+        e.className = 'empty';
+        e.textContent = 'Още няма сканирания.';
+        box.appendChild(e);
+        return;
+      }
+
+      const max = Math.max(...days.map(d => d.opens || 0), 1);
+      days.forEach(d => {
+        const row = document.createElement('div');
+        row.className = 'day';
+
+        const label = document.createElement('div');
+        label.className = 'd';
+        label.textContent = dayLabel(d.day);
+
+        const track = document.createElement('div');
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = Math.round((d.opens || 0) / max * 100) + '%';
+        bar.title = (d.plays || 0) + ' пуснали видеото';
+        track.appendChild(bar);
+
+        const num = document.createElement('div');
+        num.className = 'n';
+        num.textContent = d.opens || 0;
+
+        row.append(label, track, num);
+        box.appendChild(row);
+      });
+    }
+
+    // ------------------------------------------------------------------
+    const MONTHS = ['ян.', 'февр.', 'март', 'апр.', 'май', 'юни',
+                    'юли', 'авг.', 'септ.', 'окт.', 'ноем.', 'дек.'];
+
+    function dayLabel(iso) {
+      const d = new Date(iso + 'T00:00:00');
+      return d.getDate() + ' ' + MONTHS[d.getMonth()];
+    }
+    function date(iso) {
+      const d = new Date(iso);
+      return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    }
+    function dateTime(iso) {
+      const d = new Date(iso);
+      return date(iso) + ', ' + String(d.getHours()).padStart(2, '0') + ':' +
+             String(d.getMinutes()).padStart(2, '0');
+    }
+    function pct(part, whole) {
+      return whole ? Math.round(part / whole * 100) + '%' : '';
+    }
+    function setText(id, v) {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = (v === 0 || v) ? v : '';
+      if (['subtitle', 'venue', 'playsPct', 'complPct', 'period'].includes(id)) {
+        el.style.display = v ? '' : 'none';
+      }
+    }
+    function fail() { $('wrap').className = 'wrap is-error'; }
+  </script>
+</body>
+</html>
