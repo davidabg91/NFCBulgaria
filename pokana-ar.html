@@ -13,6 +13,12 @@
   <link rel="preconnect" href="https://upjwsqfrblxzhyuxeumj.supabase.co" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
+  <!-- Тежките библиотеки тръгват още докато се чете страницата, а не чак
+       след докосването. modulepreload следва целия граф от модули, така че
+       се дърпат и вътрешните им части. -->
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" crossorigin>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js" crossorigin>
+
   <style>
     :root { --accent: #00aeef; --ink: #ffffff; }
 
@@ -34,6 +40,14 @@
        камера се нагажда точно спрямо това. Всяко наше правило върху тях
        разминава наслагването спрямо реалния кадър. */
     #ar { position: fixed; inset: 0; overflow: hidden; }
+
+    /* Клипът се буферира скрито, но остава в страницата — иначе iOS отказва
+       да го подава като текстура. */
+    #clip {
+      position: fixed; top: 0; left: 0;
+      width: 1px; height: 1px;
+      opacity: 0; pointer-events: none;
+    }
 
     .layer {
       position: fixed; inset: 0;
@@ -59,6 +73,7 @@
       border-radius: 4px;
       display: block;
     }
+    .thumb[hidden] { display: none; }
 
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
@@ -77,17 +92,25 @@
     }
     .btn[hidden] { display: none; }
 
+    /* Лента на подготовката */
+    .progress {
+      width: min(70vw, 18rem); height: 3px;
+      background: rgba(255,255,255,.15);
+      border-radius: 2px; overflow: hidden;
+    }
+    .progress i {
+      display: block; height: 100%; width: 0;
+      background: var(--accent);
+      transition: width .4s ease;
+    }
+
     /* Рамка за насочване */
     .frame {
       width: min(78vw, 22rem);
       aspect-ratio: 2.28 / 1;
-      border-radius: 3px;
       position: relative;
     }
-    .frame i {
-      position: absolute; width: 26px; height: 26px;
-      border: 3px solid var(--accent);
-    }
+    .frame i { position: absolute; width: 26px; height: 26px; border: 3px solid var(--accent); }
     .frame i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
     .frame i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
     .frame i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
@@ -99,7 +122,6 @@
     }
     @keyframes sweep { 0%, 100% { top: 8%; } 50% { top: 90%; } }
 
-    /* Долна лента, докато видеото върви */
     .bar {
       position: fixed; left: 0; right: 0;
       bottom: calc(1rem + env(safe-area-inset-bottom));
@@ -121,16 +143,16 @@
 </head>
 <body>
   <div id="ar"></div>
+  <video id="clip" playsinline webkit-playsinline preload="auto"></video>
 
-  <!-- 1. Зареждане -->
+  <!-- 1. Кратко изчакване само за данните на поканата -->
   <div class="layer solid" id="stepLoading">
     <div class="spinner"></div>
-    <p class="tiny" id="loadingText">Подготвяме камерата…</p>
   </div>
 
-  <!-- 2. Покана към действие (тук се дава и разрешението за камера) -->
+  <!-- 2. Покана към действие. Докато гостът чете, тежкото се зарежда наум. -->
   <div class="layer solid" id="stepIntro" hidden>
-    <h1 id="introTitle">Оживете поканата<span class="en">Bring the invitation to life</span></h1>
+    <h1>Оживете поканата<span class="en">Bring the invitation to life</span></h1>
     <img class="thumb" id="thumb" alt="" hidden>
     <p>
       Насочете камерата към снимката върху поканата и тя ще се раздвижи.
@@ -140,7 +162,13 @@
     <a class="btn ghost" id="plainLink">Гледай без камера</a>
   </div>
 
-  <!-- 3. Търсене на поканата -->
+  <!-- 3. Подготовка след докосването -->
+  <div class="layer solid" id="stepPrep" hidden>
+    <div class="progress"><i id="progressBar"></i></div>
+    <p class="tiny" id="prepText">Подготвяме…</p>
+  </div>
+
+  <!-- 4. Търсене на поканата -->
   <div class="layer scrim" id="stepScan" hidden>
     <div class="frame"><i></i><i></i><i></i><i></i></div>
     <p>
@@ -149,7 +177,7 @@
     </p>
   </div>
 
-  <!-- 4. Грешка -->
+  <!-- 5. Грешка -->
   <div class="layer solid" id="stepError" hidden>
     <h1 id="errTitle">Камерата не е достъпна</h1>
     <p id="errText">Може да сте отказали достъп или устройството да не поддържа тази функция. Поканата се гледа и без камера.</p>
@@ -171,28 +199,37 @@
   </script>
 
   <script type="module">
-    import * as THREE from 'three';
-    import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js';
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
+    // =================================================================
+    // Подредбата тук е нарочна: първо се показва екранът, после се тегли
+    // тежкото. Библиотеките са около 3,5 MB, а маркерът още 0,6 MB — ако
+    // това чака докосването, гостът гледа въртележка десетина секунди.
+    // Затова всичко започва предварително, докато той чете текста, и при
+    // докосването обикновено вече е готово.
+    // =================================================================
     const SUPABASE_URL = "https://upjwsqfrblxzhyuxeumj.supabase.co";
     const SUPABASE_KEY = "sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB";
-    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const $ = id => document.getElementById(id);
     const inviteId = (new URLSearchParams(location.search).get('id') || '').trim();
     const plainUrl = 'pokana.html?id=' + encodeURIComponent(inviteId);
 
     let invite = null;
-    let video = null;
     let soundOn = false;
     let foundLogged = false;
+    const clip = $('clip');
 
     // ---------------------------------------------------------------
-    // Помощни
+    // Базата — през обикновен fetch, без клиентска библиотека отгоре
     // ---------------------------------------------------------------
-    function step(id) {
-      ['stepLoading', 'stepIntro', 'stepScan', 'stepError'].forEach(s => { $(s).hidden = s !== id; });
+    const headers = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY };
+
+    async function loadInvite(id) {
+      const url = SUPABASE_URL + '/rest/v1/video_invites?select=*&published=is.true&id=eq.' +
+                  encodeURIComponent(id);
+      const r = await fetch(url, { headers });
+      if (!r.ok) return null;
+      const rows = await r.json();
+      return rows[0] || null;
     }
 
     let platformCache = null;
@@ -207,8 +244,17 @@
 
     function logEvent(event) {
       if (!inviteId) return;
-      db.rpc('log_invite_view', { p_invite: inviteId, p_event: event, p_platform: platform() })
-        .then(() => {}, () => {});
+      fetch(SUPABASE_URL + '/rest/v1/rpc/log_invite_view', {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_invite: inviteId, p_event: event, p_platform: platform() }),
+        keepalive: true
+      }).catch(() => {});
+    }
+
+    function step(id) {
+      ['stepLoading', 'stepIntro', 'stepPrep', 'stepScan', 'stepError']
+        .forEach(s => { $(s).hidden = s !== id; });
     }
 
     function fail(title, text) {
@@ -219,7 +265,53 @@
     }
 
     // ---------------------------------------------------------------
-    // Зареждане на поканата
+    // Предварителна подготовка — върви, докато гостът чете екрана
+    // ---------------------------------------------------------------
+    const prep = { libs: false, backend: false, target: false, clip: false };
+    let libsPromise = null, targetPromise = null;
+
+    function prepDone() {
+      const keys = Object.keys(prep);
+      const pct = Math.round(keys.filter(k => prep[k]).length / keys.length * 100);
+      $('progressBar').style.width = pct + '%';
+      return pct;
+    }
+
+    function warmUp() {
+      // 1) библиотеките — най-тежкото
+      libsPromise = Promise.all([
+        import('three'),
+        import('https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js')
+      ]).then(([THREE, mod]) => {
+        prep.libs = true; prepDone();
+        // 2) сметачният двигател се вдига предварително, за да не се вдига
+        //    в момента, в който камерата вече върви
+        const tf = window.MINDAR && window.MINDAR.IMAGE && window.MINDAR.IMAGE.tf;
+        const mark = () => { prep.backend = true; prepDone(); };
+        if (tf && tf.ready) tf.ready().then(mark, mark); else mark();
+        return { THREE, MindARThree: mod.MindARThree };
+      });
+
+      // 3) маркерът влиза в кеша на браузъра, за да не се тегли после наново
+      targetPromise = fetch(invite.ar_target_url, { cache: 'force-cache' })
+        .then(r => r.arrayBuffer())
+        .then(() => { prep.target = true; prepDone(); })
+        .catch(() => { prep.target = true; prepDone(); });
+
+      // 4) клипът се буферира
+      clip.src = invite.video_url;
+      clip.loop = false;
+      clip.load();
+      const markClip = () => { if (!prep.clip) { prep.clip = true; prepDone(); } };
+      if (clip.readyState >= 3) markClip();
+      else {
+        clip.addEventListener('canplay', markClip, { once: true });
+        setTimeout(markClip, 8000);   // да не блокира, ако мрежата е бавна
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // Начало
     // ---------------------------------------------------------------
     (async function init() {
       $('plainLink').href = plainUrl;
@@ -227,17 +319,13 @@
       $('exitLink').href  = plainUrl;
 
       if (!inviteId) return fail('Липсва адрес на покана', 'Линкът е непълен.');
+      if (!window.isSecureContext) {
+        return fail('Нужна е защитена връзка', 'Отворете страницата през https, за да се използва камерата.');
+      }
 
-      const { data, error } = await db
-        .from('video_invites')
-        .select('*')
-        .eq('id', inviteId)
-        .eq('published', true)
-        .maybeSingle();
+      invite = await loadInvite(inviteId);
+      if (!invite) return fail('Поканата не е намерена', 'Проверете адреса или се свържете с организатора.');
 
-      if (error || !data) return fail('Поканата не е намерена', 'Проверете адреса или се свържете с организатора.');
-
-      invite = data;
       if (invite.accent) document.documentElement.style.setProperty('--accent', invite.accent);
       document.title = (invite.title || 'Покана') + ' | NFC Bulgaria';
 
@@ -250,36 +338,29 @@
         $('thumb').hidden = false;
       }
 
-      // Камерата иска сигурна връзка
-      if (!window.isSecureContext) {
-        return fail('Нужна е защитена връзка', 'Отворете страницата през https, за да се използва камерата.');
-      }
-
       step('stepIntro');
       logEvent('ar_open');
+      warmUp();          // тежкото тръгва сега, а не при докосването
     })();
 
     // ---------------------------------------------------------------
-    // Стартиране — тук е и жестът, който отключва звука
+    // Докосването: жест за звука, после старт
     // ---------------------------------------------------------------
     $('startBtn').addEventListener('click', async () => {
-      step('stepLoading');
-      $('loadingText').textContent = 'Зареждаме…';
+      step('stepPrep');
+      prepDone();
 
-      video = document.createElement('video');
-      video.src = invite.video_url;
-      video.playsInline = true;
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', '');
-      video.preload = 'auto';
-      video.loop = false;
-
-      // Отключване: браузърите пускат видео със звук само след докосване.
-      // Пускаме и веднага спираме, докато жестът още е „пресен".
-      soundOn = await unlock(video);
+      // Браузърите пускат видео със звук само след докосване. Пускаме и
+      // веднага спираме, докато жестът още е „пресен".
+      soundOn = await unlock(clip);
 
       try {
-        await startAR();
+        $('prepText').textContent = 'Подготвяме разпознаването…';
+        const libs = await libsPromise;
+        await targetPromise;
+
+        $('prepText').textContent = 'Включваме камерата…';
+        await startAR(libs);
       } catch (e) {
         console.error('AR не тръгна:', e);
         fail(null, (e && e.name === 'NotAllowedError')
@@ -299,7 +380,7 @@
     // ---------------------------------------------------------------
     // Разширената реалност
     // ---------------------------------------------------------------
-    async function startAR() {
+    async function startAR({ THREE, MindARThree }) {
       const mindar = new MindARThree({
         container: $('ar'),
         imageTargetSrc: invite.ar_target_url,
@@ -311,7 +392,7 @@
       const { renderer, scene, camera } = mindar;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-      const texture = new THREE.VideoTexture(video);
+      const texture = new THREE.VideoTexture(clip);
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
@@ -321,9 +402,9 @@
       // както е изрязана и снимката за печат: движението застава върху
       // отпечатаното, без да излиза извън него.
       const markerAspect = await imageAspect(invite.ar_image_url) || 2.28;
-      await videoReady(video);
-      const videoAspect = (video.videoWidth && video.videoHeight)
-        ? video.videoWidth / video.videoHeight : 16 / 9;
+      await videoReady(clip);
+      const videoAspect = (clip.videoWidth && clip.videoHeight)
+        ? clip.videoWidth / clip.videoHeight : 16 / 9;
 
       const repeatX = Math.min(1, markerAspect / videoAspect);
       const repeatY = Math.min(1, videoAspect / markerAspect);
@@ -341,27 +422,44 @@
 
       anchor.onTargetFound = () => {
         plane.visible = true;
-        step('stepScan');
         $('stepScan').hidden = true;
         $('bar').hidden = false;
         $('soundBtn').hidden = soundOn;
-        video.play().catch(() => {});
+        clip.play().catch(() => {});
         if (!foundLogged) { foundLogged = true; logEvent('ar_found'); }
         logEvent('ar_play');
       };
 
       anchor.onTargetLost = () => {
         plane.visible = false;
-        video.pause();
+        clip.pause();
         $('stepScan').hidden = false;
       };
 
-      video.addEventListener('ended', () => { plane.visible = true; });
+      // Библиотеката не ограничава камерата и телефонът често връща 1080p.
+      // Всеки кадър минава през разпознаването, затова 720p е чувствително
+      // по-бързо, без видима загуба в проследяването.
+      await withCameraLimit(() => mindar.start());
 
-      await mindar.start();
       step('stepScan');
       $('bar').hidden = false;
       renderer.setAnimationLoop(() => renderer.render(scene, camera));
+    }
+
+    function withCameraLimit(fn) {
+      const md = navigator.mediaDevices;
+      if (!md || !md.getUserMedia) return Promise.resolve().then(fn);
+      const orig = md.getUserMedia.bind(md);
+      md.getUserMedia = c => {
+        if (c && c.video && typeof c.video === 'object') {
+          c.video.width  = { ideal: 1280 };
+          c.video.height = { ideal: 720 };
+        }
+        return orig(c);
+      };
+      return Promise.resolve()
+        .then(fn)
+        .finally(() => { md.getUserMedia = orig; });
     }
 
     function imageAspect(src) {
@@ -383,11 +481,10 @@
     }
 
     $('soundBtn').addEventListener('click', () => {
-      if (!video) return;
-      video.muted = false;
-      video.volume = 1;
-      if (video.currentTime < 3) video.currentTime = 0;
-      video.play().catch(() => {});
+      clip.muted = false;
+      clip.volume = 1;
+      if (clip.currentTime < 3) clip.currentTime = 0;
+      clip.play().catch(() => {});
       soundOn = true;
       $('soundBtn').hidden = true;
       logEvent('sound');
