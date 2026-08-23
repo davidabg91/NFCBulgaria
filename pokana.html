@@ -426,7 +426,7 @@
 
       invite = data;
       render();
-      db.rpc('log_invite_view', { p_invite: inviteId, p_event: 'open' });
+      logEvent('open');
     }
 
     // Български текст от самата колона; английският — от колоната i18n
@@ -588,7 +588,7 @@
       v.addEventListener('ended',   () => {
         $('overlay').hidden = false;
         $('soundBtn').hidden = true;
-        db.rpc('log_invite_view', { p_invite: inviteId, p_event: 'complete' });
+        logEvent('complete');
       });
       v.addEventListener('error', () => toast(T[lang].videoError));
 
@@ -640,10 +640,17 @@
       $('soundBtn').hidden = true;
     }
 
+    // Заявките на supabase-js са „мързеливи" — тръгват чак при .then().
+    // Без него броячът мълчи, а грешка тук не бива да стига до госта.
+    function logEvent(event) {
+      db.rpc('log_invite_view', { p_invite: inviteId, p_event: event })
+        .then(() => {}, () => {});
+    }
+
     function logPlay() {
       if (playLogged) return;
       playLogged = true;
-      db.rpc('log_invite_view', { p_invite: inviteId, p_event: 'play' });
+      logEvent('play');
     }
 
     // ------------------------------------------------------------------
