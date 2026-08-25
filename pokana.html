@@ -782,13 +782,22 @@
       db.rpc('log_invite_view', {
         p_invite: inviteId,
         p_event: event,
-        p_platform: platform()
+        p_platform: platform(),
+        p_source: source()
       }).then(() => {}, () => {});
     }
 
     // Само вид устройство — нищо, по което човек може да бъде разпознат.
     // Полезно е за отчета: покана на хартия се сканира почти само с телефон,
     // а споделеният линк се отваря и от компютър.
+    // Откъде е дошъл гостът: липсващо = от самата покана; при рекламните
+    // материали адресът носи етикет (?s=bilbord, ?s=plakat…), за да се
+    // види кой носител води хора.
+    function source() {
+      const v = (new URLSearchParams(location.search).get('s') || '').trim();
+      return v ? v.slice(0, 24) : null;
+    }
+
     let platformCache = null;
     function platform() {
       if (platformCache) return platformCache;

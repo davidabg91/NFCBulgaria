@@ -64,6 +64,7 @@ declare
   v_events   jsonb;
   v_hours    jsonb;
   v_plats    jsonb;
+  v_sources  jsonb;
 begin
   if p_token is null or length(p_token) < 16 then
     return null;
@@ -121,6 +122,16 @@ begin
     group by 1
   ) p;
 
+  -- откъде идват: самата покана, билборд, плакат, винил…
+  select coalesce(jsonb_object_agg(x.src, x.n), '{}'::jsonb)
+  into v_sources
+  from (
+    select coalesce(w.source, 'pokana') as src, count(*) as n
+    from public.invite_views w
+    where w.invite_id = v.id and w.event = 'open'
+    group by 1
+  ) x;
+
   return jsonb_build_object(
     'title',       v.title,
     'subtitle',    v.subtitle,
@@ -136,7 +147,8 @@ begin
     'daily',       v_days,
     'events',      v_events,
     'hours',       v_hours,
-    'platforms',   v_plats
+    'platforms',   v_plats,
+    'sources',     v_sources
   );
 end;
 $$;

@@ -115,6 +115,23 @@
     .act .v { font-weight: 900; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
     .act .v span { font-size: .74rem; font-weight: 400; color: var(--muted); margin-left: .35rem; }
 
+    /* Откъде идват */
+    .srcs { border: 1px solid var(--line); }
+    .src {
+      display: grid;
+      grid-template-columns: 8.5rem 1fr 3.5rem;
+      align-items: center;
+      gap: .8rem;
+      padding: .7rem .9rem;
+      border-bottom: 1px solid var(--line);
+      font-size: .9rem;
+    }
+    .src:last-child { border-bottom: 0; }
+    .src .who b { display: block; font-weight: 600; }
+    .src .bar2 { height: 10px; background: var(--accent); min-width: 2px; }
+    .src .n { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    @media (max-width: 520px) { .src { grid-template-columns: 6.5rem 1fr 2.6rem; font-size: .84rem; } }
+
     /* Устройства */
     .plats { display: flex; flex-wrap: wrap; gap: .5rem; }
     .plat {
@@ -202,6 +219,11 @@
         <div class="hoursAxis"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
       </section>
 
+      <section id="srcsSection" hidden>
+        <h2>Откъде идват</h2>
+        <div class="srcs" id="srcs"></div>
+      </section>
+
       <section id="platsSection" hidden>
         <h2>С какво отварят поканата</h2>
         <div class="plats" id="plats"></div>
@@ -271,6 +293,7 @@
       renderActions(r.events || {}, views);
       renderHours(r.hours || {});
       renderPlatforms(r.platforms || {});
+      renderSources(r.sources || {});
 
       if (r.first_view) {
         setText('period', 'Периодът обхваща от ' + date(r.first_view) +
@@ -402,6 +425,57 @@
         box.appendChild(col);
       });
       $('hoursSection').hidden = false;
+    }
+
+    // Етикетите идват от адреса на всеки рекламен носител (?s=bilbord…).
+    // Непознат етикет се показва както е, за да не се губи.
+    const SOURCES = {
+      pokana:  'Самата покана',
+      bilbord: 'Билборд',
+      vinil:   'Винил пред галерията',
+      plakat:  'Плакат',
+      flaer:   'Флаер',
+      program: 'Програма',
+      sait:    'Сайт на галерията',
+      fb:      'Facebook',
+      ig:      'Instagram',
+      press:   'Медии и прес'
+    };
+
+    function renderSources(srcs) {
+      const box = $('srcs');
+      box.innerHTML = '';
+      const rows = Object.entries(srcs).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+      // само с поканата няма какво да се сравнява
+      if (rows.length < 2) { $('srcsSection').hidden = true; return; }
+
+      const max = Math.max(...rows.map(r => r[1]));
+      const total = rows.reduce((a, r) => a + r[1], 0);
+      rows.forEach(([key, n]) => {
+        const row = document.createElement('div');
+        row.className = 'src';
+
+        const who = document.createElement('div');
+        who.className = 'who';
+        const b = document.createElement('b');
+        b.textContent = SOURCES[key] || key;
+        who.appendChild(b);
+
+        const track = document.createElement('div');
+        const bar = document.createElement('div');
+        bar.className = 'bar2';
+        bar.style.width = Math.round(n / max * 100) + '%';
+        bar.title = pct(n, total) + ' от всички';
+        track.appendChild(bar);
+
+        const num = document.createElement('div');
+        num.className = 'n';
+        num.textContent = n;
+
+        row.append(who, track, num);
+        box.appendChild(row);
+      });
+      $('srcsSection').hidden = false;
     }
 
     const PLATFORMS = { ios: 'iPhone / iPad', android: 'Android', desktop: 'Компютър', other: 'Друго' };

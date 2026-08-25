@@ -92,10 +92,12 @@ create table if not exists public.invite_views (
   invite_id  text not null references public.video_invites(id) on delete cascade,
   event      text not null default 'open',   -- виж списъка в log_invite_view
   platform   text,                           -- ios | android | desktop | other
+  source     text,                           -- откъде идва: покана, билборд, плакат…
   created_at timestamptz not null default now()
 );
 
 alter table public.invite_views add column if not exists platform text;
+alter table public.invite_views add column if not exists source   text;
 
 create index if not exists invite_views_invite_idx on public.invite_views (invite_id, created_at desc);
 
@@ -141,14 +143,21 @@ grant select on public.video_invites to anon, authenticated;
 --   ar_found  камерата разпозна поканата
 --   ar_play   видеото тръгна върху поканата
 --
+-- p_source казва ОТКЪДЕ е дошъл гостът: липсва = от самата покана;
+-- иначе етикетът от адреса (?s=bilbord, ?s=plakat, ?s=vinil…). Така един
+-- и същ клип се разнася по всички рекламни материали, а в отчета се
+-- вижда кой от тях води хора.
+--
 -- Старата версия с два параметъра отпада, за да няма две функции с
 -- едно име — PostgREST се обърква коя да извика.
 drop function if exists public.log_invite_view(text, text);
+drop function if exists public.log_invite_view(text, text, text);
 
 create or replace function public.log_invite_view(
   p_invite   text,
   p_event    text default 'open',
-  p_platform text default null
+  p_platform text default null,
+  p_source   text default null
 )
 returns void
 language plpgsql
@@ -167,11 +176,13 @@ begin
     return;
   end if;
 
-  insert into public.invite_views (invite_id, event, platform)
+  insert into public.invite_views (invite_id, event, platform, source)
   values (
     p_invite,
     p_event,
-    case when p_platform in ('ios', 'android', 'desktop', 'other') then p_platform end
+    case when p_platform in ('ios', 'android', 'desktop', 'other') then p_platform end,
+    -- само кратък и безобиден етикет; идва от адреса, затова се подрязва
+    nullif(lower(left(regexp_replace(coalesce(p_source, ''), '[^a-zA-Z0-9_-]', '', 'g'), 24)), '')
   );
 
   if p_event = 'open' then
@@ -182,7 +193,7 @@ begin
 end;
 $$;
 
-grant execute on function public.log_invite_view(text, text, text) to anon, authenticated;
+grant execute on function public.log_invite_view(text, text, text, text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- Отчет по дни (за нас / за клиента)
