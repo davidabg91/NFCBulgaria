@@ -883,13 +883,16 @@
       }
 
       // Links values setting
-      document.getElementById('phoneLink').href = `tel:${data.phone || ''}`;
-      document.getElementById('phoneVal').innerText = data.phone || '';
+      // Показваме и набираме в международен формат — визитката се дава и на
+      // чуждестранни партньори, а местният запис (0888...) е неизползваем
+      // извън България. Точно това съобщиха от ЕЛКАБЕЛ за турски номер.
+      document.getElementById('phoneLink').href = `tel:${toIntl(data.phone)}`;
+      document.getElementById('phoneVal').innerText = toIntl(data.phone) || (data.phone || '');
 
       document.getElementById('emailLink').href = `mailto:${data.email || ''}`;
       document.getElementById('emailVal').innerText = data.email || '';
 
-      document.getElementById('viberLink').href = data.viber ? `https://viber.click/${data.viber.replace('+', '')}` : '#';
+      document.getElementById('viberLink').href = data.viber ? `https://viber.click/${normalizeWhatsApp(data.viber)}` : '#';
       document.getElementById('whatsappLink').href = data.whatsapp ? `https://wa.me/${normalizeWhatsApp(data.whatsapp)}` : '#';
       document.getElementById('linkedinLink').href = formatExternalUrl(data.linkedin);
       document.getElementById('facebookLink').href = formatExternalUrl(data.facebook);
@@ -1095,7 +1098,7 @@ N:${vName};;;;
 FN:${vName}
 ORG:${vCompany}
 TITLE:${vTitle}
-TEL;TYPE=CELL:${currentProfile.phone}
+TEL;TYPE=CELL:${toIntl(currentProfile.phone) || currentProfile.phone}
 EMAIL;TYPE=PREF,INTERNET:${currentProfile.email}
 URL:${currentProfile.website}
 END:VCARD`;
@@ -1122,13 +1125,38 @@ END:VCARD`;
 
     // Helper to format external URLs safely with protocol checks
     // Normalize a phone number into WhatsApp wa.me international format (digits only, BG default).
-    function normalizeWhatsApp(num) {
+    // Само цифри, с код на държавата. Български местен номер (0888...) става
+    // 359888...; вече международните се оставят както са.
+    // Връща само цифрите С код на държавата, или '' ако кодът не може да се
+    // определи със сигурност. Български са и стационарните (9 цифри с водеща
+    // нула: 056 800811), и мобилните (10 цифри: 0888 107616) — затова се
+    // проверяват и двете дължини.
+    function intlDigits(num) {
       if (!num) return '';
-      let d = String(num).replace(/\D/g, '');
+      const raw = String(num).trim();
+      const hadPlus = raw.startsWith('+');
+      let d = raw.replace(/\D/g, '');
       if (d.startsWith('00')) d = d.slice(2);
       if (d.startsWith('359')) return d;
-      if (d.startsWith('0')) return '359' + d.slice(1);
-      return d;
+      if (d.startsWith('0') && (d.length === 9 || d.length === 10)) return '359' + d.slice(1);
+      if (hadPlus) return d;          // чужд номер, записан с код — оставяме го
+      return '';                      // непознат формат: по-добре нищо, отколкото грешка
+    }
+
+    // Международен запис за набиране и за vCard: +359888107616
+    // Без него чужд телефон набира местния номер и не се свързва —
+    // точно това съобщиха от ЕЛКАБЕЛ за колега с турски номер.
+    // При непознат формат връщаме номера както е записан, за да не сглобим
+    // нещо невалидно от рода на "+056800811".
+    function toIntl(num) {
+      const d = intlDigits(num);
+      return d ? '+' + d : (num ? String(num).trim() : '');
+    }
+
+    function normalizeWhatsApp(num) {
+      // wa.me и viber.click искат само цифри. Ако кодът не е разпознат,
+      // пращаме поне цифрите, вместо празен адрес.
+      return intlDigits(num) || String(num || '').replace(/\D/g, '');
     }
 
     function formatExternalUrl(url) {
@@ -1410,6 +1438,20 @@ END:VCARD`;
       'архпроект': { en:'ARCHPROJECT', de:'ARCHPROJECT', ro:'ARCHPROJECT' }
     };
 
+    // Имена, при които механичната транслитерация дава грешен резултат.
+    // Кирилицата е фонетичен презапис на чуждо име, затова обратният път
+    // връща "Tundzher Koch" вместо турското изписване "Tuncer Koç"
+    // (на турски "c" се чете "дж", а "ç" — "ч").
+    // Ключът е името на български, с малки букви.
+    const NAME_LATIN = {
+      'тунджер коч': 'Tuncer Koç'
+    };
+
+    function latinName(name) {
+      if (!name) return '';
+      return NAME_LATIN[normKey(name)] || translit(name);
+    }
+
     // Ръчни преводи от базата: profiles.i18n = {"en":{"title":"...","company":"..."}, ...}
     function profileOverrides(p, lang) {
       let raw = p && p.i18n;
@@ -1443,7 +1485,7 @@ END:VCARD`;
       const p = currentProfile || {};
       const ov = profileOverrides(p, activeLang);
 
-      const name    = ov.name    || (activeLang === 'bg' ? (p.name || '') : translit(p.name));
+      const name    = ov.name    || (activeLang === 'bg' ? (p.name || '') : latinName(p.name));
       const title   = ov.title   || translateTerm(p.title, activeLang);
       const company = ov.company || translateCompany(p.company, activeLang);
       const bio     = ov.bio     || p.bio || '';
