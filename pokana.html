@@ -266,6 +266,13 @@
       white-space: pre-line;
     }
 
+    /* Свит изглед: празните блокове не бива да оставят дупки, а всичко
+       трябва да се събира на един екран. */
+    body.layout-compact .main { display: none; }
+    body.layout-compact .desc { display: none; }
+    body.layout-compact .wrap.is-ready > .content { gap: clamp(1rem, 3vw, 1.5rem); }
+    body.layout-compact footer { padding-top: .7rem; }
+
     /* ---------- бутони ---------- */
     .actions {
       display: grid;
@@ -501,6 +508,11 @@
     function render() {
       applyTheme();
 
+      // „compact": гостът държи хартиената покана в ръката си, затова
+      // екранът не повтаря автора, заглавието, датите и партньорите —
+      // остават само клипът и бутоните, събрани без превъртане.
+      document.body.classList.toggle('layout-compact', invite.layout === 'compact');
+
       const twoLang = !!invite.bilingual;
       $('langSwitch').hidden = twoLang;
 
@@ -517,11 +529,20 @@
 
       document.title = (txt('title') || 'Видео покана') + ' | NFC Bulgaria';
 
+      const compact = invite.layout === 'compact';
+
       renderGallery(twoLang);
-      renderTitles(twoLang);
-      renderWhen(twoLang);
-      renderSponsors(twoLang);
-      setText('desc', txt('description'));
+      if (compact) {
+        $('titles').innerHTML = '';
+        $('when').innerHTML = '';
+        $('sponsors').hidden = true;
+        setText('desc', '');
+      } else {
+        renderTitles(twoLang);
+        renderWhen(twoLang);
+        renderSponsors(twoLang);
+        setText('desc', txt('description'));
+      }
 
       setupPlayer();
 
@@ -564,8 +585,10 @@
         $('logo').alt = bg('venue') || '';
         $('logo').hidden = false;
       }
-      setText('venueBg',   txt('venue'));
-      setText('addressBg', txt('address'));
+      // В двуезичен режим лявата страна е винаги на български — иначе от
+      // телефон с английски език адресът излиза два пъти на английски.
+      setText('venueBg',   twoLang ? bg('venue')   : txt('venue'));
+      setText('addressBg', twoLang ? bg('address') : txt('address'));
 
       if (showEn) {
         setText('venueEn', [en('venue'), en('address')].filter(Boolean).join(', '));
@@ -783,7 +806,7 @@
         p_invite: inviteId,
         p_event: event,
         p_platform: platform(),
-        p_source: source()
+        p_source: campaignSource()
       }).then(() => {}, () => {});
     }
 
@@ -793,7 +816,7 @@
     // Откъде е дошъл гостът: липсващо = от самата покана; при рекламните
     // материали адресът носи етикет (?s=bilbord, ?s=plakat…), за да се
     // види кой носител води хора.
-    function source() {
+    function campaignSource() {
       const v = (new URLSearchParams(location.search).get('s') || '').trim();
       return v ? v.slice(0, 24) : null;
     }

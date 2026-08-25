@@ -40,6 +40,7 @@ create table if not exists public.video_invites (
   -- Вид
   theme          text not null default 'dark',      -- dark | light
   mode           text not null default 'page',      -- page | cinema (клипът пръв, цял екран)
+  layout         text not null default 'full',      -- full | compact (само клипът и бутоните)
   accent         text not null default '#c9a227',   -- акцентен цвят
   bg_color       text not null default '#0b0b0d',
   bilingual      boolean not null default false,    -- BG и EN един до друг (както в печата)
@@ -69,6 +70,8 @@ comment on column public.video_invites.i18n is
   'Английски текстове: {"en":{"title","subtitle","description","event_text","venue","address","sponsors_note"}}';
 comment on column public.video_invites.ar_crop_top is
   'Дял от видео кадъра, отрязан ОТГОРЕ при печатното оформление (0..1). Изрезът рядко е центриран; без тази стойност AR видеото ляга изместено спрямо хартията.';
+comment on column public.video_invites.layout is
+  'full = цялата покана; compact = само клипът и бутоните. Свитият изглед е за случаите, когато гостът държи хартиената покана в ръката си и екранът не бива да повтаря написаното на нея.';
 comment on column public.video_invites.mode is
   'page = поканата с видеото в нея; cinema = клипът пръв на цял екран, поканата се показва след края му';
 comment on column public.video_invites.bilingual is
@@ -80,6 +83,7 @@ comment on column public.video_invites.event_text is
 alter table public.video_invites
   add column if not exists theme         text not null default 'dark',
   add column if not exists mode          text not null default 'page',
+  add column if not exists layout        text not null default 'full',
   add column if not exists bilingual     boolean not null default false,
   add column if not exists sponsors_note text,
   add column if not exists sponsors_url  text,
