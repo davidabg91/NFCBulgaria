@@ -1098,9 +1098,9 @@ N:${vName};;;;
 FN:${vName}
 ORG:${vCompany}
 TITLE:${vTitle}
-TEL;TYPE=CELL:${toIntl(currentProfile.phone) || currentProfile.phone}
-EMAIL;TYPE=PREF,INTERNET:${currentProfile.email}
-URL:${currentProfile.website}
+TEL;TYPE=CELL:${toIntl(currentProfile.phone) || currentProfile.phone || ''}
+EMAIL;TYPE=PREF,INTERNET:${currentProfile.email || ''}
+URL:${currentProfile.website || ''}
 END:VCARD`;
 
       const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8;' });
@@ -1612,7 +1612,7 @@ END:VCARD`;
     }
 
     function detectLanguage() {
-      const browserLang = (navigator.language || navigator.userLanguage).toLowerCase();
+      const browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
       if (browserLang.startsWith('de')) return 'de';
       if (browserLang.startsWith('ro')) return 'ro';
       if (browserLang.startsWith('bg')) return 'bg';
