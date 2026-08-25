@@ -115,6 +115,29 @@
     .act .v { font-weight: 900; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
     .act .v span { font-size: .74rem; font-weight: 400; color: var(--muted); margin-left: .35rem; }
 
+    /* По отделните покани */
+    .inv { border: 1px solid var(--line); }
+    .inv-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 1.2rem;
+      align-items: baseline;
+      padding: .85rem .9rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .inv-row:last-child { border-bottom: 0; }
+    .inv-row.head {
+      font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted); font-weight: 600;
+    }
+    .inv-row b { font-weight: 600; font-size: .95rem; }
+    .inv-row .num { font-weight: 900; font-size: 1.1rem; font-variant-numeric: tabular-nums; min-width: 2.6rem; text-align: right; }
+    .inv-row.head .num { font-weight: 600; font-size: .7rem; }
+    @media (max-width: 520px) {
+      .inv-row { grid-template-columns: 1fr auto auto auto; gap: .7rem; }
+      .inv-row b { font-size: .84rem; }
+    }
+
     /* Откъде идват */
     .srcs { border: 1px solid var(--line); }
     .src {
@@ -204,6 +227,11 @@
         </div>
       </div>
 
+      <section id="invSection" hidden>
+        <h2>По вид покана</h2>
+        <div class="inv" id="inv"></div>
+      </section>
+
       <h2>По дни</h2>
       <div class="days" id="days"></div>
       <div class="peak" id="peak" hidden></div>
@@ -288,6 +316,7 @@
       setText('playsPct', views ? pct(plays, views) + ' от сканиралите' : '');
       setText('complPct', plays ? pct(compl, plays) + ' от пусналите' : '');
 
+      renderInvites(r.invites || []);
       renderDays(r.daily || []);
       renderPeak(r.daily || []);
       renderActions(r.events || {}, views);
@@ -339,6 +368,42 @@
         row.append(label, track, num);
         box.appendChild(row);
       });
+    }
+
+    // Разбивка по вид покана. Показва се само когато има повече от една —
+    // при единична покана редът само би повторил числата отгоре.
+    function renderInvites(list) {
+      const box = $('inv');
+      box.innerHTML = '';
+      if (!list.length) { $('invSection').hidden = true; return; }
+
+      const head = document.createElement('div');
+      head.className = 'inv-row head';
+      ['', 'сканирания', 'пуснали', 'докрай'].forEach((t, i) => {
+        const d = document.createElement('div');
+        if (i > 0) d.className = 'num';
+        d.textContent = t;
+        head.appendChild(d);
+      });
+      box.appendChild(head);
+
+      list.forEach(it => {
+        const row = document.createElement('div');
+        row.className = 'inv-row';
+        const name = document.createElement('div');
+        const b = document.createElement('b');
+        b.textContent = it.label || it.id;
+        name.appendChild(b);
+        row.appendChild(name);
+        [it.views, it.plays, it.completions].forEach(n => {
+          const d = document.createElement('div');
+          d.className = 'num';
+          d.textContent = n || 0;
+          row.appendChild(d);
+        });
+        box.appendChild(row);
+      });
+      $('invSection').hidden = false;
     }
 
     // Най-силният ден — първото нещо, което всеки пита
