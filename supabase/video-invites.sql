@@ -51,6 +51,7 @@ create table if not exists public.video_invites (
   ar_enabled     boolean not null default false,
   ar_target_url  text,                              -- компилираният маркер (.mind)
   ar_image_url   text,                              -- същата снимка като картинка (за пропорцията и подсказката)
+  ar_crop_top    numeric,                           -- дял от кадъра, отрязан ОТГОРЕ при печата (0..1)
 
   -- Управление
   published      boolean not null default true,
@@ -66,6 +67,8 @@ comment on table  public.video_invites is 'Видео покани, отваря
 comment on column public.video_invites.video_url is 'Публичен адрес на MP4 файла (Storage/R2/CDN), а не самият файл';
 comment on column public.video_invites.i18n is
   'Английски текстове: {"en":{"title","subtitle","description","event_text","venue","address","sponsors_note"}}';
+comment on column public.video_invites.ar_crop_top is
+  'Дял от видео кадъра, отрязан ОТГОРЕ при печатното оформление (0..1). Изрезът рядко е центриран; без тази стойност AR видеото ляга изместено спрямо хартията.';
 comment on column public.video_invites.mode is
   'page = поканата с видеото в нея; cinema = клипът пръв на цял екран, поканата се показва след края му';
 comment on column public.video_invites.bilingual is
@@ -82,7 +85,8 @@ alter table public.video_invites
   add column if not exists sponsors_url  text,
   add column if not exists ar_enabled    boolean not null default false,
   add column if not exists ar_target_url text,
-  add column if not exists ar_image_url  text;
+  add column if not exists ar_image_url  text,
+  add column if not exists ar_crop_top   numeric;
 
 -- ---------------------------------------------------------------------
 -- Лог на отварянията — за отчет към клиента ("колко пъти е сканирана")

@@ -418,7 +418,17 @@
       const repeatX = Math.min(1, markerAspect / videoAspect);
       const repeatY = Math.min(1, videoAspect / markerAspect);
       texture.repeat.set(repeatX, repeatY);
-      texture.offset.set((1 - repeatX) / 2, (1 - repeatY) / 2);
+
+      // Кой къс от кадъра е отпечатан. Изрезът в оформлението рядко е
+      // центриран — при поканата на Койчев горе са отрязани 331 пиксела,
+      // а долу само 38. Ако центрираме наслуки, видеото ляга изместено
+      // спрямо хартията. ar_crop_top е делът, отрязан ОТГОРЕ (0..1);
+      // липсва ли — връщаме се към центриране.
+      const cropTop = Number(invite.ar_crop_top);
+      const offsetY = (isFinite(cropTop) && invite.ar_crop_top !== null)
+        ? Math.max(0, Math.min(1 - repeatY, 1 - cropTop - repeatY))
+        : (1 - repeatY) / 2;                       // offset.y се мери ОТДОЛУ
+      texture.offset.set((1 - repeatX) / 2, offsetY);
 
       const plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1, 1 / markerAspect),
