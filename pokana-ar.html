@@ -139,6 +139,23 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .tiny { font-size: .78rem; color: rgba(255,255,255,.45); font-weight: 300; }
+
+    /* Показания при ?debug=1 — колко кадъра рисува и колко пъти в секунда
+       идва нова поза. Второто число е това, което решава „лепи ли". */
+    .probe {
+      position: fixed;
+      top: calc(.6rem + env(safe-area-inset-top)); left: .6rem;
+      z-index: 30;
+      padding: .5rem .7rem;
+      border-radius: 8px;
+      background: rgba(0,0,0,.72);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #9fe8b0;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: .68rem; line-height: 1.5;
+      white-space: pre;
+    }
+    .probe[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -184,6 +201,8 @@
     <a class="btn" id="errLink">Отвори поканата</a>
   </div>
 
+  <div class="probe" id="probe" hidden></div>
+
   <div class="bar" id="bar" hidden>
     <button class="btn ghost" id="soundBtn" hidden>🔇 Докоснете за звук</button>
     <a class="btn ghost" id="exitLink">Към поканата</a>
@@ -217,6 +236,32 @@
     let soundOn = false;
     let foundLogged = false;
     const clip = $('clip');
+
+    // ------------------------------------------------------------------
+    // Настройки на проследяването, нагласяеми от адреса
+    // ------------------------------------------------------------------
+    // Наслагването е триизмерно и се накланя с картона. Онова, което го
+    // кара да „плува", е закъснение: образът от камерата е жив, а позата
+    // се смята от по-стар кадър. Затова трите неща, които го управляват,
+    // стоят в адреса — за да се намери работната стойност на живо, с
+    // истински телефон и истинска покана.
+    //
+    //   ?cf=   колко изглажда при бавно движение (по-високо = по-малко
+    //          закъснение, но повече трепкане в покой)
+    //   ?beta= колко бързо догонва при бързо движение
+    //   ?miss= колко кадъра издържа без разпознаване, преди да скрие
+    //          видеото (високо = показва стара поза, тоест „изместено")
+    //   ?res=  ширина на кадъра от камерата (по-малко = по-бърза
+    //          обработка, тоест по-малко закъснение, но по-къс обхват)
+    const P = new URLSearchParams(location.search);
+    const num = (k, d) => { const v = parseFloat(P.get(k)); return isFinite(v) ? v : d; };
+    const TUNE = {
+      cf:   num('cf', 0.01),
+      beta: num('beta', 2000),
+      miss: num('miss', 5),
+      res:  num('res', 1280),
+      debug: P.get('debug') === '1'
+    };
 
     // ---------------------------------------------------------------
     // Базата — през обикновен fetch, без клиентска библиотека отгоре
@@ -400,11 +445,10 @@
         // на ниската си честота и наслагването изостава, тоест „се
         // отлепя" от снимката, щом телефонът тръгне. Стойностите по
         // подразбиране на библиотеката са премерени; не ги подбиваме.
-        filterMinCF: 0.001,    // колко трепка при неподвижна ръка
-        filterBeta: 1000,      // колко бързо догонва при движение
-
-        warmupTolerance: 3,    // хваща по-рано
-        missTolerance: 8       // не изпуска при кратко замъгляване
+        filterMinCF: TUNE.cf,
+        filterBeta:  TUNE.beta,
+        warmupTolerance: 3,
+        missTolerance:   TUNE.miss
       });
 
       const { renderer, scene, camera } = mindar;
@@ -458,6 +502,27 @@
         logEvent('ar_play');
       };
 
+      // брои колко пъти в секунда идва нова поза
+      let poseCount = 0, frameCount = 0, lastReport = performance.now();
+      anchor.onTargetUpdate = () => { poseCount++; };
+
+      if (TUNE.debug) {
+        $('probe').hidden = false;
+        setInterval(() => {
+          const now = performance.now();
+          const dt = (now - lastReport) / 1000;
+          const cam = mindar.video ? mindar.video.videoWidth + 'x' + mindar.video.videoHeight : '?';
+          $('probe').textContent = [
+            'кадри/сек   ' + Math.round(frameCount / dt),
+            'пози/сек    ' + Math.round(poseCount / dt),
+            'камера      ' + cam,
+            'cf/beta     ' + TUNE.cf + ' / ' + TUNE.beta,
+            'miss        ' + TUNE.miss
+          ].join(String.fromCharCode(10));
+          poseCount = 0; frameCount = 0; lastReport = now;
+        }, 1000);
+      }
+
       anchor.onTargetLost = () => {
         plane.visible = false;
         clip.pause();
@@ -471,7 +536,7 @@
 
       step('stepScan');
       $('bar').hidden = false;
-      renderer.setAnimationLoop(() => renderer.render(scene, camera));
+      renderer.setAnimationLoop(() => { frameCount++; renderer.render(scene, camera); });
     }
 
     function withCameraLimit(fn) {
@@ -480,8 +545,8 @@
       const orig = md.getUserMedia.bind(md);
       md.getUserMedia = c => {
         if (c && c.video && typeof c.video === 'object') {
-          c.video.width  = { ideal: 1280 };
-          c.video.height = { ideal: 720 };
+          c.video.width  = { ideal: TUNE.res };
+          c.video.height = { ideal: Math.round(TUNE.res * 9 / 16) };
         }
         return orig(c);
       };
