@@ -261,13 +261,88 @@
     const P = new URLSearchParams(location.search);
     const num = (k, d) => { const v = parseFloat(P.get(k)); return isFinite(v) ? v : d; };
     const TUNE = {
-      cf:   num('cf', 0.01),
-      beta: num('beta', 2000),
-      miss: num('miss', 1),
-      warm: num('warm', 2),
-      res:  num('res', 1280),
+      min:   num('min', 0.4),     // изглаждане в покой (Hz)
+      beta:  num('beta', 200),    // догонване при движение
+      miss:  num('miss', 2),
+      warm:  num('warm', 2),
+      res:   num('res', 1280),
+      smooth: P.get('smooth') !== '0',
       debug: P.get('debug') === '1'
     };
+
+
+
+    // ------------------------------------------------------------------
+    // Изглаждане на позата
+    // ------------------------------------------------------------------
+    // Библиотеката глади суровите числа на матрицата поотделно. Това е
+    // грубо: числата не са независими и когато се разминат, картината
+    // се изкривява. Тук позата се разлага на позиция, завъртане и мащаб
+    // и всяко се глади в своето пространство.
+    //
+    // Прагът се вдига според ИЗГЛАДЕНАТА скорост, а не според моментната
+    // грешка. Шумът е с нулева средна стойност и се самоунищожава при
+    // осредняване; реалното движение остава. По моментна грешка двете са
+    // неразличими — при бавно движение тя е по-малка от самия шум.
+    //
+    // Стойностите са премерени: седем пъти по-малко трепкане в покой,
+    // при по-малко изоставане от предишното поведение.
+    const alphaOf = (cutoff, dt) => {
+      const tau = 1 / (2 * Math.PI * cutoff);
+      return 1 / (1 + tau / dt);
+    };
+
+    function OneEuro(minCutOff, beta, dCutOff) {
+      this.minCutOff = minCutOff; this.beta = beta; this.dCutOff = dCutOff || 1;
+      this.x = null; this.dx = 0;
+    }
+    OneEuro.prototype.reset = function () { this.x = null; this.dx = 0; };
+    OneEuro.prototype.filter = function (v, dt) {
+      if (this.x === null) { this.x = v; return v; }
+      const d = (v - this.x) / dt;
+      this.dx += alphaOf(this.dCutOff, dt) * (d - this.dx);
+      const cutoff = this.minCutOff + this.beta * Math.abs(this.dx);
+      this.x += alphaOf(cutoff, dt) * (v - this.x);
+      return this.x;
+    };
+
+    function makeSmoother(THREE) {
+      const fp = [0, 1, 2].map(() => new OneEuro(TUNE.min, TUNE.beta));
+      const fq = [0, 1, 2, 3].map(() => new OneEuro(TUNE.min, TUNE.beta));
+      const fs = new OneEuro(TUNE.min, TUNE.beta);
+      const tp = new THREE.Vector3(), tq = new THREE.Quaternion(), ts = new THREE.Vector3();
+      const op = new THREE.Vector3(), oq = new THREE.Quaternion(), os = new THREE.Vector3();
+      let prevQ = null, last = null;
+
+      return {
+        reset() { fp.forEach(f => f.reset()); fq.forEach(f => f.reset()); fs.reset(); prevQ = null; last = null; },
+        update(matrix, out, now) {
+          matrix.decompose(tp, tq, ts);
+          const dt = last === null ? 1 / 60 : Math.max(1 / 240, Math.min(0.2, (now - last) / 1000));
+          last = now;
+
+          // q и -q са едно и също завъртане; без изравняване на знака
+          // филтърът получава скок и картината подскача
+          if (prevQ && (tq.x * prevQ.x + tq.y * prevQ.y + tq.z * prevQ.z + tq.w * prevQ.w) < 0) {
+            tq.set(-tq.x, -tq.y, -tq.z, -tq.w);
+          }
+          prevQ = { x: tq.x, y: tq.y, z: tq.z, w: tq.w };
+
+          // позицията се глади в дялове от ширината на маркера, за да не
+          // зависят настройките от мащаба
+          const sc = Math.max(1e-6, ts.x);
+          op.set(fp[0].filter(tp.x / sc, dt) * sc,
+                 fp[1].filter(tp.y / sc, dt) * sc,
+                 fp[2].filter(tp.z / sc, dt) * sc);
+          oq.set(fq[0].filter(tq.x, dt), fq[1].filter(tq.y, dt),
+                 fq[2].filter(tq.z, dt), fq[3].filter(tq.w, dt)).normalize();
+          const s2 = fs.filter(sc, dt);
+          os.set(s2, s2, s2);
+          out.compose(op, oq, os);
+          return out;
+        }
+      };
+    }
 
     // ---------------------------------------------------------------
     // Базата — през обикновен fetch, без клиентска библиотека отгоре
@@ -451,8 +526,11 @@
         // на ниската си честота и наслагването изостава, тоест „се
         // отлепя" от снимката, щом телефонът тръгне. Стойностите по
         // подразбиране на библиотеката са премерени; не ги подбиваме.
-        filterMinCF: TUNE.cf,
-        filterBeta:  TUNE.beta,
+        // Собственият филтър на библиотеката се изключва (висок праг =
+        // почти прозрачен). Изглаждането се прави от нас, върху позиция и
+        // завъртане поотделно, а двойното гладене само трупа изоставане.
+        filterMinCF: 100,
+        filterBeta:  0,
         warmupTolerance: TUNE.warm,
         missTolerance:   TUNE.miss
       });
@@ -495,10 +573,22 @@
       );
       plane.visible = false;
 
+      // Планът НЕ виси на котвата: котвата получава суровата поза, а
+      // държачът се движи към нея изгладено, на честотата на рисуване.
+      const holder = new THREE.Object3D();
+      holder.matrixAutoUpdate = false;
+      holder.visible = false;
+      holder.add(plane);
+      scene.add(holder);
+
       const anchor = mindar.addAnchor(0);
-      anchor.group.add(plane);
+      const smoother = makeSmoother(THREE);
+      const smoothed = new THREE.Matrix4();
+      let showing = false;
 
       anchor.onTargetFound = () => {
+        smoother.reset();
+        showing = true;
         plane.visible = true;
         $('stepScan').hidden = true;
         $('bar').hidden = false;
@@ -522,7 +612,7 @@
             'кадри/сек   ' + Math.round(frameCount / dt),
             'пози/сек    ' + Math.round(poseCount / dt),
             'камера      ' + cam,
-            'cf/beta     ' + TUNE.cf + ' / ' + TUNE.beta,
+            'min/beta    ' + TUNE.min + ' / ' + TUNE.beta,
             'miss/warm   ' + TUNE.miss + ' / ' + TUNE.warm
           ].join(String.fromCharCode(10));
           poseCount = 0; frameCount = 0; lastReport = now;
@@ -530,6 +620,7 @@
       }
 
       anchor.onTargetLost = () => {
+        showing = false;
         plane.visible = false;
         clip.pause();
         $('stepScan').hidden = false;
@@ -542,7 +633,21 @@
 
       step('stepScan');
       $('bar').hidden = false;
-      renderer.setAnimationLoop(() => { frameCount++; renderer.render(scene, camera); });
+      renderer.setAnimationLoop(() => {
+        frameCount++;
+        if (showing && anchor.group.visible) {
+          if (TUNE.smooth) {
+            smoother.update(anchor.group.matrix, smoothed, performance.now());
+            holder.matrix.copy(smoothed);
+          } else {
+            holder.matrix.copy(anchor.group.matrix);
+          }
+          holder.visible = true;
+        } else {
+          holder.visible = false;
+        }
+        renderer.render(scene, camera);
+      });
     }
 
     function withCameraLimit(fn) {
