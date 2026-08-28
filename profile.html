@@ -876,6 +876,7 @@
       if (data.avatar_url) {
         avatarEl.src = data.avatar_url;
         avatarEl.style.display = 'block';
+        prefetchVcardPhoto(data.avatar_url);
       } else {
         // Без своя снимка остава неутралният силует, а не чужда снимка
         avatarEl.removeAttribute('src');
@@ -1121,6 +1122,54 @@
       return [n.family, n.given, n.middle, n.prefix, ''].map(vcEscape).join(';');
     }
 
+    // Снимката от визитката влиза и в контакта на телефона. Подготвя се
+    // при зареждане на профила, а не при клика: на iOS изтегляне, което
+    // чака async работа, се блокира — вече не е част от жеста на потребителя.
+    let vcardPhotoLine = '';
+
+    function prefetchVcardPhoto(url) {
+      vcardPhotoLine = '';
+      if (!url) return;
+      const img = new Image();
+      // Снимките се пазят като data: адрес, но ако някой профил сочи към
+      // хранилището, crossOrigin пази canvas-а чист и toDataURL продължава да работи.
+      if (!/^data:/i.test(url)) img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        try {
+          // Квадратна изрезка от центъра — точно каквото се вижда в кръга на
+          // визитката (object-fit: cover). Малка снимка не се раздува.
+          const side = Math.min(img.naturalWidth, img.naturalHeight);
+          if (!side) return;
+          const SIDE = Math.min(400, side);
+          const canvas = document.createElement('canvas');
+          canvas.width = SIDE;
+          canvas.height = SIDE;
+          canvas.getContext('2d').drawImage(
+            img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, SIDE, SIDE);
+          const b64 = (canvas.toDataURL('image/jpeg', 0.82).split(',')[1] || '');
+          // Прекалено голяма снимка чупи вноса на контакта при някои телефони.
+          if (b64 && b64.length < 500000) {
+            vcardPhotoLine = foldVcardLine('PHOTO;ENCODING=b;TYPE=JPEG:' + b64);
+          }
+        } catch (err) {
+          // Контактът се сваля и без снимка — тя е допълнение, не условие.
+          console.warn('Снимката не влезе в контакта:', err);
+        }
+      };
+      img.onerror = function () {
+        console.warn('Снимката не се зареди за контакта.');
+      };
+      img.src = url;
+    }
+
+    // vCard редовете са до 75 знака; продължението започва с интервал.
+    // Без това дългият ред със снимката се отхвърля от част от телефоните.
+    function foldVcardLine(line) {
+      const out = [line.slice(0, 74)];
+      for (let i = 74; i < line.length; i += 73) out.push(' ' + line.slice(i, i + 73));
+      return out.join('\r\n');
+    }
+
     // Download VCard
     function downloadVCard() {
       if (!profileLoaded) return;
@@ -1139,17 +1188,23 @@
       const vTitle = shownProfile.title || currentProfile.title || '';
       const vCompany = shownProfile.company || currentProfile.company || '';
 
-      const vcardData =
-`BEGIN:VCARD
-VERSION:3.0
-N:${vcardN(vName)}
-FN:${vcEscape(vName)}
-ORG:${vcEscape(vCompany)}
-TITLE:${vcEscape(vTitle)}
-TEL;TYPE=CELL:${toIntl(currentProfile.phone) || currentProfile.phone || ''}
-EMAIL;TYPE=PREF,INTERNET:${currentProfile.email || ''}
-URL:${currentProfile.website || ''}
-END:VCARD`;
+      // Редовете се слепват с CRLF, както иска форматът — важно е за дългия,
+      // прегънат ред със снимката.
+      const lines = [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        'N:' + vcardN(vName),
+        'FN:' + vcEscape(vName),
+        'ORG:' + vcEscape(vCompany),
+        'TITLE:' + vcEscape(vTitle),
+        'TEL;TYPE=CELL:' + (toIntl(currentProfile.phone) || currentProfile.phone || ''),
+        'EMAIL;TYPE=PREF,INTERNET:' + (currentProfile.email || ''),
+        'URL:' + (currentProfile.website || '')
+      ];
+      if (vcardPhotoLine) lines.push(vcardPhotoLine);
+      lines.push('END:VCARD');
+
+      const vcardData = lines.join('\r\n');
 
       const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8;' });
       const link = document.createElement('a');

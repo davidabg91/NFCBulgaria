@@ -997,6 +997,40 @@
       } catch (e) { showToast(url); }
     }
 
+    // Снимката от визитката влиза и в контакта. Подготвя се при
+    // зареждане, а не при клика — на iOS изтегляне след async работа се блокира.
+    let vcardPhotoLine = '';
+
+    (function prefetchVcardPhoto() {
+      const el = document.getElementById('profileAvatar');
+      const url = el && el.getAttribute('src');
+      if (!url) return;
+      const img = new Image();
+      if (!/^data:/i.test(url)) img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        try {
+          const side = Math.min(img.naturalWidth, img.naturalHeight);
+          if (!side) return;
+          const SIDE = Math.min(400, side);
+          const canvas = document.createElement('canvas');
+          canvas.width = SIDE;
+          canvas.height = SIDE;
+          canvas.getContext('2d').drawImage(
+            img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, SIDE, SIDE);
+          const b64 = (canvas.toDataURL('image/jpeg', 0.82).split(',')[1] || '');
+          if (!b64 || b64.length > 500000) return;
+          // vCard редовете са до 75 знака; продължението започва с интервал.
+          const line = 'PHOTO;ENCODING=b;TYPE=JPEG:' + b64;
+          const out = [line.slice(0, 74)];
+          for (let i = 74; i < line.length; i += 73) out.push(' ' + line.slice(i, i + 73));
+          vcardPhotoLine = out.join('\r\n');
+        } catch (err) {
+          console.warn('Снимката не влезе в контакта:', err);
+        }
+      };
+      img.src = url;
+    })();
+
     // Dynamic vCard Generation
     function downloadVCard() {
       // Local demo increment
@@ -1004,17 +1038,22 @@
       saves += 1;
       localStorage.setItem('demoSaves', saves);
 
-      const vcard = `BEGIN:VCARD
-VERSION:3.0
-FN:Александър Петров
-N:Петров;Александър;;;
-ORG:АРХПРОЕКТ
-TITLE:Главен Архитект
-TEL;TYPE=WORK,VOICE:+359881234567
-EMAIL;TYPE=PREF,INTERNET:a.petrov@arhproekt.bg
-URL:https://nfcbulgaria.com
-REV:${new Date().toISOString()}
-END:VCARD`;
+      const lines = [
+        'BEGIN:VCARD',
+        'VERSION:3.0',
+        'FN:Александър Петров',
+        'N:Петров;Александър;;;',
+        'ORG:АРХПРОЕКТ',
+        'TITLE:Главен Архитект',
+        'TEL;TYPE=WORK,VOICE:+359881234567',
+        'EMAIL;TYPE=PREF,INTERNET:a.petrov@arhproekt.bg',
+        'URL:https://nfcbulgaria.com',
+        'REV:' + new Date().toISOString()
+      ];
+      if (vcardPhotoLine) lines.push(vcardPhotoLine);
+      lines.push('END:VCARD');
+
+      const vcard = lines.join('\r\n');
 
       const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8;' });
       const link = document.createElement('a');
