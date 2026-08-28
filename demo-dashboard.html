@@ -66,7 +66,10 @@
     .logo-icon { width:24px; height:17px; border:2px solid var(--primary); border-radius:4px; box-shadow:0 0 10px var(--primary-glow); }
     .logo-text { font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:700; color:var(--text); }
     .logo-text span { color:var(--primary); }
-    .header-right { display:flex; align-items:center; gap:0.9rem; flex-wrap:wrap; }
+    .header-right { display:flex; align-items:center; justify-content:flex-end; gap:0.5rem 0.9rem; flex-wrap:wrap; }
+    /* Езиковият превключвач е на собствен ред под бутоните — иначе i18n.js
+       го слага position:fixed горе вдясно и се застъпва с тях. */
+    .header-right #langSwitch { flex-basis:100%; display:flex; justify-content:flex-end; }
     .demo-pill { background:rgba(0,242,255,0.1); border:1px solid var(--glass-border); color:var(--primary); padding:0.3rem 0.85rem; border-radius:20px; font-size:0.76rem; font-weight:700; letter-spacing:0.5px; }
     .btn-outline { background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text-muted); padding:0.42rem 0.95rem; border-radius:8px; font-size:0.82rem; cursor:pointer; font-weight:600; text-decoration:none; transition:all 0.25s ease; display:inline-flex; align-items:center; gap:6px; }
     .btn-outline:hover { background:rgba(255,255,255,0.08); color:var(--text); }
@@ -703,6 +706,7 @@
       <span class="admin-pill"><svg class="ico" aria-hidden="true"><use href="#i-admin"/></svg> АДМИН</span>
       <span class="header-user-info" style="font-weight:600; font-size:0.88rem; color:var(--text);">Александър Петров <span style="color:var(--text-muted); font-weight:500;">· АРХПРОЕКТ</span></span>
       <a href="index.html" class="btn-outline"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"/></svg> Назад към сайта</a>
+      <div id="langSwitch"></div>
     </div>
   </header>
 
