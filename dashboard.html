@@ -85,7 +85,17 @@
     .user-info {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.5rem;
+    }
+
+    /* Езиковият превключвач е на собствен ред под бутона "Изход" — иначе
+       i18n.js го слага position:fixed горе вдясно и се застъпва с него. */
+    .user-info #langSwitch {
+      flex-basis: 100%;
+      display: flex;
+      justify-content: flex-end;
     }
 
     .btn-logout {
@@ -649,6 +659,7 @@
     <div class="user-info">
       <span id="userName" style="font-weight: 600; font-size: 0.9rem;">Александър Петров</span>
       <button class="btn-logout" onclick="handleLogout()">Изход</button>
+      <div id="langSwitch"></div>
     </div>
   </header>
 
