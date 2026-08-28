@@ -1074,6 +1074,53 @@
       document.getElementById('leadForm').reset();
     }
 
+    // ; , \ и нов ред имат значение във vCard формата и разцепват полето,
+    // ако не се екранират (напр. длъжност "Мениджър, Продажби").
+    function vcEscape(v) {
+      return String(v == null ? '' : v)
+        .replace(/\\/g, '\\\\')
+        .replace(/\r?\n/g, '\\n')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,');
+    }
+
+    // iOS попълва "Име" и "Фамилия" от структурираното поле N, а не от FN.
+    // Досега пращахме "N:Цялото Име;;;;" → всичко влизаше във фамилията, а
+    // първото име оставаше празно в Контакти (сигнал от клиент с iPhone).
+    // N е: Фамилия;Име;Презиме;Титла;Наставка
+    function splitName(full) {
+      const parts = String(full || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+      const out = { given: '', middle: '', family: '', prefix: '' };
+      if (!parts.length) return out;
+
+      // "инж. Иван Петров", "д-р Мария Илиева" — титлата не е част от името
+      const TITLES = ['инж', 'д-р', 'проф', 'доц', 'арх', 'адв', 'г-н', 'г-жа',
+                      'dr', 'ing', 'eng', 'prof', 'mr', 'mrs', 'ms'];
+      while (parts.length > 1 && TITLES.indexOf(parts[0].replace(/\.$/, '').toLowerCase()) !== -1) {
+        out.prefix = (out.prefix ? out.prefix + ' ' : '') + parts.shift();
+      }
+
+      // "Петров, Иван" — обърнат запис: фамилията е преди запетаята
+      if (parts.length > 1 && /,$/.test(parts[0])) {
+        out.family = parts.shift().replace(/,$/, '');
+        out.given = parts.shift();
+        out.middle = parts.join(' ');
+        return out;
+      }
+
+      // Българските имена са три: Име Презиме Фамилия. При две — Име Фамилия,
+      // при едно — само име (фамилията остава празна, вместо да ѝ дадем името).
+      out.given = parts.shift();
+      if (parts.length) out.family = parts.pop();
+      out.middle = parts.join(' ');
+      return out;
+    }
+
+    function vcardN(full) {
+      const n = splitName(full);
+      return [n.family, n.given, n.middle, n.prefix, ''].map(vcEscape).join(';');
+    }
+
     // Download VCard
     function downloadVCard() {
       if (!profileLoaded) return;
@@ -1087,17 +1134,18 @@
       }
 
       // vCard-ът се сваля на езика, който посетителят вижда
-      const vName = shownProfile.name || currentProfile.name || '';
+      const vName = String(shownProfile.name || currentProfile.name || '')
+        .replace(/\s+/g, ' ').trim();
       const vTitle = shownProfile.title || currentProfile.title || '';
       const vCompany = shownProfile.company || currentProfile.company || '';
 
       const vcardData =
 `BEGIN:VCARD
 VERSION:3.0
-N:${vName};;;;
-FN:${vName}
-ORG:${vCompany}
-TITLE:${vTitle}
+N:${vcardN(vName)}
+FN:${vcEscape(vName)}
+ORG:${vcEscape(vCompany)}
+TITLE:${vcEscape(vTitle)}
 TEL;TYPE=CELL:${toIntl(currentProfile.phone) || currentProfile.phone || ''}
 EMAIL;TYPE=PREF,INTERNET:${currentProfile.email || ''}
 URL:${currentProfile.website || ''}

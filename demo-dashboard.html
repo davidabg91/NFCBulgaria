@@ -1013,8 +1013,17 @@
       document.body.removeChild(link);
     }
 
+    // N е: Фамилия;Име;Презиме;Титла;Наставка. Цялото име в първото поле
+    // го вкарваше само във "Фамилия" на iPhone и "Име" оставаше празно.
+    function vcardN(full) {
+      const parts = String(full || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+      const given = parts.shift() || '';
+      const family = parts.length ? parts.pop() : '';
+      return `${family};${given};${parts.join(' ')};;`;
+    }
+
     function downloadLeadVCard(name, phone) {
-      const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nN:${name};;;;\nTEL;TYPE=CELL:${phone}\nEND:VCARD`;
+      const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nN:${vcardN(name)}\nTEL;TYPE=CELL:${phone}\nEND:VCARD`;
       const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
