@@ -13,6 +13,12 @@
 --   3. checkout_intents              → КОЙ е натиснал бутона за плащане
 --   4. admin_* справки (security definer, само за is_app_admin())
 --
+-- ШЕФ = едно от двете (в базата има два независими механизма):
+--   * profiles.is_boss        — HubSpot Lite шеф (пакет с брой места)
+--   * public.company_admins   — фирмен админ по company_id (ЕЛКАБЕЛ)
+-- Справките отдолу гледат И ДВЕТЕ, иначе фирмени шефове излизат
+-- като обикновени служители.
+--
 -- Всички справки минават през is_app_admin() — същите имейли, които са
 -- в ADMIN_EMAILS в admin.html. Ако добавиш админ, добави го и в
 -- team-portal.sql → is_app_admin(), и пусни пак този файл не е нужно.
@@ -220,7 +226,11 @@ begin
     'profiles_active',  (select count(*) from public.profiles p
                           where exists (select 1 from public.analytics a
                                         where a.profile_id = p.id)),
-    'bosses',           (select count(*) from public.profiles where is_boss),
+    -- шеф = is_boss ИЛИ фирмен админ (двата механизма)
+    'bosses',           (select count(*) from public.profiles p
+                          where coalesce(p.is_boss, false)
+                             or exists (select 1 from public.company_admins ca
+                                        where ca.user_id = p.user_id)),
     'companies',        (select count(distinct company_id) from public.profiles
                           where company_id is not null),
     'orphans',          (select count(*) from public.profiles where company_id is null),
@@ -267,15 +277,20 @@ grant execute on function public.admin_dashboard_stats() to authenticated;
 -- ---------------------------------------------------------------------
 -- 4.2 Всички визитки с употребата им — сърцето на панела
 -- ---------------------------------------------------------------------
+-- Сигнатурата се промени (нова колона is_company_admin) → старата версия
+-- трябва да падне, create or replace не може да смени типа на резултата.
+drop function if exists public.admin_profiles_overview();
+
 create or replace function public.admin_profiles_overview()
 returns table (
-  profile_id     text,
-  name           text,
-  title          text,
-  company        text,
-  company_id     uuid,
-  is_boss        boolean,
-  boss_name      text,
+  profile_id       text,
+  name             text,
+  title            text,
+  company          text,
+  company_id       uuid,
+  is_boss          boolean,
+  is_company_admin boolean,
+  boss_name        text,
   boss_profile   text,
   login_email    text,
   card_email     text,
@@ -311,6 +326,7 @@ begin
     p.company,
     p.company_id,
     coalesce(p.is_boss, false),
+    exists (select 1 from public.company_admins ca where ca.user_id = p.user_id),
     b.name,
     b.id,
     u.email::text,          -- auth.users.email е varchar, OUT-ът е text
@@ -387,21 +403,29 @@ begin
   end if;
 
   return query
-  with comp as (
+  with prof as (
+    -- шеф по който и да е от двата механизма
+    select p.*,
+           (coalesce(p.is_boss, false)
+            or exists (select 1 from public.company_admins ca
+                       where ca.user_id = p.user_id)) as boss_flag
+    from public.profiles p
+    where p.company_id is not null
+  ),
+  comp as (
     select
-      p.company_id as cid,
+      pr.company_id as cid,
       coalesce(
-        max(p.company) filter (where p.is_boss),
-        max(p.company),
+        max(pr.company) filter (where pr.boss_flag),
+        max(pr.company),
         'Без име'
       ) as cname,
       count(*) as members,
-      string_agg(p.name, ', ' order by p.name) filter (where p.is_boss) as bosses,
-      string_agg(p.id,   ', ' order by p.name) filter (where p.is_boss) as boss_profiles,
-      coalesce(sum(coalesce(p.saves_count, 0)), 0)::bigint as saves
-    from public.profiles p
-    where p.company_id is not null
-    group by p.company_id
+      string_agg(pr.name, ', ' order by pr.name) filter (where pr.boss_flag) as bosses,
+      string_agg(pr.id,   ', ' order by pr.name) filter (where pr.boss_flag) as boss_profiles,
+      coalesce(sum(coalesce(pr.saves_count, 0)), 0)::bigint as saves
+    from prof pr
+    group by pr.company_id
   )
   select
     c.cid,
@@ -575,6 +599,7 @@ begin
            (select coalesce(max(p.company) filter (where p.is_boss), max(p.company))
               from public.profiles p
              where p.company_id = s.company_id) as company_name,
+           -- за пълнота: и фирмените админи се броят за шефове
            (s.status = 'active' and s.current_period_end > now()) as is_live
     from public.team_subscriptions s
     left join public.profiles bp on bp.user_id = s.boss_user_id
@@ -590,7 +615,10 @@ begin
              where p.company_id = o.company_id) as company_name,
            (select string_agg(p.name, ', ' order by p.name)
               from public.profiles p
-             where p.company_id = o.company_id and p.is_boss) as bosses,
+             where p.company_id = o.company_id
+               and (coalesce(p.is_boss, false)
+                    or exists (select 1 from public.company_admins ca
+                               where ca.user_id = p.user_id))) as bosses,
            (select count(*) from public.profiles p
              where p.company_id = o.company_id) as members,
            exists (select 1 from public.team_subscriptions s

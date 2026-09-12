@@ -740,6 +740,11 @@
           <h2>Фирми и екипи</h2>
           <p>Всяка фирма е една група. Отгоре стои <strong>шефът</strong> (маркиран със син етикет),
              отдолу — неговите хора. Кликни върху фирмата, за да разгънеш екипа.</p>
+          <p style="margin-top:0.5rem">
+            Има два вида шеф: <strong style="color:var(--text)">Шеф (фирмен)</strong> вижда
+            всички визитки на фирмата (така е направен ЕЛКАБЕЛ), а
+            <strong style="color:var(--text)">Шеф</strong> вижда само хората, които са закачени
+            лично към него през пакет с места. Единият не изключва другия.</p>
         </div>
         <button class="btn-ghost" onclick="toggleAllCompanies()">Разгъни / Свий всички</button>
       </div>
@@ -1064,6 +1069,7 @@
     let leadsRows       = [];   // admin_recent_leads()
     let activityRows    = [];   // admin_activity_feed()
     let paymentsData    = null; // admin_payments_overview()
+    let companyBossMap  = new Map(); // company_id → имената на шефовете
     let insightsReady   = false;
 
     let cardsSort = { key: 'scans', dir: 'desc' };
@@ -1214,6 +1220,36 @@
 
     function fieldLabel(f) { return FIELD_LABELS[f] || f; }
 
+    // В базата има ДВА независими начина един човек да е шеф:
+    //   is_boss          — шеф по пакет (HubSpot Lite, брой места)
+    //   is_company_admin — фирмен админ по company_id (така е ЕЛКАБЕЛ)
+    // Панелът трябва да признава и двата, иначе фирмените шефове
+    // излизат като обикновени служители.
+    function isBossLike(r) { return !!(r.is_boss || r.is_company_admin); }
+
+    function roleBadge(r) {
+      if (r.is_boss && r.is_company_admin) {
+        return '<span class="badge badge-boss">👑 Шеф</span>'
+             + '<div class="person-sub">пакет + цяла фирма</div>';
+      }
+      if (r.is_company_admin) {
+        return '<span class="badge badge-boss">👑 Шеф (фирмен)</span>'
+             + '<div class="person-sub">вижда цялата фирма</div>';
+      }
+      if (r.is_boss) {
+        return '<span class="badge badge-boss">👑 Шеф</span>'
+             + '<div class="person-sub">вижда екипа си</div>';
+      }
+      // parent_boss_id е само единият механизъм — ако фирмата се води от
+      // фирмен админ, човекът пак си има шеф, просто по другата линия.
+      const companyBoss = companyBossMap.get(r.company_id);
+      const sub = r.boss_name
+        ? `при ${escapeHtml(r.boss_name)}`
+        : (companyBoss ? `фирмен шеф: ${escapeHtml(companyBoss)}` : 'без шеф');
+      return '<span class="badge badge-staff">Служител</span>'
+           + `<div class="person-sub">${sub}</div>`;
+    }
+
     // ---------------------------------------------------------------
     // Основен списък (винаги работи — не зависи от новия SQL)
     // ---------------------------------------------------------------
@@ -1321,7 +1357,11 @@
       renderChart(daysRes.error ? [] : (daysRes.data || []));
 
       companiesRows = compRes.error ? [] : (compRes.data || []);
+      companyBossMap = new Map(
+        companiesRows.filter(c => c.bosses).map(c => [c.company_id, c.bosses])
+      );
       renderCompanies();
+      renderCardsTable();   // сега вече знаем кой води всяка фирма
 
       leadsRows = leadsRes.error ? [] : (leadsRes.data || []);
       renderLeadsTable();
@@ -1498,7 +1538,7 @@
         if (comp && comp !== '__none__' && r.company !== comp) return false;
         if (usage === 'active'    && Number(r.scans) === 0) return false;
         if (usage === 'idle'      && Number(r.scans) > 0) return false;
-        if (usage === 'boss'      && !r.is_boss) return false;
+        if (usage === 'boss'      && !isBossLike(r)) return false;
         if (usage === 'noaccount' && r.has_account) return false;
         if (!q) return true;
         return [r.name, r.profile_id, r.company, r.title, r.login_email, r.card_email, r.boss_name]
@@ -1507,7 +1547,7 @@
 
       const key = cardsSort.key, dir = cardsSort.dir === 'asc' ? 1 : -1;
       const pick = r => ({
-        name: r.name, company: r.company, role: (r.is_boss ? '1' : '0') + (r.boss_name || ''),
+        name: r.name, company: r.company, role: (isBossLike(r) ? '1' : '0') + (r.boss_name || ''),
         scans: Number(r.scans), leads: Number(r.leads), saves: Number(r.saves),
         last_scan: r.last_scan ? new Date(r.last_scan).getTime() : 0,
         last_edit: r.last_edit ? new Date(r.last_edit).getTime() : 0,
@@ -1532,15 +1572,11 @@
       if (!rows.length) { tbody.innerHTML = emptyRow(10, 'Няма съвпадения.'); return; }
 
       tbody.innerHTML = rows.map(r => {
-        const role = r.is_boss
-          ? '<span class="badge badge-boss">Шеф</span>'
-          : (r.boss_name
-              ? `<span class="badge badge-staff">Служител</span><div class="person-sub">при ${escapeHtml(r.boss_name)}</div>`
-              : '<span class="badge badge-staff">Служител</span><div class="person-sub">без шеф</div>');
+        const role = roleBadge(r);
 
         const account = r.has_account ? '' : '<div class="person-sub" style="color:var(--danger)">няма акаунт</div>';
 
-        return `<tr${r.is_boss ? ' class="boss-row"' : ''}>
+        return `<tr${isBossLike(r) ? ' class="boss-row"' : ''}>
           <td>${personCell(r.name, r.title || r.profile_id, r.avatar_url)}${account}</td>
           <td class="muted">${escapeHtml(r.company || '—')}</td>
           <td>${role}</td>
@@ -1593,12 +1629,12 @@
 
       let html = companiesRows.map((c, i) => {
         const members = (byCompany.get(c.company_id) || [])
-          .sort((a, b) => (b.is_boss - a.is_boss) || (Number(b.scans) - Number(a.scans)));
+          .sort((a, b) => (isBossLike(b) - isBossLike(a)) || (Number(b.scans) - Number(a.scans)));
 
         const rows = members.map(m => `
-          <tr${m.is_boss ? ' class="boss-row"' : ''}>
+          <tr${isBossLike(m) ? ' class="boss-row"' : ''}>
             <td>${personCell(m.name, m.title || m.profile_id, m.avatar_url)}</td>
-            <td>${m.is_boss ? '<span class="badge badge-boss">👑 Шеф</span>' : '<span class="badge badge-staff">Служител</span>'}</td>
+            <td>${roleBadge(m)}</td>
             <td class="num">${num(m.scans)}</td>
             <td class="num">${num(m.leads)}</td>
             <td class="num">${num(m.saves)}</td>
