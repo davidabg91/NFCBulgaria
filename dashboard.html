@@ -970,6 +970,173 @@
     .theme-btn[disabled] { opacity: 0.55; cursor: default; transform: none; box-shadow: none; }
     .theme-intro { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
     .theme-intro strong { color: var(--text); }
+
+    /* --- Преглед на визитката с избрания фон ------------------------ */
+    .tp-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      background: rgba(3, 6, 14, 0.82);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .tp-overlay.open { display: block; }
+
+    .tp-dialog {
+      max-width: 900px;
+      margin: 2rem auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 0;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+    }
+    @media (max-width: 760px) {
+      .tp-dialog { grid-template-columns: 1fr; margin: 1rem auto; }
+    }
+
+    /* Сцената носи променливите на темата — точно както body в profile.html */
+    .tp-stage {
+      position: relative;
+      padding: 2.2rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 420px;
+      background-color: var(--bg);
+      background-image: var(--theme-grain, none), var(--theme-page, none);
+      background-size: 120px 120px, cover;
+      background-repeat: repeat, no-repeat;
+      transition: background-color 0.35s ease;
+    }
+
+    /* Умалена, но вярна на оригинала визитка */
+    .tp-card {
+      width: 100%;
+      max-width: 300px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--theme-card-shadow);
+      overflow: hidden;
+      color: var(--text);
+      text-align: center;
+    }
+    .tp-top { padding: 1.6rem 1.2rem 1.2rem; }
+    .tp-ring {
+      width: 74px; height: 74px;
+      margin: 0 auto 0.9rem;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 8px 20px var(--primary-glow);
+    }
+    .tp-ava {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      background: var(--input-bg) center/60% no-repeat;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='19' r='7.5' fill='%239aa3b0'/%3E%3Cpath d='M9.5 42.5c0-8 6.5-12.5 14.5-12.5s14.5 4.5 14.5 12.5z' fill='%239aa3b0'/%3E%3C/svg%3E");
+    }
+    .tp-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem; font-weight: 700; line-height: 1.25;
+    }
+    .tp-title {
+      color: var(--primary);
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-top: 0.3rem;
+    }
+    .tp-company { color: var(--text-muted); font-size: 0.78rem; margin-top: 0.25rem; }
+    .tp-save {
+      margin: 1.1rem 1.2rem 0;
+      padding: 0.75rem;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--on-primary);
+      font-weight: 700; font-size: 0.82rem;
+      box-shadow: 0 6px 18px var(--primary-glow);
+    }
+    .tp-tiles {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      padding: 0.9rem 1.2rem 1.2rem;
+    }
+    .tp-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 0.7rem 0.4rem;
+      font-size: 0.64rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .tp-tile b { display: block; color: var(--primary); margin-bottom: 4px; }
+    .tp-tile svg { width: 17px; height: 17px; }
+    .tp-save svg { width: 15px; height: 15px; vertical-align: -3px; margin-right: 5px; }
+    .tp-foot {
+      border-top: 1px solid var(--border);
+      padding: 0.7rem;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+    }
+
+    /* Дясната колона — описание и действие */
+    .tp-side {
+      background: #0f1626;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1.6rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      color: #f3f4f6;
+    }
+    @media (max-width: 760px) { .tp-side { border-left: none; border-top: 1px solid rgba(255,255,255,0.08); } }
+    .tp-side h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.15rem; font-weight: 700; margin: 0;
+    }
+    .tp-side .tp-tag { font-size: 0.8rem; color: #9ca3af; line-height: 1.55; }
+    .tp-badge {
+      align-self: flex-start;
+      padding: 0.2rem 0.55rem; border-radius: 999px;
+      font-size: 0.66rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tp-badge.free   { background: rgba(161,232,175,0.16); color: #a1e8af; border: 1px solid rgba(161,232,175,0.45); }
+    .tp-badge.owned  { background: rgba(161,232,175,0.9); color: #06210f; }
+    .tp-badge.price  { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+    .tp-badge.active { background: #00f2ff; color: #0b0f19; }
+    .tp-facts { margin: 0.3rem 0 0; padding-left: 1.05rem; display: flex; flex-direction: column; gap: 0.45rem; }
+    .tp-facts li { font-size: 0.76rem; color: #9ca3af; line-height: 1.5; }
+    .tp-facts strong { color: #f3f4f6; }
+    .tp-actions { margin-top: auto; padding-top: 1rem; display: flex; flex-direction: column; gap: 0.55rem; }
+    .tp-nav { display: flex; gap: 0.5rem; }
+    .tp-nav button {
+      flex: 1; padding: 0.55rem; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.05); color: #f3f4f6;
+      font-family: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+    }
+    .tp-nav button:hover { border-color: #00f2ff; color: #00f2ff; }
+    .tp-counter { text-align: center; font-size: 0.72rem; color: #9ca3af; }
+    .tp-close {
+      position: absolute; top: 12px; right: 14px; z-index: 5;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(0,0,0,0.45); color: #fff;
+      font-size: 1rem; line-height: 1; cursor: pointer;
+    }
+    .theme-btn.look { background: rgba(255,255,255,0.07); }
+    .theme-btn.look:hover { border-color: var(--primary); color: var(--primary); }
   </style>
 
   <div class="container" id="themeSection" style="display: none; margin-bottom: 4rem;">
@@ -985,6 +1152,54 @@
         може да го включваш и изключваш когато решиш.
       </p>
       <div class="theme-grid" id="themeGrid"></div>
+    </div>
+  </div>
+
+
+  <!-- Преглед „как ще изглежда визитката ми с този фон" -->
+  <div class="tp-overlay" id="themePreview" onclick="if(event.target===this)closeThemePreview()">
+    <div class="tp-dialog">
+      <div class="tp-stage" id="tpStage">
+        <button class="tp-close" onclick="closeThemePreview()" aria-label="Затвори">×</button>
+        <div class="tp-card">
+          <div class="tp-top">
+            <div class="tp-ring"><img class="tp-ava" id="tpAva" alt=""></div>
+            <div class="tp-name" id="tpName">Вашето име</div>
+            <div class="tp-title" id="tpTitle">Длъжност</div>
+            <div class="tp-company" id="tpCompany">Фирма</div>
+          </div>
+          <div class="tp-save">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+            Запази Контакта
+          </div>
+          <div class="tp-tiles">
+            <div class="tp-tile"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg></b>Телефон</div>
+            <div class="tp-tile"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></b>Имейл</div>
+            <div class="tp-tile"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></svg></b>Уебсайт</div>
+            <div class="tp-tile"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></b>LinkedIn</div>
+          </div>
+          <div class="tp-foot">Създай своята с NFC Bulgaria</div>
+        </div>
+      </div>
+
+      <div class="tp-side">
+        <span class="tp-badge" id="tpBadge"></span>
+        <h4 id="tpThemeName"></h4>
+        <div class="tp-tag" id="tpTagline"></div>
+        <ul class="tp-facts">
+          <li>Сменя фона на визитката <strong>и</strong> на цялата страница, която вижда клиентът ти.</li>
+          <li>Плаща се <strong>веднъж</strong> — остава твой завинаги.</li>
+          <li>Може да го включваш и изключваш по всяко време, без нова такса.</li>
+        </ul>
+        <div class="tp-actions">
+          <div class="tp-counter" id="tpCounter"></div>
+          <div class="tp-nav">
+            <button type="button" onclick="stepThemePreview(-1)">← Предишен</button>
+            <button type="button" onclick="stepThemePreview(1)">Следващ →</button>
+          </div>
+          <button class="theme-btn" id="tpAction" type="button"></button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2112,13 +2327,17 @@
 
         return `
           <div class="theme-tile${active ? ' is-active' : ''}">
-            <div class="theme-preview">
+            <div class="theme-preview" style="cursor:zoom-in"
+                 title="Виж как изглежда визитката ти"
+                 onclick="openThemePreview('${t.id}')">
               ${flag}
               ${window.CardThemes.previewHtml(t.id)}
             </div>
             <div class="theme-body">
               <div class="theme-name">${escapeHtml(t.name)}</div>
               <div class="theme-tagline">${escapeHtml(t.tagline)}</div>
+              <button class="theme-btn look" type="button"
+                      onclick="openThemePreview('${t.id}')">👁 Виж визитката си</button>
               ${btn}
             </div>
           </div>`;
@@ -2223,6 +2442,91 @@
         console.error('verify theme:', err);
       }
     }
+
+
+    // --- Преглед преди покупка --------------------------------------
+    // Показва ИСТИНСКИТЕ данни от формата горе, за да види човекът своята
+    // визитка с този фон, а не абстрактен образец.
+    let tpThemeId = null;
+
+    function openThemePreview(themeId) {
+      if (!window.CardThemes) return;
+      tpThemeId = themeId;
+      renderThemePreview();
+      document.getElementById('themePreview').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeThemePreview() {
+      document.getElementById('themePreview').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function stepThemePreview(delta) {
+      const list = window.CardThemes.list;
+      const i = list.findIndex(t => t.id === tpThemeId);
+      const next = (i + delta + list.length) % list.length;
+      tpThemeId = list[next].id;
+      renderThemePreview();
+    }
+
+    function renderThemePreview() {
+      const list  = window.CardThemes.list;
+      const theme = window.CardThemes.get(tpThemeId);
+      const stage = document.getElementById('tpStage');
+
+      // Променливите се слагат само върху сцената — панелът наоколо
+      // остава със своите цветове.
+      window.CardThemes.apply(stage, theme.id);
+
+      const val = id => (document.getElementById(id) || {}).value || '';
+      document.getElementById('tpName').textContent    = val('nameInput')    || 'Вашето име';
+      document.getElementById('tpTitle').textContent   = val('titleInput')   || 'Длъжност';
+      document.getElementById('tpCompany').textContent = val('companyInput') || 'Фирма';
+
+      const ava = document.getElementById('tpAva');
+      const url = val('avatarInput');
+      if (url) { ava.src = url; ava.style.visibility = 'visible'; }
+      else { ava.removeAttribute('src'); ava.style.visibility = 'hidden'; }
+
+      document.getElementById('tpThemeName').textContent = theme.name;
+      document.getElementById('tpTagline').textContent   = theme.tagline;
+      document.getElementById('tpCounter').textContent   =
+        `${list.findIndex(t => t.id === theme.id) + 1} от ${list.length} фона`;
+
+      const owned  = theme.free || ownedThemes.includes(theme.id);
+      const active = theme.id === activeThemeId;
+
+      const badge = document.getElementById('tpBadge');
+      badge.className = 'tp-badge ' + (active ? 'active' : owned ? (theme.free ? 'free' : 'owned') : 'price');
+      badge.textContent = active ? 'Сложен на визитката'
+                        : theme.free ? 'Безплатен'
+                        : owned ? 'Твой' : '9,99 € еднократно';
+
+      const act = document.getElementById('tpAction');
+      act.disabled = false;
+      act.className = 'theme-btn';
+      if (active) {
+        act.textContent = 'Това е текущият ти фон';
+        act.disabled = true;
+      } else if (owned) {
+        act.className = 'theme-btn use';
+        act.textContent = 'Сложи този фон';
+        act.onclick = async () => { await activateTheme(theme.id, act); renderThemePreview(); };
+      } else {
+        act.className = 'theme-btn buy';
+        act.textContent = 'Купи за 9,99 €';
+        act.onclick = () => buyTheme(theme.id, act);
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      const open = document.getElementById('themePreview');
+      if (!open || !open.classList.contains('open')) return;
+      if (e.key === 'Escape')     closeThemePreview();
+      if (e.key === 'ArrowRight') stepThemePreview(1);
+      if (e.key === 'ArrowLeft')  stepThemePreview(-1);
+    });
 
     // --- Добавяне на служител ---
     // Приема цял линк или само slug — вадим последното полезно парче.
