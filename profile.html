@@ -46,12 +46,12 @@
 
     body {
       background-color: var(--bg);
-      /* Купен фон → рисува се тук. Без купен фон всичко е празно и
-         остават оригиналните два „блоба" отдолу. */
-      background-image: var(--theme-grain, none), var(--theme-page, none);
-      background-attachment: fixed, fixed;
-      background-size: 120px 120px, cover;
-      background-repeat: repeat, no-repeat;
+      /* Купен фон → рисува се тук. Без купен фон е празно и остават
+         оригиналните два „блоба" отдолу. */
+      background-image: var(--theme-page, none);
+      background-attachment: fixed;
+      background-size: cover;
+      background-repeat: no-repeat;
       color: var(--text);
       display: flex;
       justify-content: center;

@@ -6,11 +6,10 @@
  *   dashboard.html — галерията, от която клиентът избира / купува
  *   theme-checkout — валидира, че купуваният id съществува
  *
- * Всяка платена тема се състои от четири слоя:
+ * Всяка платена тема се състои от три слоя:
  *   page     — преливащите се градиенти (основата)
  *   pattern  — рисунъкът отгоре: мрежа, платки, контури, щрихи…
  *   accent   — едно голямо светещо петно
- *   grain    — фината зърнистост, обща за всички
  * Плюс CSS променливите, по които се боядисват самата визитка и
  * панелите ѝ, за да е всичко от един тон.
  *
@@ -21,12 +20,10 @@
 (function (global) {
   'use strict';
 
-  // Фина зърнистост отгоре — това прави градиентите да изглеждат
-  // „скъпи", а не като плосък CSS преливник.
-  var GRAIN =
-    // stitchTiles + baseFrequency, кратна на размера на плочката (0.8*120=96),
-    // иначе шумът се вижда като квадратна мрежа върху светлите фонове.
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E\")";
+  // Зърнистост НЯМА. Пробвана беше SVG feTurbulence плочка, но тя се
+  // реди на квадрати от 120px и се вижда като мрежа върху фона —
+  // особено на светлите теми. По-добре чист градиент, отколкото
+  // текстура с шев.
 
   // svg() спестява ръчното кодиране на # и кавичките в data URI-тата.
   function svg(w, h, body) {
@@ -479,7 +476,7 @@
     '--bg', '--card-bg', '--primary', '--primary-glow', '--secondary',
     '--text', '--text-muted', '--border', '--glass-border',
     '--on-primary', '--surface', '--surface-strong', '--input-bg',
-    '--primary-soft', '--theme-page', '--theme-card-shadow', '--theme-grain',
+    '--primary-soft', '--theme-page', '--theme-card-shadow',
     '--btn-save-glow', '--lang-bg', '--lang-active-glow', '--hover-text',
     '--avatar-glow',
     '--theme-pattern', '--theme-pattern-size', '--theme-drift',
@@ -527,7 +524,6 @@
     s.setProperty('--hover-text', v.text);
     s.setProperty('--theme-page', t.page);
     s.setProperty('--theme-card-shadow', t.cardShadow);
-    s.setProperty('--theme-grain', GRAIN);
     s.setProperty('--theme-pattern', t.pattern || 'none');
     s.setProperty('--theme-pattern-size', t.patternSize || 'auto');
     s.setProperty('--theme-drift', t.drift || '0 0');
@@ -535,6 +531,18 @@
     s.setProperty('--theme-accent-pos', t.accentPos || '50% 50%');
     s.setProperty('--theme-accent-size', t.accentSize || '46% 60%');
     return t;
+  }
+
+  /* Квадратчето в галерията е около 230px широко, а телефонът — около
+   * 390px. Ако рисунъкът се сложи 1:1, изглежда по-едър, отколкото ще е
+   * в действителност. Затова тук се смалява със същото отношение. */
+  var PREVIEW_SCALE = 230 / 390;
+
+  function scaleSize(size, f) {
+    if (!size || size === 'auto') return size;
+    return size.replace(/(\d+(?:\.\d+)?)px/g, function (m, n) {
+      return Math.max(4, Math.round(parseFloat(n) * f)) + 'px';
+    });
   }
 
   /* Малко квадратче за галерията — същите слоеве, умалена визитка. */
@@ -545,7 +553,7 @@
 
     if (t.pattern) {
       layers += '<div style="position:absolute;inset:0;background-image:' + t.pattern +
-        ';background-size:' + (t.patternSize || 'auto') + ';"></div>';
+        ';background-size:' + scaleSize(t.patternSize || 'auto', PREVIEW_SCALE) + ';"></div>';
     }
     if (t.accent) {
       layers += '<div style="position:absolute;inset:0;background-image:' + t.accent +
@@ -553,8 +561,6 @@
         ';background-size:' + (t.accentSize || '46% 60%') +
         ';background-repeat:no-repeat;"></div>';
     }
-    layers += '<div style="position:absolute;inset:0;background:' + GRAIN + ';opacity:0.9;"></div>';
-
     return layers +
       '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);' +
       'width:62%;height:72%;border-radius:14px;background:' + v.cardBg + ';' +
@@ -573,7 +579,6 @@
     list: THEMES,
     byId: BY_ID,
     DEFAULT_ID: DEFAULT_ID,
-    GRAIN: GRAIN,
     get: getTheme,
     isFree: isFree,
     apply: applyThemeVars,
