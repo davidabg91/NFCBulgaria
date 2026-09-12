@@ -2477,7 +2477,7 @@
 
       // Променливите се слагат само върху сцената — панелът наоколо
       // остава със своите цветове.
-      window.CardThemes.apply(stage, theme.id);
+      window.CardThemes.apply(stage, theme.id, true);
 
       const val = id => (document.getElementById(id) || {}).value || '';
       document.getElementById('tpName').textContent    = val('nameInput')    || 'Вашето име';

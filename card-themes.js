@@ -304,13 +304,34 @@
     return !!(t && t.free);
   }
 
+  var PROPS = [
+    '--bg', '--card-bg', '--primary', '--primary-glow', '--secondary',
+    '--text', '--text-muted', '--border', '--glass-border',
+    '--on-primary', '--surface', '--surface-strong', '--input-bg',
+    '--primary-soft', '--theme-page', '--theme-card-shadow', '--theme-grain',
+    '--btn-save-glow', '--lang-bg', '--lang-active-glow', '--hover-text',
+    '--avatar-glow'
+  ];
+
   /* Задава CSS променливите на дадения елемент (обикновено
    * document.documentElement). Връща темата, за да може извикващият
-   * да реши още нещо по нея (напр. светла ли е). */
-  function applyThemeVars(el, id) {
+   * да реши още нещо по нея (напр. светла ли е).
+   *
+   * ВАЖНО: темата по подразбиране НЕ задава нищо — маха всичко и оставя
+   * страницата на нейния собствен CSS. Така визитката без купен фон
+   * изглежда точно както преди да съществуват темите. `force` е за
+   * прегледа в панела, където и подразбиращата се тема трябва да се
+   * нарисува върху отделен елемент.
+   */
+  function applyThemeVars(el, id, force) {
     var t = getTheme(id);
     var v = t.vars;
     var s = el.style;
+
+    if (t.id === DEFAULT_ID && !force) {
+      PROPS.forEach(function (p) { s.removeProperty(p); });
+      return t;
+    }
     s.setProperty('--bg', v.bg);
     s.setProperty('--card-bg', v.cardBg);
     s.setProperty('--primary', v.primary);
@@ -325,6 +346,11 @@
     s.setProperty('--surface-strong', v.surfaceStrong);
     s.setProperty('--input-bg', v.inputBg);
     s.setProperty('--primary-soft', v.primarySoft);
+    s.setProperty('--btn-save-glow', v.primaryGlow);
+    s.setProperty('--avatar-glow', v.primaryGlow);
+    s.setProperty('--lang-bg', v.cardBg);
+    s.setProperty('--lang-active-glow', v.primaryGlow);
+    s.setProperty('--hover-text', v.text);
     s.setProperty('--theme-page', t.page);
     s.setProperty('--theme-card-shadow', t.cardShadow);
     s.setProperty('--theme-grain', GRAIN);
