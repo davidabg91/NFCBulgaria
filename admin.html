@@ -829,6 +829,22 @@
         </div>
       </div>
 
+      <div class="dash-card" id="themeSalesCard" style="display:none; margin-bottom:1.5rem">
+        <h3 class="card-title">🎨 Продадени фонове за визитки</h3>
+        <p class="card-hint" id="themeSalesSummary"></p>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Кога</th><th>Кой</th><th>Фирма</th>
+                <th>Фон</th><th class="num">Сума</th><th>Сложен ли е</th>
+              </tr>
+            </thead>
+            <tbody id="themeSalesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="dash-card">
         <h3 class="card-title">👆 Кой е натискал „Плати / Активирай“</h3>
         <p class="card-hint">
@@ -1049,6 +1065,8 @@
 
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Само за имената на фоновете в таб „Плащания" -->
+  <script src="card-themes.js"></script>
 
   <script>
     // Supabase Credentials
@@ -1372,6 +1390,11 @@
 
       paymentsData = payRes.error ? null : payRes.data;
       renderPayments();
+
+      // Продажбите на фонове живеят в card-themes.sql — ако той още не е
+      // пуснат, картата просто остава скрита.
+      const themeRes = await supabaseClient.rpc('admin_theme_sales');
+      renderThemeSales(themeRes.error ? null : themeRes.data);
     }
 
     // Когато новият SQL още не е пуснат — показваме поне каквото имаме.
@@ -1865,6 +1888,52 @@
                 : '<span class="badge badge-staff">към Stripe</span>'}</td>
           <td>${c.converted ? '<span class="badge badge-ok">✅ да</span>' : '<span class="badge badge-warn">не</span>'}</td>
         </tr>`).join('') : emptyRow(7, 'Никой още не е натискал бутона за плащане.');
+    }
+
+    // Имената на фоновете идват от card-themes.js, ако е зареден;
+    // иначе показваме суровото id, вместо да гадаем.
+    function themeName(id) {
+      if (window.CardThemes && window.CardThemes.byId[id]) {
+        return window.CardThemes.byId[id].name;
+      }
+      return id;
+    }
+
+    function renderThemeSales(data) {
+      const card = document.getElementById('themeSalesCard');
+      if (!card) return;
+
+      if (!data || data.ok === false || !Array.isArray(data.sales)) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = 'block';
+
+      const sold = Number(data.sold_count || 0);
+      document.getElementById('themeSalesSummary').textContent =
+        `${num(sold)} платени фона · ${euro(data.revenue_cents)} общо. ` +
+        'Редовете без сума са подарени ръчно (банков превод или поддръжка).';
+
+      const tbody = document.getElementById('themeSalesBody');
+      if (!data.sales.length) {
+        tbody.innerHTML = emptyRow(6, 'Още никой не е купил фон.');
+        return;
+      }
+
+      tbody.innerHTML = data.sales.map(t => `
+        <tr>
+          <td class="muted" style="white-space:nowrap">${fmtDateTime(t.created_at)}</td>
+          <td>${escapeHtml(t.profile_name || '—')}<div class="person-sub">${escapeHtml(t.user_email || t.profile_id || '')}</div></td>
+          <td class="muted">${escapeHtml(t.company || '—')}</td>
+          <td>${escapeHtml(themeName(t.theme_id))}</td>
+          <td class="num">${t.granted_manually
+                ? '<span class="badge badge-staff">подарен</span>'
+                : euro(t.amount_cents)}</td>
+          <td>${t.is_active
+                ? '<span class="badge badge-ok">на визитката</span>'
+                : '<span class="badge badge-staff">купен, но изключен</span>'}</td>
+        </tr>`).join('');
     }
 
     // ---------------------------------------------------------------

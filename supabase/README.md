@@ -119,3 +119,68 @@ select public.admin_activate_subscription(
   '<user_id на шефа>'::uuid, 'team10', 1
 );
 ```
+
+---
+
+# Фонове на визитката (9,99 € за фон)
+
+Клиентът си избира фон от панела; фонът сменя визитката **и** страницата,
+която вижда посетителят. Един фон е безплатен, останалите осем са по
+9,99 € еднократно.
+
+## 1. База
+
+Supabase → SQL Editor → `card-themes.sql`.
+
+Добавя `profiles.theme_id`, таблицата `theme_purchases`, и функциите
+`get_my_themes()`, `set_my_theme()`, `admin_grant_theme()`,
+`admin_theme_sales()`.
+
+Проверката „купен ли е фонът" е в `set_my_theme()`, т.е. на сървъра —
+през браузъра не може да се сложи неплатен фон.
+
+## 2. Edge функция
+
+```bash
+supabase functions deploy theme-checkout
+```
+
+Ползва вече зададените `STRIPE_SECRET_KEY`, `SITE_URL` и `SERVICE_KEY`.
+Нищо ново не се налага да се задава.
+
+Функцията е **отделна** от `create-checkout-session` / `verify-checkout`
+нарочно — абонаментите за Фирмения Портал не се пипат.
+
+## 3. Stripe
+
+Вече е направено в live акаунта:
+
+| Обект   | ID                              |
+|---------|---------------------------------|
+| Product | `prod_VFQl8813j685Ob`           |
+| Price   | `price_1UEvtaBSCTEyBv79AlhnTEWy` (9,99 €, еднократно) |
+
+Ако някога смениш цената, направи нов Price в Stripe и го подай така:
+
+```bash
+supabase secrets set STRIPE_THEME_PRICE_ID=price_...
+```
+
+(без него функцията ползва ID-то по-горе, зашито в кода).
+
+## 4. Каталогът с фонове
+
+`card-themes.js` в корена на проекта — един файл, ползван от
+`profile.html`, `dashboard.html` и `admin.html`.
+
+За нов фон: добави обект в `THEMES` и **същото id** в `PAID_THEMES`
+в `supabase/functions/theme-checkout/index.ts`. Сървърът е авторитетът
+кое е платено — браузърът само рисува.
+
+Съществуващи id-та не се преименуват — пазят се в базата и в Stripe.
+
+## 5. Ръчно подаряване на фон
+
+```sql
+select public.admin_grant_theme('vasil-bozhinov', 'obsidian');
+```
