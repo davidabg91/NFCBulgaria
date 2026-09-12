@@ -975,6 +975,155 @@
     .theme-intro { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
     .theme-intro strong { color: var(--text); }
 
+    /* --- Съобщение към клиента (вместо системния alert) ------------- */
+    .notice-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(3, 6, 14, 0.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .notice-overlay.open { display: flex; }
+
+    .notice-box {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      padding: 2rem 1.8rem 1.6rem;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      overflow: hidden;
+      animation: noticeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    /* същото сияние като на визитката — да си личи, че е част от сайта */
+    .notice-box::before {
+      content: '';
+      position: absolute;
+      top: -90px; left: -70px;
+      width: 240px; height: 240px;
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    @keyframes noticeIn {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .notice-ico {
+      position: relative;
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0, 242, 255, 0.1);
+      border: 1px solid var(--glass-border);
+      margin-bottom: 1rem;
+      font-size: 1.35rem;
+    }
+    .notice-box h3 {
+      position: relative;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+      line-height: 1.3;
+    }
+    .notice-box p {
+      position: relative;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+    .notice-steps {
+      position: relative;
+      margin: 1.1rem 0 0;
+      padding: 0.9rem 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    .notice-steps li {
+      list-style: none;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      padding-left: 1.6rem;
+      position: relative;
+    }
+    .notice-steps li::before {
+      content: counter(nstep);
+      counter-increment: nstep;
+      position: absolute;
+      left: 0; top: 0;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #0b0f19;
+      font-size: 0.66rem;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .notice-steps { counter-reset: nstep; }
+    .notice-steps strong { color: var(--text); }
+
+    .notice-actions {
+      position: relative;
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1.4rem;
+      flex-wrap: wrap;
+    }
+    .notice-btn {
+      flex: 1 1 140px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      transition: all 0.25s ease;
+    }
+    .notice-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-color: transparent;
+      color: #0b0f19;
+    }
+    .notice-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0, 242, 255, 0.3); }
+    .notice-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .notice-btn.primary:hover { color: #0b0f19; }
+    .notice-close {
+      position: absolute;
+      top: 12px; right: 14px;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      font-size: 1rem; line-height: 1; cursor: pointer;
+      z-index: 3;
+    }
+    .notice-close:hover { color: var(--text); border-color: var(--primary); }
+
     /* --- Преглед на визитката с избрания фон ------------------------ */
     .tp-overlay {
       position: fixed;
@@ -1242,6 +1391,19 @@
           <button class="theme-btn" id="tpAction" type="button"></button>
         </div>
       </div>
+    </div>
+  </div>
+
+
+  <!-- Съобщение към клиента — вместо системния alert -->
+  <div class="notice-overlay" id="noticeOverlay" onclick="if(event.target===this)closeNotice()">
+    <div class="notice-box">
+      <button class="notice-close" onclick="closeNotice()" aria-label="Затвори">×</button>
+      <div class="notice-ico" id="noticeIco">💬</div>
+      <h3 id="noticeTitle"></h3>
+      <p id="noticeText"></p>
+      <ul class="notice-steps" id="noticeSteps" style="display:none"></ul>
+      <div class="notice-actions" id="noticeActions"></div>
     </div>
   </div>
 
@@ -2256,6 +2418,113 @@
       }
     }
 
+
+    // =================================================================
+    // Съобщения към клиента
+    // =================================================================
+    // Системният alert() изглежда като счупен сайт и не дава на човека
+    // какво да направи. Този диалог е със стила на сайта и винаги
+    // завършва с действие — най-често „пишете ни".
+    const SUPPORT_EMAIL = 'office@nfcbulgaria.com';
+    const SUPPORT_PHONE = '0876141826';
+
+    function showNotice(opt) {
+      const o = opt || {};
+      document.getElementById('noticeIco').textContent  = o.icon || '💬';
+      document.getElementById('noticeTitle').textContent = o.title || 'Съобщение';
+      document.getElementById('noticeText').textContent  = o.text || '';
+
+      const stepsEl = document.getElementById('noticeSteps');
+      if (o.steps && o.steps.length) {
+        stepsEl.innerHTML = o.steps.map(st => `<li>${st}</li>`).join('');
+        stepsEl.style.display = 'flex';
+      } else {
+        stepsEl.style.display = 'none';
+      }
+
+      const actions = document.getElementById('noticeActions');
+      if (o.contact) {
+        const subject = encodeURIComponent(o.mailSubject || 'Фирмен портал — NFC Bulgaria');
+        const body = encodeURIComponent(o.mailBody || '');
+        actions.innerHTML =
+          `<a class="notice-btn primary" href="mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}">✉️ Пишете ни</a>` +
+          `<a class="notice-btn" href="tel:${SUPPORT_PHONE}">📞 ${SUPPORT_PHONE}</a>` +
+          `<button class="notice-btn" type="button" onclick="closeNotice()">Затвори</button>`;
+      } else {
+        actions.innerHTML =
+          `<button class="notice-btn primary" type="button" onclick="closeNotice()">Разбрах</button>`;
+      }
+
+      document.getElementById('noticeOverlay').classList.add('open');
+    }
+
+    function closeNotice() {
+      document.getElementById('noticeOverlay').classList.remove('open');
+    }
+
+    document.addEventListener('keydown', e => {
+      const el = document.getElementById('noticeOverlay');
+      if (e.key === 'Escape' && el && el.classList.contains('open')) closeNotice();
+    });
+
+    // Превръща отговора на сървъра в разбираемо съобщение с ясна следваща
+    // стъпка. Кодовете идват от create-checkout-session.
+    function noticeForCheckoutError(code, fallbackText, profileName) {
+      if (code === 'no_company') {
+        return {
+          icon: '🏢',
+          title: 'Остава една стъпка, която правим ние',
+          text: 'Името на фирмата, което сте попълнили в профила си, се показва на ' +
+                'визитката. За Фирмения портал обаче е нужно още нещо: картите на ' +
+                'екипа трябва да са свързани в обща фирмена група, а вие — отбелязан ' +
+                'като управител. Това се прави от наша страна.',
+          steps: [
+            'Пишете ни или се обадете — <strong>отнема минути</strong>.',
+            'Свързваме вашата карта и тези на екипа в обща фирмена група.',
+            'Отбелязваме ви като управител.',
+            'Връщате се тук и пакетът се купува нормално.'
+          ],
+          contact: true,
+          mailSubject: 'Фирмен портал — свързване на екип',
+          mailBody: 'Здравейте,\n\nИскам да активирам Фирмения портал.\n\n' +
+                    'Профил: ' + (profileName || '') + '\n' +
+                    'Фирма: \nБрой служители: \n\nБлагодаря!'
+        };
+      }
+
+      if (code === 'no_offer') {
+        return {
+          icon: '💼',
+          title: 'Бизнес планът се изготвя за вас',
+          text: 'При 20 и повече служители цената е договорена според броя карти, ' +
+                'затова не се купува направо от сайта. Пишете ни с колко души сте и ' +
+                'ви подготвяме офертата — след това бутонът тук ще работи.',
+          contact: true,
+          mailSubject: 'Бизнес оферта за 20+ служители',
+          mailBody: 'Здравейте,\n\nИскам оферта за бизнес план.\n\n' +
+                    'Фирма: \nБрой служители: \n\nБлагодаря!'
+        };
+      }
+
+      if (code === 'no_profile') {
+        return {
+          icon: '👤',
+          title: 'Влезли сте с друг акаунт',
+          text: fallbackText,
+          contact: true,
+          mailSubject: 'Проблем с достъпа до визитката'
+        };
+      }
+
+      return {
+        icon: '⚠️',
+        title: 'Плащането не може да започне',
+        text: fallbackText || 'Нещо се обърка. Опитайте пак след малко.',
+        contact: true,
+        mailSubject: 'Проблем при плащане'
+      };
+    }
+
     // --- Плащане ---
     async function startCheckout(plan, btn) {
       const buttons = document.querySelectorAll('.plan-btn');
@@ -2293,7 +2562,9 @@
 
         const body = await res.json().catch(() => ({}));
         if (!res.ok || !body.url) {
-          throw new Error(body.error || 'Плащането не може да бъде стартирано в момента.');
+          const e = new Error(body.error || 'Плащането не може да бъде стартирано в момента.');
+          e.code = body.code;
+          throw e;
         }
 
         window.location.href = body.url;
@@ -2302,7 +2573,8 @@
         Promise.resolve(
           supabaseClient.rpc('log_checkout_intent', { p_plan: plan, p_interval: billingInterval, p_outcome: 'failed' })
         ).catch(() => {});
-        alert(err.message);
+        const name = (document.getElementById('nameInput') || {}).value || '';
+        showNotice(noticeForCheckoutError(err.code, err.message, name));
         buttons.forEach(b => b.disabled = false);
         btn.innerText = original;
       }
@@ -2449,7 +2721,13 @@
         console.error('theme checkout:', err);
         themeBusy = false;
         if (btn) { btn.disabled = false; btn.innerText = original; }
-        alert(err.message);
+        showNotice({
+          icon: '🎨',
+          title: 'Покупката не може да започне',
+          text: err.message,
+          contact: true,
+          mailSubject: 'Проблем при покупка на фон'
+        });
       }
     }
 
