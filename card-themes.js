@@ -124,11 +124,13 @@
         inputBg: 'rgba(15, 23, 42, 0.6)',
         primarySoft: 'rgba(0, 242, 255, 0.10)'
       },
-      // 1:1 повторение на досегашните два „блоба" от body::before/::after,
-      // за да не се промени нито една вече издадена визитка.
+      // Ползва се САМО от прегледите — живата визитка си рисува блобовете
+      // от body::before/::after в profile.html и не пипа тази стойност.
+      // Затова е в проценти: така умаленото квадратче в галерията показва
+      // същото, което човекът ще види на телефона си.
       page:
-        'radial-gradient(circle 150px at 100px 100px, rgba(0,242,255,0.4) 0%, transparent 70%),' +
-        'radial-gradient(circle 150px at calc(100% - 100px) calc(100% - 100px), rgba(161,232,175,0.2) 0%, transparent 70%),' +
+        'radial-gradient(30% 34% at 9% 12%, rgba(0,242,255,0.40) 0%, transparent 70%),' +
+        'radial-gradient(30% 34% at 91% 88%, rgba(161,232,175,0.20) 0%, transparent 70%),' +
         'linear-gradient(160deg, #0b0f19 0%, #0b0f19 100%)',
       cardShadow: '0 20px 50px rgba(0, 0, 0, 0.5)'
     },
@@ -157,15 +159,15 @@
         primarySoft: 'rgba(125, 249, 255, 0.12)'
       },
       page:
-        'radial-gradient(760px 560px at 16% -6%, rgba(185,140,255,0.26), transparent 60%),' +
-        'radial-gradient(820px 620px at 90% 106%, rgba(125,249,255,0.20), transparent 62%),' +
+        'radial-gradient(70% 72% at 16% -6%, rgba(185,140,255,0.26), transparent 60%),' +
+        'radial-gradient(75% 80% at 90% 106%, rgba(125,249,255,0.20), transparent 62%),' +
         'linear-gradient(168deg, #05060f 0%, #080a20 60%, #05060f 100%)',
       pattern: P_QUANTUM,
       patternSize: '48px 48px',
       drift: '48px 48px',
       accent: 'radial-gradient(closest-side, rgba(125,249,255,0.16), transparent 70%)',
       accentPos: '78% 18%',
-      accentSize: '520px 520px',
+      accentSize: '48% 62%',
       cardShadow: '0 24px 58px rgba(2, 3, 16, 0.72)'
     },
 
@@ -193,15 +195,15 @@
         primarySoft: 'rgba(69, 240, 166, 0.11)'
       },
       page:
-        'radial-gradient(860px 620px at 86% -10%, rgba(69,240,166,0.16), transparent 58%),' +
-        'radial-gradient(720px 540px at 4% 104%, rgba(20,110,90,0.26), transparent 62%),' +
+        'radial-gradient(78% 80% at 86% -10%, rgba(69,240,166,0.16), transparent 58%),' +
+        'radial-gradient(66% 70% at 4% 104%, rgba(20,110,90,0.26), transparent 62%),' +
         'linear-gradient(168deg, #040907 0%, #07120f 100%)',
       pattern: P_CIRCUIT,
       patternSize: '90px 90px',
       drift: '90px 0px',
       accent: 'radial-gradient(closest-side, rgba(69,240,166,0.14), transparent 72%)',
       accentPos: '20% 82%',
-      accentSize: '480px 480px',
+      accentSize: '44% 58%',
       cardShadow: '0 22px 54px rgba(0, 14, 10, 0.7)'
     },
 
@@ -229,15 +231,15 @@
         primarySoft: 'rgba(255, 204, 102, 0.12)'
       },
       page:
-        'radial-gradient(900px 640px at 12% -8%, rgba(120,170,240,0.20), transparent 60%),' +
-        'radial-gradient(760px 560px at 94% 108%, rgba(255,204,102,0.12), transparent 62%),' +
+        'radial-gradient(82% 82% at 12% -8%, rgba(120,170,240,0.20), transparent 60%),' +
+        'radial-gradient(70% 72% at 94% 108%, rgba(255,204,102,0.12), transparent 62%),' +
         'linear-gradient(168deg, #05203f 0%, #072a54 55%, #041b38 100%)',
       pattern: P_BLUEPRINT,
       patternSize: '100px 100px',
       drift: '0px 100px',
       accent: 'radial-gradient(closest-side, rgba(255,204,102,0.12), transparent 72%)',
       accentPos: '86% 12%',
-      accentSize: '460px 460px',
+      accentSize: '42% 55%',
       cardShadow: '0 22px 54px rgba(2, 14, 30, 0.66)'
     },
 
@@ -265,15 +267,15 @@
         primarySoft: 'rgba(255, 138, 61, 0.12)'
       },
       page:
-        'radial-gradient(900px 620px at 50% 116%, rgba(255,110,40,0.26), transparent 62%),' +
-        'radial-gradient(700px 520px at 8% -8%, rgba(255,255,255,0.06), transparent 58%),' +
+        'radial-gradient(82% 80% at 50% 116%, rgba(255,110,40,0.26), transparent 62%),' +
+        'radial-gradient(64% 67% at 8% -8%, rgba(255,255,255,0.06), transparent 58%),' +
         'linear-gradient(168deg, #14120f 0%, #0d0c0b 100%)',
       pattern: P_STEEL,
       patternSize: 'auto',
       drift: '60px 0px',
       accent: 'radial-gradient(closest-side, rgba(255,138,61,0.18), transparent 70%)',
       accentPos: '50% 104%',
-      accentSize: '720px 420px',
+      accentSize: '66% 50%',
       cardShadow: '0 22px 54px rgba(8, 6, 5, 0.72)'
     },
 
@@ -301,15 +303,15 @@
         primarySoft: 'rgba(216, 184, 119, 0.11)'
       },
       page:
-        'radial-gradient(900px 640px at 82% -10%, rgba(216,184,119,0.16), transparent 58%),' +
-        'radial-gradient(760px 560px at 6% 106%, rgba(30,52,96,0.40), transparent 62%),' +
+        'radial-gradient(82% 82% at 82% -10%, rgba(216,184,119,0.16), transparent 58%),' +
+        'radial-gradient(70% 72% at 6% 106%, rgba(30,52,96,0.40), transparent 62%),' +
         'linear-gradient(168deg, #080d19 0%, #0c1426 100%)',
       pattern: P_PINSTRIPE,
       patternSize: 'auto',
       drift: '32px 0px',
       accent: 'radial-gradient(closest-side, rgba(216,184,119,0.12), transparent 72%)',
       accentPos: '84% 16%',
-      accentSize: '500px 500px',
+      accentSize: '46% 60%',
       cardShadow: '0 22px 54px rgba(2, 6, 16, 0.7)'
     },
 
@@ -337,15 +339,15 @@
         primarySoft: 'rgba(47, 125, 91, 0.10)'
       },
       page:
-        'radial-gradient(900px 620px at 10% -10%, rgba(108,187,149,0.34), transparent 60%),' +
-        'radial-gradient(820px 560px at 96% 110%, rgba(47,125,91,0.20), transparent 62%),' +
+        'radial-gradient(82% 80% at 10% -10%, rgba(108,187,149,0.34), transparent 60%),' +
+        'radial-gradient(75% 72% at 96% 110%, rgba(47,125,91,0.20), transparent 62%),' +
         'linear-gradient(160deg, #f5faf6 0%, #e6efe8 100%)',
       pattern: P_TOPO,
       patternSize: '140px 70px',
       drift: '140px 0px',
       accent: 'radial-gradient(closest-side, rgba(47,125,91,0.10), transparent 72%)',
       accentPos: '18% 84%',
-      accentSize: '520px 520px',
+      accentSize: '48% 62%',
       cardShadow: '0 22px 48px rgba(20, 50, 36, 0.14)'
     },
 
@@ -373,16 +375,16 @@
         primarySoft: 'rgba(155, 140, 255, 0.13)'
       },
       page:
-        'radial-gradient(880px 620px at 18% -6%, rgba(155,140,255,0.30), transparent 58%),' +
-        'radial-gradient(820px 600px at 88% 20%, rgba(67,223,232,0.18), transparent 58%),' +
-        'radial-gradient(760px 560px at 60% 112%, rgba(224,86,190,0.16), transparent 60%),' +
+        'radial-gradient(80% 80% at 18% -6%, rgba(155,140,255,0.30), transparent 58%),' +
+        'radial-gradient(75% 77% at 88% 20%, rgba(67,223,232,0.18), transparent 58%),' +
+        'radial-gradient(70% 72% at 60% 112%, rgba(224,86,190,0.16), transparent 60%),' +
         'linear-gradient(170deg, #080a1c 0%, #0c0a22 100%)',
       pattern: P_STARS,
       patternSize: '160px 160px',
       drift: '160px 160px',
       accent: 'radial-gradient(closest-side, rgba(67,223,232,0.12), transparent 72%)',
       accentPos: '88% 22%',
-      accentSize: '520px 520px',
+      accentSize: '48% 62%',
       cardShadow: '0 24px 58px rgba(6, 4, 24, 0.68)'
     },
 
@@ -410,15 +412,15 @@
         primarySoft: 'rgba(61, 90, 128, 0.10)'
       },
       page:
-        'radial-gradient(900px 620px at 10% -10%, rgba(61,90,128,0.16), transparent 60%),' +
-        'radial-gradient(820px 560px at 96% 110%, rgba(123,143,168,0.20), transparent 62%),' +
+        'radial-gradient(82% 80% at 10% -10%, rgba(61,90,128,0.16), transparent 60%),' +
+        'radial-gradient(75% 72% at 96% 110%, rgba(123,143,168,0.20), transparent 62%),' +
         'linear-gradient(160deg, #f7f8fa 0%, #e9ecf1 100%)',
       pattern: P_GRID_LIGHT,
       patternSize: '120px 120px',
       drift: '120px 0px',
       accent: 'radial-gradient(closest-side, rgba(61,90,128,0.09), transparent 72%)',
       accentPos: '14% 86%',
-      accentSize: '520px 520px',
+      accentSize: '48% 62%',
       cardShadow: '0 22px 48px rgba(22, 26, 33, 0.14)'
     },
 
@@ -446,15 +448,15 @@
         primarySoft: 'rgba(156, 102, 68, 0.10)'
       },
       page:
-        'radial-gradient(880px 620px at 14% -10%, rgba(195,154,118,0.32), transparent 60%),' +
-        'radial-gradient(800px 560px at 94% 108%, rgba(156,102,68,0.20), transparent 62%),' +
+        'radial-gradient(80% 80% at 14% -10%, rgba(195,154,118,0.32), transparent 60%),' +
+        'radial-gradient(73% 72% at 94% 108%, rgba(156,102,68,0.20), transparent 62%),' +
         'linear-gradient(160deg, #faf5ed 0%, #efe5d6 100%)',
       pattern: P_DUNES,
       patternSize: '180px 90px',
       drift: '180px 0px',
       accent: 'radial-gradient(closest-side, rgba(156,102,68,0.10), transparent 72%)',
       accentPos: '86% 84%',
-      accentSize: '540px 540px',
+      accentSize: '50% 64%',
       cardShadow: '0 22px 48px rgba(60, 45, 32, 0.16)'
     }
   ];
@@ -531,7 +533,7 @@
     s.setProperty('--theme-drift', t.drift || '0 0');
     s.setProperty('--theme-accent', t.accent || 'none');
     s.setProperty('--theme-accent-pos', t.accentPos || '50% 50%');
-    s.setProperty('--theme-accent-size', t.accentSize || '500px 500px');
+    s.setProperty('--theme-accent-size', t.accentSize || '46% 60%');
     return t;
   }
 
@@ -548,7 +550,7 @@
     if (t.accent) {
       layers += '<div style="position:absolute;inset:0;background-image:' + t.accent +
         ';background-position:' + (t.accentPos || '50% 50%') +
-        ';background-size:' + (t.accentSize || '500px 500px') +
+        ';background-size:' + (t.accentSize || '46% 60%') +
         ';background-repeat:no-repeat;"></div>';
     }
     layers += '<div style="position:absolute;inset:0;background:' + GRAIN + ';opacity:0.9;"></div>';
