@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Админ Панел | NFC Bulgaria</title>
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/webp" href="assets/favicon.webp">
-  
+
   <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +20,8 @@
       --primary: #00f2ff;
       --primary-glow: rgba(0, 242, 255, 0.4);
       --secondary: #a1e8af;
+      --warn: #ffcc66;
+      --danger: #ff6b6b;
       --text: #f3f4f6;
       --text-muted: #9ca3af;
       --border: rgba(255, 255, 255, 0.08);
@@ -50,6 +52,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -77,8 +81,27 @@
       color: var(--text);
     }
 
-    .logo-text span {
-      color: var(--primary);
+    .logo-text span { color: var(--primary); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-chip {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--secondary);
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+    }
+    .admin-chip small {
+      font-weight: 500;
+      color: var(--text-muted);
+      font-size: 0.7rem;
     }
 
     .btn-logout {
@@ -94,18 +117,28 @@
     }
 
     .btn-logout:hover {
-      background: #ff6b6b;
+      background: var(--danger);
       color: #fff;
-      border-color: #ff6b6b;
+      border-color: var(--danger);
     }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+    .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
 
     /* Admin Gate Overlay */
     .gate-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       background: var(--bg);
       display: flex;
       justify-content: center;
@@ -115,45 +148,279 @@
       font-weight: 600;
     }
 
-    /* Main Grid */
-    .admin-layout {
-      max-width: 1200px;
-      width: 100%;
-      margin: 2rem auto;
+    /* ---------- Tabs ---------- */
+    .tabs-bar {
+      position: sticky;
+      top: 68px;
+      z-index: 90;
+      background: rgba(11, 15, 25, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
       padding: 0 1.5rem;
-      display: grid;
-      grid-template-columns: 1fr 1.8fr;
-      gap: 2rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    @media (max-width: 900px) {
-      .admin-layout {
-        grid-template-columns: 1fr;
-      }
+    .tabs {
+      display: flex;
+      gap: 0.3rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      min-width: max-content;
+    }
+
+    .tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      padding: 0.95rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .page {
+      max-width: 1400px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+    }
+
+    .section-head h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .section-head p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      max-width: 70ch;
+      line-height: 1.55;
     }
 
     .dash-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 2rem;
+      padding: 1.6rem;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
     .card-title {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.2rem;
+      font-size: 1.05rem;
       font-weight: 600;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
       color: var(--text);
       border-bottom: 1px solid var(--border);
       padding-bottom: 0.8rem;
     }
 
-    .form-group {
-      margin-bottom: 1.2rem;
+    .card-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 1.1rem;
     }
 
+    /* ---------- KPI ---------- */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .kpi {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.1rem 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi::after {
+      content: '';
+      position: absolute;
+      inset: auto auto -40px -40px;
+      width: 110px; height: 110px;
+      background: radial-gradient(circle, var(--primary-glow), transparent 70%);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+    .kpi .kpi-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .kpi .kpi-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin: 0.35rem 0 0.15rem;
+      line-height: 1;
+    }
+    .kpi .kpi-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .kpi.accent .kpi-value { color: var(--primary); }
+    .kpi.good   .kpi-value { color: var(--secondary); }
+    .kpi.warn   .kpi-value { color: var(--warn); }
+
+    /* ---------- Tables ---------- */
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 0.6rem;
+      border-radius: 12px;
+    }
+
+    table.tbl {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+      min-width: 700px;
+    }
+
+    table.tbl th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.7rem 0.85rem;
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+    }
+    table.tbl th.sortable { cursor: pointer; user-select: none; }
+    table.tbl th.sortable:hover { color: var(--primary); }
+    table.tbl th .arrow { opacity: 0.55; font-size: 0.7rem; }
+
+    table.tbl td {
+      padding: 0.7rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+    }
+    table.tbl tbody tr:hover { background: rgba(255,255,255,0.025); }
+    table.tbl td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    table.tbl .muted { color: var(--text-muted); }
+    table.tbl .empty-row td {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 2rem 1rem;
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      min-width: 190px;
+    }
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .person-name { font-weight: 600; line-height: 1.2; }
+    .person-sub { font-size: 0.72rem; color: var(--text-muted); }
+
+    .badge {
+      display: inline-block;
+      padding: 0.18rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .badge-boss   { background: rgba(0,242,255,0.15); border: 1px solid var(--primary); color: var(--primary); }
+    .badge-staff  { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-muted); }
+    .badge-ok     { background: rgba(161,232,175,0.14); border: 1px solid var(--secondary); color: var(--secondary); }
+    .badge-warn   { background: rgba(255,204,102,0.14); border: 1px solid var(--warn); color: var(--warn); }
+    .badge-off    { background: rgba(255,107,107,0.12); border: 1px solid rgba(255,107,107,0.5); color: var(--danger); }
+
+    .btn-action {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-right: 0.25rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-action.btn-del { color: var(--danger); border-color: rgba(255, 107, 107, 0.2); }
+    .btn-action.btn-del:hover { background: var(--danger); color: #fff; }
+    .btn-action.btn-view:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ---------- Toolbar / filters ---------- */
+    .toolbar {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .search-input, .select-input {
+      padding: 0.6rem 0.8rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.25s ease;
+    }
+    .search-input { min-width: 240px; flex: 1 1 240px; max-width: 360px; }
+    .search-input:focus, .select-input:focus { border-color: var(--primary); }
+    .result-count { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; }
+
+    /* ---------- Forms (Управление) ---------- */
+    .form-group { margin-bottom: 1.2rem; }
     .form-group label {
       display: block;
       font-size: 0.8rem;
@@ -161,7 +428,6 @@
       margin-bottom: 0.4rem;
       font-weight: 600;
     }
-
     .form-input {
       width: 100%;
       padding: 0.85rem;
@@ -173,10 +439,8 @@
       outline: none;
       transition: border-color 0.3s ease;
     }
-
-    .form-input:focus {
-      border-color: var(--primary);
-    }
+    .form-input:focus { border-color: var(--primary); }
+    select.form-input { background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem; }
 
     .btn-create {
       width: 100%;
@@ -191,70 +455,119 @@
       box-shadow: 0 4px 15px rgba(0, 242, 255, 0.2);
       transition: all 0.3s ease;
     }
+    .btn-create:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 242, 255, 0.35); }
 
-    .btn-create:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 242, 255, 0.35);
+    .forms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      align-items: start;
     }
 
-    /* Profiles List Table */
-    .profiles-table-wrapper {
-      overflow-x: auto;
-      margin-top: 1rem;
-    }
-
-    .profiles-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.9rem;
-    }
-
-    .profiles-table th {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 0.8rem 1rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .profiles-table td {
-      padding: 0.8rem 1rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .profiles-table tr:hover {
-      background: rgba(255,255,255,0.01);
-    }
-
-    .btn-action {
-      background: rgba(255,255,255,0.05);
+    /* ---------- Company cards ---------- */
+    .company-card {
+      background: var(--card-bg);
       border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
+      border-radius: 18px;
+      margin-bottom: 1.2rem;
+      overflow: hidden;
+    }
+    .company-head {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.2rem 1.4rem;
       cursor: pointer;
-      text-decoration: none;
+      flex-wrap: wrap;
+      transition: background 0.2s ease;
+    }
+    .company-head:hover { background: rgba(255,255,255,0.02); }
+    .company-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+    }
+    .company-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .company-nums {
+      display: flex;
+      gap: 1.3rem;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+    .company-num { text-align: right; }
+    .company-num b {
+      display: block;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem;
+    }
+    .company-num span {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .company-body { display: none; border-top: 1px solid var(--border); padding: 0.6rem 1.4rem 1.4rem; }
+    .company-card.open .company-body { display: block; }
+    .company-card.open .chev { transform: rotate(90deg); }
+    .chev { transition: transform 0.2s ease; color: var(--text-muted); display: inline-block; }
+
+    .boss-row { background: rgba(0, 242, 255, 0.045); }
+
+    /* ---------- Chart ---------- */
+    .chart-box { width: 100%; overflow-x: auto; }
+    .chart-legend {
+      display: flex;
+      gap: 1.2rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .chart-legend i {
       display: inline-block;
-      margin-right: 0.3rem;
-      transition: all 0.2s ease;
+      width: 10px; height: 10px;
+      border-radius: 3px;
+      margin-right: 0.35rem;
+      vertical-align: -1px;
     }
 
-    .btn-action.btn-del {
-      color: #ff6b6b;
-      border-color: rgba(255, 107, 107, 0.2);
+    /* ---------- Setup banner ---------- */
+    .setup-banner {
+      display: none;
+      background: rgba(255, 204, 102, 0.08);
+      border: 1px solid rgba(255, 204, 102, 0.35);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--warn);
+    }
+    .setup-banner code {
+      background: rgba(0,0,0,0.35);
+      padding: 0.12rem 0.4rem;
+      border-radius: 5px;
+      font-family: 'Space Grotesk', monospace;
+      color: var(--text);
     }
 
-    .btn-action.btn-del:hover {
-      background: #ff6b6b;
-      color: #fff;
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
     }
-
-    .btn-action.btn-view:hover {
-      border-color: var(--primary);
-      color: var(--primary);
+    @media (max-width: 980px) {
+      .two-col { grid-template-columns: 1fr; }
+      header { padding: 1rem; }
+      .tabs-bar { top: 60px; padding: 0 0.6rem; }
+      .page { padding: 0 0.8rem 3rem; margin-top: 1.2rem; }
+      .dash-card { padding: 1.2rem; }
     }
   </style>
 </head>
@@ -268,168 +581,464 @@
       <div class="logo-icon"></div>
       <div class="logo-text">NFC<span>Bulgaria</span></div>
     </a>
-    <div>
-      <span style="font-weight: 700; font-size: 0.9rem; color: var(--secondary); margin-right: 1.5rem;">👑 АДМИНИСТРАТОР</span>
+    <div class="header-right">
+      <div class="admin-chip">
+        👑 АДМИНИСТРАТОР
+        <small id="adminEmail"></small>
+      </div>
+      <button class="btn-ghost" onclick="refreshAll()" title="Презареди данните">↻ Обнови</button>
       <button class="btn-logout" onclick="handleLogout()">Изход</button>
     </div>
   </header>
 
-  <div class="admin-layout">
-    
-    <!-- LEFT COLUMN: Forms -->
-    <div style="display: flex; flex-direction: column; gap: 2rem;">
-      
-      <!-- Create Profile Form -->
-      <div class="dash-card">
-        <h3 class="card-title">🆕 Създай нов клиент</h3>
-        <form id="createClientForm" onsubmit="handleCreateClient(event)">
-          
-          <div class="form-group">
-            <label for="clientEmail">Имейл адрес на клиента</label>
-            <input type="email" id="clientEmail" class="form-input" placeholder="client@company.com" required autocomplete="username">
-          </div>
+  <nav class="tabs-bar">
+    <div class="tabs">
+      <button class="tab active" data-tab="overview">📊 Обзор</button>
+      <button class="tab" data-tab="cards">📇 Визитки</button>
+      <button class="tab" data-tab="companies">🏢 Фирми и екипи</button>
+      <button class="tab" data-tab="leads">📥 Събрани контакти</button>
+      <button class="tab" data-tab="payments">💳 Плащания</button>
+      <button class="tab" data-tab="activity">🕓 Кой какво променя</button>
+      <button class="tab" data-tab="manage">⚙️ Управление</button>
+    </div>
+  </nav>
 
-          <div class="form-group">
-            <label for="clientPassword">Парола</label>
-            <input type="text" id="clientPassword" class="form-input" placeholder="Въведете парола (мин. 6 знака)" required>
-          </div>
+  <div class="page">
 
-          <div class="form-group">
-            <label for="clientName">Три имена</label>
-            <input type="text" id="clientName" class="form-input" placeholder="Деян Димитров" required>
-          </div>
-
-          <div class="form-group">
-            <label for="profileId">Уникално ID за линк (profile ID)</label>
-            <input type="text" id="profileId" class="form-input" placeholder="DeividDimitrov" required>
-            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Например: `DeividDimitrov` ще води до `profile.html?id=DeividDimitrov`</p>
-          </div>
-
-          <button type="submit" class="btn-create">Създай Клиент</button>
-        </form>
-      </div>
-
-      <!-- HubSpot Lite Team Linker Card -->
-      <div class="dash-card">
-        <h3 class="card-title">🏢 Управление на екипи (HubSpot Lite)</h3>
-        <form id="teamLinkerForm" onsubmit="handleLinkTeam(event)">
-          
-          <div class="form-group">
-            <label for="employeeSelect">Изберете профил (служител)</label>
-            <select id="employeeSelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;" required>
-              <option value="">-- Изберете профил --</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="bossSelect">Изберете шеф на фирмата (мениджър)</label>
-            <select id="bossSelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;">
-              <option value="">-- Никой / Премахни мениджъра --</option>
-            </select>
-          </div>
-
-          <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
-            <input type="checkbox" id="isBossCheckbox" style="width: 18px; height: 18px; cursor: pointer;">
-            <label for="isBossCheckbox" style="margin-bottom: 0; cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;">Направи избрания профил Шеф (Мениджър)</label>
-          </div>
-
-          <button type="submit" class="btn-create">Запази връзката / ролята</button>
-        </form>
-      </div>
-
-      <!-- Company assignment — без нея Фирменият Портал не работи -->
-      <div class="dash-card">
-        <h3 class="card-title">🏭 Фирма на профила</h3>
-        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.5;">
-          Шефът може да добавя само служители от <strong style="color: var(--text);">същата фирма</strong>.
-          Задай обща фирма на шефа и на неговите карти.
-        </p>
-        <form id="companyForm" onsubmit="handleSetCompany(event)">
-
-          <div class="form-group">
-            <label for="companyProfileSelect">Профил</label>
-            <select id="companyProfileSelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;" required>
-              <option value="">-- Изберете профил --</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="companyIdSelect">Фирма</label>
-            <select id="companyIdSelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;">
-              <option value="">-- Създай НОВА фирма --</option>
-            </select>
-            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem;">
-              За шефа избери „Създай НОВА фирма“, после закачи служителите към същата.
-            </p>
-          </div>
-
-          <button type="submit" class="btn-create">Запази фирмата</button>
-        </form>
-      </div>
-
-      <!-- Бизнес оферта (20+ служителя, договорена цена) -->
-      <div class="dash-card">
-        <h3 class="card-title">💼 Бизнес оферта (20+)</h3>
-        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.5;">
-          Договорена цена за голяма фирма. Шефът вижда бутон „Активирай“ в портала
-          и плаща с карта. Годишно = месечно × 11.
-        </p>
-        <form id="bizOfferForm" onsubmit="handleSetBizOffer(event)">
-
-          <div class="form-group">
-            <label for="bizCompanySelect">Фирма</label>
-            <select id="bizCompanySelect" class="form-input" style="background: rgba(15, 23, 42, 0.9); height: auto; padding: 0.8rem;" required>
-              <option value="">-- Изберете фирма --</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="bizSeats">Брой места (служители)</label>
-            <input type="number" id="bizSeats" class="form-input" min="1" placeholder="24" required>
-          </div>
-
-          <div class="form-group">
-            <label for="bizPrice">Месечна цена (€)</label>
-            <input type="number" id="bizPrice" class="form-input" min="0" step="0.01" placeholder="20" required>
-          </div>
-
-          <div class="form-group">
-            <label for="bizLabel">Етикет (по избор)</label>
-            <input type="text" id="bizLabel" class="form-input" placeholder="Бизнес план — ЕЛКАБЕЛ">
-          </div>
-
-          <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
-            <input type="checkbox" id="bizTrial" checked style="width: 18px; height: 18px; cursor: pointer;">
-            <label for="bizTrial" style="margin-bottom: 0; cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;">Първи месец безплатно (само при месечно)</label>
-          </div>
-
-          <button type="submit" class="btn-create">Запази офертата</button>
-        </form>
-      </div>
-
+    <div id="setupBanner" class="setup-banner">
+      <strong>Разширените справки още не са включени.</strong><br>
+      Отвори Supabase → SQL Editor и изпълни файла <code>supabase/admin-insights.sql</code>.
+      Панелът работи и без това, но показва само основния списък с визитки —
+      без статистика за сканирания, контакти, плащания и промени.
+      <div id="setupBannerErr" style="margin-top:0.5rem; font-size:0.75rem; opacity:0.8;"></div>
     </div>
 
-    <!-- RIGHT: Active Profiles Table -->
-    <div class="dash-card">
-      <h3 class="card-title">📋 Активни дигитални визитки</h3>
-      
-      <div class="profiles-table-wrapper">
-        <table class="profiles-table">
-          <thead>
-            <tr>
-              <th>Профил ID</th>
-              <th>Име</th>
-              <th>Роля</th>
-              <th>Мениджър (Шеф)</th>
-              <th>Действия</th>
-            </tr>
-          </thead>
-          <tbody id="profilesTableBody">
-            <!-- Loaded dynamically from Supabase -->
-          </tbody>
-        </table>
+    <!-- ============ ОБЗОР ============ -->
+    <section class="panel active" id="panel-overview">
+      <div class="section-head">
+        <div>
+          <h2>Обзор</h2>
+          <p>Бърза снимка на цялата система: колко визитки има, колко се ползват реално,
+             колко контакта са събрани и какво се плаща.</p>
+        </div>
       </div>
-    </div>
+
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="two-col">
+        <div class="dash-card">
+          <h3 class="card-title">📈 Активност последните 30 дни</h3>
+          <div class="chart-legend">
+            <span><i style="background:var(--primary)"></i>Сканирания на визитки</span>
+            <span><i style="background:var(--secondary)"></i>Оставени контакти</span>
+          </div>
+          <div class="chart-box" id="chartBox">
+            <p class="card-hint">Зареждане...</p>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <h3 class="card-title">🔥 Най-използвани визитки</h3>
+          <p class="card-hint">Подредени по брой сканирания за последните 30 дни.</p>
+          <div class="table-wrap">
+            <table class="tbl" style="min-width:420px">
+              <thead>
+                <tr>
+                  <th>Човек</th>
+                  <th class="num">Скан. 30д</th>
+                  <th class="num">Контакти</th>
+                  <th class="num">Записвания</th>
+                </tr>
+              </thead>
+              <tbody id="topProfilesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col" style="margin-top:1.5rem">
+        <div class="dash-card">
+          <h3 class="card-title">😴 Неизползвани визитки</h3>
+          <p class="card-hint">Раздадени карти без нито едно сканиране — тук се вижда кой не е започнал да ползва визитката си.</p>
+          <div class="table-wrap">
+            <table class="tbl" style="min-width:380px">
+              <thead>
+                <tr><th>Човек</th><th>Фирма</th><th>Последен вход</th></tr>
+              </thead>
+              <tbody id="idleProfilesBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <h3 class="card-title">🕓 Последни промени</h3>
+          <p class="card-hint">Кой е редактирал визитка и какво точно е пипнал.</p>
+          <div class="table-wrap">
+            <table class="tbl" style="min-width:380px">
+              <thead>
+                <tr><th>Кога</th><th>Кой</th><th>Какво</th></tr>
+              </thead>
+              <tbody id="overviewActivityBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ВИЗИТКИ ============ -->
+    <section class="panel" id="panel-cards">
+      <div class="section-head">
+        <div>
+          <h2>Визитки</h2>
+          <p>Всяка издадена визитка с реалната ѝ употреба. Кликни върху заглавие на колона,
+             за да подредиш таблицата по нея.</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="cardsSearch" class="search-input" placeholder="Търси по име, ID, фирма, имейл...">
+        <select id="cardsCompanyFilter" class="select-input">
+          <option value="">Всички фирми</option>
+        </select>
+        <select id="cardsUsageFilter" class="select-input">
+          <option value="">Всякаква употреба</option>
+          <option value="active">Само използвани (има сканирания)</option>
+          <option value="idle">Само неизползвани</option>
+          <option value="boss">Само шефове</option>
+          <option value="noaccount">Без акаунт за вход</option>
+        </select>
+        <span class="result-count" id="cardsCount"></span>
+      </div>
+
+      <div class="dash-card" style="padding:1rem">
+        <div class="table-wrap">
+          <table class="tbl" id="cardsTable">
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="name">Човек <span class="arrow"></span></th>
+                <th class="sortable" data-sort="company">Фирма <span class="arrow"></span></th>
+                <th class="sortable" data-sort="role">Роля / Шеф <span class="arrow"></span></th>
+                <th class="sortable num" data-sort="scans">Сканирания <span class="arrow"></span></th>
+                <th class="sortable num" data-sort="leads">Контакти <span class="arrow"></span></th>
+                <th class="sortable num" data-sort="saves">Записвания <span class="arrow"></span></th>
+                <th class="sortable" data-sort="last_scan">Последно скан. <span class="arrow"></span></th>
+                <th class="sortable" data-sort="last_edit">Последна промяна <span class="arrow"></span></th>
+                <th class="sortable" data-sort="last_login">Последен вход <span class="arrow"></span></th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="cardsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ФИРМИ ============ -->
+    <section class="panel" id="panel-companies">
+      <div class="section-head">
+        <div>
+          <h2>Фирми и екипи</h2>
+          <p>Всяка фирма е една група. Отгоре стои <strong>шефът</strong> (маркиран със син етикет),
+             отдолу — неговите хора. Кликни върху фирмата, за да разгънеш екипа.</p>
+        </div>
+        <button class="btn-ghost" onclick="toggleAllCompanies()">Разгъни / Свий всички</button>
+      </div>
+      <div id="companiesList"></div>
+    </section>
+
+    <!-- ============ КОНТАКТИ ============ -->
+    <section class="panel" id="panel-leads">
+      <div class="section-head">
+        <div>
+          <h2>Събрани контакти</h2>
+          <p>Всички запитвания, оставени през формата на визитките — кой ги е събрал и от кого.</p>
+        </div>
+        <button class="btn-ghost" onclick="exportLeadsCsv()">⬇ Свали CSV</button>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="leadsSearch" class="search-input" placeholder="Търси по клиент, телефон, визитка, фирма...">
+        <span class="result-count" id="leadsCount"></span>
+      </div>
+
+      <div class="dash-card" style="padding:1rem">
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Кога</th>
+                <th>Събрано от (визитка)</th>
+                <th>Фирма</th>
+                <th>Клиент</th>
+                <th>Телефон</th>
+                <th>Имейл</th>
+                <th>Съобщение</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ПЛАЩАНИЯ ============ -->
+    <section class="panel" id="panel-payments">
+      <div class="section-head">
+        <div>
+          <h2>Плащания</h2>
+          <p>Активни абонаменти, договорени бизнес оферти и — най-важното —
+             <strong>кой е натиснал бутона за плащане</strong>, дори когато не е стигнал до край.</p>
+        </div>
+      </div>
+
+      <div class="dash-card" style="margin-bottom:1.5rem">
+        <h3 class="card-title">✅ Абонаменти</h3>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Статус</th><th>Фирма / Шеф</th><th>Пакет</th>
+                <th class="num">Места</th><th class="num">Цена</th>
+                <th>Период</th><th>Валиден до</th><th>Стартиран на</th>
+              </tr>
+            </thead>
+            <tbody id="subsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dash-card" style="margin-bottom:1.5rem">
+        <h3 class="card-title">💼 Договорени бизнес оферти (20+)</h3>
+        <p class="card-hint">Оферта = цена, подготвена от нас. „Активирана“ значи, че фирмата вече плаща по нея.</p>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Фирма / Шеф</th><th class="num">Места</th>
+                <th class="num">Месечно</th><th>Триал</th>
+                <th>Етикет</th><th>Статус</th><th>Обновена</th>
+              </tr>
+            </thead>
+            <tbody id="offersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <h3 class="card-title">👆 Кой е натискал „Плати / Активирай“</h3>
+        <p class="card-hint">
+          Записва се в момента на натискането, преди пренасочването към Stripe.
+          Ред без ✅ значи, че човекът е тръгнал да плаща, но не е завършил — добър повод за обаждане.
+        </p>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Кога</th><th>Кой</th><th>Имейл</th>
+                <th>Пакет</th><th>Период</th><th>Изход</th><th>Платено?</th>
+              </tr>
+            </thead>
+            <tbody id="clicksTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ АКТИВНОСТ ============ -->
+    <section class="panel" id="panel-activity">
+      <div class="section-head">
+        <div>
+          <h2>Кой какво променя</h2>
+          <p>Дневник на всяка промяна по визитките — кой я е направил, на чия визитка и кои полета е пипнал.
+             Записва се автоматично, включително когато шеф добави или махне служител от екипа си.</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="activitySearch" class="search-input" placeholder="Търси по човек, визитка, поле...">
+        <span class="result-count" id="activityCount"></span>
+      </div>
+
+      <div class="dash-card" style="padding:1rem">
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Кога</th><th>Кой го е направил</th>
+                <th>Върху коя визитка</th><th>Действие</th><th>Променени полета</th>
+              </tr>
+            </thead>
+            <tbody id="activityTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ УПРАВЛЕНИЕ ============ -->
+    <section class="panel" id="panel-manage">
+      <div class="section-head">
+        <div>
+          <h2>Управление</h2>
+          <p>Създаване на клиенти, свързване на екипи, фирми и бизнес оферти.
+             Реда е: <strong>1)</strong> създай клиента → <strong>2)</strong> задай му фирма →
+             <strong>3)</strong> направи шефа шеф и закачи хората към него →
+             <strong>4)</strong> при 20+ души задай бизнес оферта.</p>
+        </div>
+      </div>
+
+      <div class="forms-grid">
+
+        <!-- Create Profile Form -->
+        <div class="dash-card">
+          <h3 class="card-title">🆕 1. Създай нов клиент</h3>
+          <p class="card-hint">Прави акаунт за вход + празна визитка. Клиентът после си я попълва от своя панел.</p>
+          <form id="createClientForm" onsubmit="handleCreateClient(event)">
+
+            <div class="form-group">
+              <label for="clientEmail">Имейл адрес на клиента (за вход)</label>
+              <input type="email" id="clientEmail" class="form-input" placeholder="client@company.com" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+              <label for="clientPassword">Парола</label>
+              <input type="text" id="clientPassword" class="form-input" placeholder="Въведете парола (мин. 6 знака)" required>
+            </div>
+
+            <div class="form-group">
+              <label for="clientName">Три имена</label>
+              <input type="text" id="clientName" class="form-input" placeholder="Деян Димитров" required>
+            </div>
+
+            <div class="form-group">
+              <label for="profileId">Уникално ID за линк (profile ID)</label>
+              <input type="text" id="profileId" class="form-input" placeholder="DeividDimitrov" required>
+              <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Например: `DeividDimitrov` ще води до `profile.html?id=DeividDimitrov`</p>
+            </div>
+
+            <button type="submit" class="btn-create">Създай Клиент</button>
+          </form>
+        </div>
+
+        <!-- Company assignment -->
+        <div class="dash-card">
+          <h3 class="card-title">🏭 2. Фирма на профила</h3>
+          <p class="card-hint">
+            Фирмата е групата. Шефът може да добавя само хора от <strong style="color: var(--text);">същата фирма</strong>.
+            За първия човек от нова фирма избери „Създай НОВА фирма“, после закачи останалите към нея.
+          </p>
+          <form id="companyForm" onsubmit="handleSetCompany(event)">
+
+            <div class="form-group">
+              <label for="companyProfileSelect">Профил</label>
+              <select id="companyProfileSelect" class="form-input" required>
+                <option value="">-- Изберете профил --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="companyIdSelect">Фирма</label>
+              <select id="companyIdSelect" class="form-input">
+                <option value="">-- Създай НОВА фирма --</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-create">Запази фирмата</button>
+          </form>
+        </div>
+
+        <!-- Team Linker -->
+        <div class="dash-card">
+          <h3 class="card-title">🏢 3. Шеф и екип</h3>
+          <p class="card-hint">
+            Маркирай кой е шеф и закачи служителите към него. Шефът вижда статистиката
+            и събраните контакти на своя екип.
+          </p>
+          <form id="teamLinkerForm" onsubmit="handleLinkTeam(event)">
+
+            <div class="form-group">
+              <label for="employeeSelect">Изберете профил (служител)</label>
+              <select id="employeeSelect" class="form-input" required>
+                <option value="">-- Изберете профил --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bossSelect">Изберете шеф на фирмата (мениджър)</label>
+              <select id="bossSelect" class="form-input">
+                <option value="">-- Никой / Премахни мениджъра --</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
+              <input type="checkbox" id="isBossCheckbox" style="width: 18px; height: 18px; cursor: pointer;">
+              <label for="isBossCheckbox" style="margin-bottom: 0; cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;">Направи избрания профил Шеф (Мениджър)</label>
+            </div>
+
+            <button type="submit" class="btn-create">Запази връзката / ролята</button>
+          </form>
+        </div>
+
+        <!-- Business offer -->
+        <div class="dash-card">
+          <h3 class="card-title">💼 4. Бизнес оферта (20+)</h3>
+          <p class="card-hint">
+            Договорена цена за голяма фирма. Шефът вижда бутон „Активирай“ в портала
+            и плаща с карта. Годишно = месечно × 11.
+          </p>
+          <form id="bizOfferForm" onsubmit="handleSetBizOffer(event)">
+
+            <div class="form-group">
+              <label for="bizCompanySelect">Фирма</label>
+              <select id="bizCompanySelect" class="form-input" required>
+                <option value="">-- Изберете фирма --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bizSeats">Брой места (служители)</label>
+              <input type="number" id="bizSeats" class="form-input" min="1" placeholder="24" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bizPrice">Месечна цена (€)</label>
+              <input type="number" id="bizPrice" class="form-input" min="0" step="0.01" placeholder="20" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bizLabel">Етикет (по избор)</label>
+              <input type="text" id="bizLabel" class="form-input" placeholder="Бизнес план — ЕЛКАБЕЛ">
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
+              <input type="checkbox" id="bizTrial" checked style="width: 18px; height: 18px; cursor: pointer;">
+              <label for="bizTrial" style="margin-bottom: 0; cursor: pointer; font-size: 0.85rem; color: var(--text); user-select: none;">Първи месец безплатно (само при месечно)</label>
+            </div>
+
+            <button type="submit" class="btn-create">Запази офертата</button>
+          </form>
+        </div>
+
+      </div>
+
+      <div class="dash-card" style="margin-top:1.5rem">
+        <h3 class="card-title">📋 Основен списък с визитки</h3>
+        <p class="card-hint">Суровият списък от базата — за бърза проверка и изтриване.</p>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Профил ID</th>
+                <th>Име</th>
+                <th>Роля</th>
+                <th>Мениджър (Шеф)</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="profilesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
   </div>
 
@@ -444,16 +1053,29 @@
 
     // List of admin emails authorized to access the panel
     const ADMIN_EMAILS = [
-      "office@nfcbulgaria.com", 
+      "office@nfcbulgaria.com",
       "sjv_gold@abv.bg"
     ];
 
+    // ---- Състояние ----
+    let allProfilesList = [];   // суровите редове от profiles (за формите)
+    let overviewRows    = [];   // admin_profiles_overview()
+    let companiesRows   = [];   // admin_companies_overview()
+    let leadsRows       = [];   // admin_recent_leads()
+    let activityRows    = [];   // admin_activity_feed()
+    let paymentsData    = null; // admin_payments_overview()
+    let insightsReady   = false;
+
+    let cardsSort = { key: 'scans', dir: 'desc' };
+
     document.addEventListener('DOMContentLoaded', checkAdminAccess);
 
-    // Verify Admin authentication
+    // ---------------------------------------------------------------
+    // Достъп
+    // ---------------------------------------------------------------
     async function checkAdminAccess() {
       const { data: { session } } = await supabaseClient.auth.getSession();
-      
+
       if (!session) {
         window.location.href = 'login.html';
         return;
@@ -464,15 +1086,137 @@
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 2000);
-      } else {
-        document.getElementById('gateOverlay').style.display = 'none';
-        loadProfilesList();
+        return;
       }
+
+      document.getElementById('gateOverlay').style.display = 'none';
+      document.getElementById('adminEmail').textContent = session.user.email;
+      initTabs();
+      refreshAll();
     }
 
-    let allProfilesList = [];
+    function initTabs() {
+      document.querySelectorAll('.tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
 
-    // Load active profile rows
+      document.querySelectorAll('#cardsTable th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.sort;
+          if (cardsSort.key === key) {
+            cardsSort.dir = cardsSort.dir === 'desc' ? 'asc' : 'desc';
+          } else {
+            cardsSort = { key, dir: 'desc' };
+          }
+          renderCardsTable();
+        });
+      });
+
+      document.getElementById('cardsSearch').addEventListener('input', renderCardsTable);
+      document.getElementById('cardsCompanyFilter').addEventListener('change', renderCardsTable);
+      document.getElementById('cardsUsageFilter').addEventListener('change', renderCardsTable);
+      document.getElementById('leadsSearch').addEventListener('input', renderLeadsTable);
+      document.getElementById('activitySearch').addEventListener('input', renderActivityTable);
+    }
+
+    async function refreshAll() {
+      await loadProfilesList();   // основното — работи винаги
+      await loadInsights();       // разширеното — иска admin-insights.sql
+    }
+
+    // ---------------------------------------------------------------
+    // Помощни
+    // ---------------------------------------------------------------
+    const nf = new Intl.NumberFormat('bg-BG');
+    // null/undefined → тире, за да не изглежда като истинска нула
+    const num = v => (v === null || v === undefined || v === '') ? '—' : nf.format(Number(v) || 0);
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function fmtDate(v) {
+      if (!v) return '—';
+      const d = new Date(v);
+      if (isNaN(d)) return '—';
+      return d.toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function fmtDateTime(v) {
+      if (!v) return '—';
+      const d = new Date(v);
+      if (isNaN(d)) return '—';
+      return d.toLocaleString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    // „преди 3 дни“ — най-бързият начин да видиш дали нещо се ползва
+    function ago(v) {
+      if (!v) return '—';
+      const d = new Date(v);
+      if (isNaN(d)) return '—';
+      const s = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (s < 60) return 'току-що';
+      const m = Math.floor(s / 60);
+      if (m < 60) return `преди ${m} мин.`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `преди ${h} ч.`;
+      const days = Math.floor(h / 24);
+      if (days === 1) return 'вчера';
+      if (days < 31) return `преди ${days} дни`;
+      const mo = Math.floor(days / 30);
+      if (mo < 12) return `преди ${mo} мес.`;
+      return fmtDate(v);
+    }
+
+    function euro(cents) {
+      if (cents == null) return '—';
+      return (Number(cents) / 100).toLocaleString('bg-BG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    }
+
+    function initials(name) {
+      return String(name || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase();
+    }
+
+    function personCell(name, sub, avatar) {
+      const av = avatar
+        ? `<img class="avatar" src="${escapeHtml(avatar)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'avatar',textContent:'${escapeHtml(initials(name))}'}))">`
+        : `<div class="avatar">${escapeHtml(initials(name))}</div>`;
+      return `<div class="person">${av}<div>
+                <div class="person-name">${escapeHtml(name || '—')}</div>
+                <div class="person-sub">${escapeHtml(sub || '')}</div>
+              </div></div>`;
+    }
+
+    function emptyRow(cols, text) {
+      return `<tr class="empty-row"><td colspan="${cols}">${escapeHtml(text)}</td></tr>`;
+    }
+
+    // Човешки имена на колоните от базата — за дневника на промените
+    const FIELD_LABELS = {
+      name: 'име', title: 'длъжност', company: 'фирма', phone: 'телефон',
+      email: 'имейл', viber: 'Viber', whatsapp: 'WhatsApp', linkedin: 'LinkedIn',
+      facebook: 'Facebook', instagram: 'Instagram', website: 'уебсайт',
+      google_maps: 'Google Maps', avatar_url: 'снимка', company_logo: 'лого',
+      bio: 'кратко описание', working_hours: 'работно време',
+      hours_enabled: 'показване на работно време', share_enabled: 'бутон споделяне',
+      saves_count: 'брой записвания', is_boss: 'роля шеф',
+      parent_boss_id: 'връзка към шеф', company_id: 'фирма (група)',
+      i18n: 'ръчни преводи', user_id: 'акаунт за вход'
+    };
+
+    function fieldLabel(f) { return FIELD_LABELS[f] || f; }
+
+    // ---------------------------------------------------------------
+    // Основен списък (винаги работи — не зависи от новия SQL)
+    // ---------------------------------------------------------------
     async function loadProfilesList() {
       const { data: profiles, error } = await supabaseClient
         .from('profiles')
@@ -490,9 +1234,9 @@
       const tbody = document.getElementById('profilesTableBody');
       tbody.innerHTML = '';
 
-      profiles.forEach(profile => {
+      allProfilesList.forEach(profile => {
         const tr = document.createElement('tr');
-        
+
         tr.innerHTML = `
           <td style="font-weight:600; color: var(--primary);"></td>
           <td></td>
@@ -507,20 +1251,18 @@
         // Safe textContent assignment to prevent HTML injection or escaping issues
         tr.cells[0].textContent = profile.id;
         tr.cells[1].textContent = profile.name;
-        
+
         // Role badge
-        if (profile.is_boss) {
-          tr.cells[2].innerHTML = `<span class="company-badge" style="background:rgba(0, 242, 255, 0.15); border:1px solid var(--primary); color:var(--primary); padding: 0.2rem 0.5rem; border-radius: 6px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Шеф</span>`;
-        } else {
-          tr.cells[2].innerHTML = `<span class="company-badge" style="background:rgba(255,255,255,0.03); border:1px solid var(--border); color:var(--text-muted); padding: 0.2rem 0.5rem; border-radius: 6px; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Служител</span>`;
-        }
+        tr.cells[2].innerHTML = profile.is_boss
+          ? '<span class="badge badge-boss">Шеф</span>'
+          : '<span class="badge badge-staff">Служител</span>';
 
         // Manager / Boss
         if (profile.parent_boss_id) {
-          const boss = profiles.find(p => p.user_id === profile.parent_boss_id);
+          const boss = allProfilesList.find(p => p.user_id === profile.parent_boss_id);
           tr.cells[3].textContent = boss ? boss.name : 'Неизвестен';
         } else {
-          tr.cells[3].innerHTML = '<em style="color:var(--text-muted)">Няма</em>';
+          tr.cells[3].innerHTML = '<em class="muted">Няма</em>';
         }
 
         // Action elements
@@ -536,11 +1278,605 @@
       });
     }
 
-    // Populate dropdowns for HubSpot Lite linker card
+    // ---------------------------------------------------------------
+    // Разширени справки (изискват supabase/admin-insights.sql)
+    // ---------------------------------------------------------------
+    async function loadInsights() {
+      const banner = document.getElementById('setupBanner');
+
+      const [statsRes, profRes] = await Promise.all([
+        supabaseClient.rpc('admin_dashboard_stats'),
+        supabaseClient.rpc('admin_profiles_overview')
+      ]);
+
+      if (statsRes.error || profRes.error) {
+        insightsReady = false;
+        banner.style.display = 'block';
+        document.getElementById('setupBannerErr').textContent =
+          (statsRes.error || profRes.error).message || '';
+        renderFallbackOverview();
+        return;
+      }
+
+      insightsReady = true;
+      banner.style.display = 'none';
+
+      const stats = statsRes.data || {};
+      overviewRows = profRes.data || [];
+
+      renderKpis(stats);
+      renderTopProfiles();
+      renderIdleProfiles();
+      renderCompanyFilter();
+      renderCardsTable();
+
+      const [daysRes, compRes, leadsRes, actRes, payRes] = await Promise.all([
+        supabaseClient.rpc('admin_scans_by_day', { p_days: 30 }),
+        supabaseClient.rpc('admin_companies_overview'),
+        supabaseClient.rpc('admin_recent_leads', { p_limit: 500 }),
+        supabaseClient.rpc('admin_activity_feed', { p_limit: 300 }),
+        supabaseClient.rpc('admin_payments_overview')
+      ]);
+
+      renderChart(daysRes.error ? [] : (daysRes.data || []));
+
+      companiesRows = compRes.error ? [] : (compRes.data || []);
+      renderCompanies();
+
+      leadsRows = leadsRes.error ? [] : (leadsRes.data || []);
+      renderLeadsTable();
+
+      activityRows = actRes.error ? [] : (actRes.data || []);
+      renderActivityTable();
+      renderOverviewActivity();
+
+      paymentsData = payRes.error ? null : payRes.data;
+      renderPayments();
+    }
+
+    // Когато новият SQL още не е пуснат — показваме поне каквото имаме.
+    function renderFallbackOverview() {
+      const bosses = allProfilesList.filter(p => p.is_boss).length;
+      const companies = new Set(allProfilesList.filter(p => p.company_id).map(p => p.company_id)).size;
+      renderKpis({
+        profiles_total: allProfilesList.length,
+        bosses, companies,
+        orphans: allProfilesList.filter(p => !p.company_id).length
+      });
+      document.getElementById('chartBox').innerHTML =
+        '<p class="card-hint">Графиката изисква <code>admin-insights.sql</code>.</p>';
+      ['topProfilesBody', 'idleProfilesBody', 'overviewActivityBody'].forEach(id => {
+        document.getElementById(id).innerHTML = emptyRow(4, 'Изисква admin-insights.sql');
+      });
+      document.getElementById('cardsTableBody').innerHTML = emptyRow(10, 'Изисква admin-insights.sql');
+      document.getElementById('leadsTableBody').innerHTML = emptyRow(7, 'Изисква admin-insights.sql');
+      document.getElementById('activityTableBody').innerHTML = emptyRow(5, 'Изисква admin-insights.sql');
+      document.getElementById('subsTableBody').innerHTML = emptyRow(8, 'Изисква admin-insights.sql');
+      document.getElementById('offersTableBody').innerHTML = emptyRow(7, 'Изисква admin-insights.sql');
+      document.getElementById('clicksTableBody').innerHTML = emptyRow(7, 'Изисква admin-insights.sql');
+      renderCompaniesFallback();
+    }
+
+    // ---------------------------------------------------------------
+    // Обзор
+    // ---------------------------------------------------------------
+    function kpi(label, value, sub, cls) {
+      return `<div class="kpi ${cls || ''}">
+        <div class="kpi-label">${label}</div>
+        <div class="kpi-value">${value}</div>
+        <div class="kpi-sub">${sub || ''}</div>
+      </div>`;
+    }
+
+    function renderKpis(s) {
+      const used = s.profiles_active != null
+        ? `${num(s.profiles_active)} се ползват реално`
+        : '';
+      const html = [
+        kpi('📇 Издадени визитки', num(s.profiles_total), used, 'accent'),
+        kpi('🏢 Фирми (групи)', num(s.companies),
+            s.orphans != null ? `${num(s.orphans)} профила без фирма` : ''),
+        kpi('👑 Шефове', num(s.bosses), 'виждат екипа си в портала'),
+        kpi('📲 Сканирания', num(s.scans_total),
+            s.scans_30d != null ? `${num(s.scans_30d)} за 30 дни · ${num(s.scans_7d)} за 7 дни` : '', 'accent'),
+        kpi('📥 Събрани контакти', num(s.leads_total),
+            s.leads_30d != null ? `${num(s.leads_30d)} за 30 дни` : '', 'good'),
+        kpi('💾 Записвания в телефон', num(s.saves_total), 'натиснат бутон „Запази контакт“'),
+        kpi('💳 Активни абонаменти', num(s.subs_active),
+            s.mrr_cents != null ? `≈ ${euro(s.mrr_cents)} / месец` : '', 'good'),
+        kpi('👆 Натискания „Плати“', num(s.pay_clicks_30d), 'за последните 30 дни', 'warn'),
+        kpi('✏️ Промени по визитки', num(s.edits_7d), 'за последните 7 дни')
+      ].join('');
+      document.getElementById('kpiGrid').innerHTML = html;
+    }
+
+    function renderTopProfiles() {
+      const rows = [...overviewRows]
+        .sort((a, b) => (b.scans_30d - a.scans_30d) || (b.scans - a.scans))
+        .filter(r => r.scans_30d > 0 || r.scans > 0)
+        .slice(0, 8);
+
+      const tbody = document.getElementById('topProfilesBody');
+      if (!rows.length) { tbody.innerHTML = emptyRow(4, 'Още няма сканирания.'); return; }
+
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${personCell(r.name, r.company || r.profile_id, r.avatar_url)}</td>
+          <td class="num"><strong>${num(r.scans_30d)}</strong><div class="person-sub">общо ${num(r.scans)}</div></td>
+          <td class="num">${num(r.leads)}</td>
+          <td class="num">${num(r.saves)}</td>
+        </tr>`).join('');
+    }
+
+    function renderIdleProfiles() {
+      const rows = overviewRows.filter(r => Number(r.scans) === 0).slice(0, 8);
+      const tbody = document.getElementById('idleProfilesBody');
+      if (!rows.length) { tbody.innerHTML = emptyRow(3, 'Всички визитки се ползват. 🎉'); return; }
+
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${personCell(r.name, r.profile_id, r.avatar_url)}</td>
+          <td class="muted">${escapeHtml(r.company || '—')}</td>
+          <td class="muted">${r.last_login ? ago(r.last_login) : '<span class="badge badge-off">никога</span>'}</td>
+        </tr>`).join('');
+    }
+
+    function renderOverviewActivity() {
+      const tbody = document.getElementById('overviewActivityBody');
+      const rows = activityRows.slice(0, 10);
+      if (!rows.length) { tbody.innerHTML = emptyRow(3, 'Няма записани промени.'); return; }
+
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td class="muted" style="white-space:nowrap">${ago(r.created_at)}</td>
+          <td>${escapeHtml(r.actor_email || 'система')}</td>
+          <td class="muted">${escapeHtml(r.profile_name || r.profile_id || '—')}
+            ${r.changed && r.changed.length ? `<div class="person-sub">${escapeHtml(r.changed.map(fieldLabel).join(', '))}</div>` : ''}</td>
+        </tr>`).join('');
+    }
+
+    // Прост SVG график — без външни библиотеки, за да не тежи панелът.
+    function renderChart(days) {
+      const box = document.getElementById('chartBox');
+      if (!days.length) {
+        box.innerHTML = '<p class="card-hint">Няма данни за периода.</p>';
+        return;
+      }
+
+      const W = Math.max(560, days.length * 19);
+      const H = 220, PAD_L = 34, PAD_B = 26, PAD_T = 10;
+      const maxV = Math.max(1, ...days.map(d => Math.max(Number(d.scans), Number(d.leads))));
+      const innerW = W - PAD_L - 10;
+      const innerH = H - PAD_B - PAD_T;
+      const bw = innerW / days.length;
+
+      let bars = '', labels = '';
+      days.forEach((d, i) => {
+        const x = PAD_L + i * bw;
+        const hs = (Number(d.scans) / maxV) * innerH;
+        const hl = (Number(d.leads) / maxV) * innerH;
+        const w = Math.max(3, bw * 0.38);
+        bars += `<rect x="${x + bw * 0.06}" y="${PAD_T + innerH - hs}" width="${w}" height="${hs}" rx="2" fill="var(--primary)" opacity="0.85"><title>${d.day}: ${d.scans} сканирания</title></rect>`;
+        bars += `<rect x="${x + bw * 0.06 + w + 1}" y="${PAD_T + innerH - hl}" width="${w}" height="${hl}" rx="2" fill="var(--secondary)" opacity="0.85"><title>${d.day}: ${d.leads} контакта</title></rect>`;
+        if (i % 5 === 0 || i === days.length - 1) {
+          const dd = new Date(d.day);
+          labels += `<text x="${x + bw / 2}" y="${H - 8}" fill="#9ca3af" font-size="9" text-anchor="middle">${dd.getDate()}.${dd.getMonth() + 1}</text>`;
+        }
+      });
+
+      let grid = '';
+      for (let g = 0; g <= 4; g++) {
+        const y = PAD_T + innerH - (innerH / 4) * g;
+        const val = Math.round((maxV / 4) * g);
+        grid += `<line x1="${PAD_L}" y1="${y}" x2="${W - 10}" y2="${y}" stroke="rgba(255,255,255,0.06)"/>`;
+        grid += `<text x="${PAD_L - 6}" y="${y + 3}" fill="#9ca3af" font-size="9" text-anchor="end">${val}</text>`;
+      }
+
+      box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Сканирания и контакти по дни">${grid}${bars}${labels}</svg>`;
+    }
+
+    // ---------------------------------------------------------------
+    // Таб „Визитки“
+    // ---------------------------------------------------------------
+    function renderCompanyFilter() {
+      const sel = document.getElementById('cardsCompanyFilter');
+      const current = sel.value;
+      const names = [...new Set(overviewRows.map(r => r.company).filter(Boolean))].sort();
+      sel.innerHTML = '<option value="">Всички фирми</option>' +
+        names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('') +
+        '<option value="__none__">— без фирма —</option>';
+      sel.value = current;
+    }
+
+    function renderCardsTable() {
+      const q = document.getElementById('cardsSearch').value.trim().toLowerCase();
+      const comp = document.getElementById('cardsCompanyFilter').value;
+      const usage = document.getElementById('cardsUsageFilter').value;
+
+      let rows = overviewRows.filter(r => {
+        if (comp === '__none__' && r.company) return false;
+        if (comp && comp !== '__none__' && r.company !== comp) return false;
+        if (usage === 'active'    && Number(r.scans) === 0) return false;
+        if (usage === 'idle'      && Number(r.scans) > 0) return false;
+        if (usage === 'boss'      && !r.is_boss) return false;
+        if (usage === 'noaccount' && r.has_account) return false;
+        if (!q) return true;
+        return [r.name, r.profile_id, r.company, r.title, r.login_email, r.card_email, r.boss_name]
+          .some(v => String(v || '').toLowerCase().includes(q));
+      });
+
+      const key = cardsSort.key, dir = cardsSort.dir === 'asc' ? 1 : -1;
+      const pick = r => ({
+        name: r.name, company: r.company, role: (r.is_boss ? '1' : '0') + (r.boss_name || ''),
+        scans: Number(r.scans), leads: Number(r.leads), saves: Number(r.saves),
+        last_scan: r.last_scan ? new Date(r.last_scan).getTime() : 0,
+        last_edit: r.last_edit ? new Date(r.last_edit).getTime() : 0,
+        last_login: r.last_login ? new Date(r.last_login).getTime() : 0
+      }[key]);
+
+      rows.sort((a, b) => {
+        const va = pick(a), vb = pick(b);
+        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+        return String(va || '').localeCompare(String(vb || ''), 'bg') * dir;
+      });
+
+      document.querySelectorAll('#cardsTable th.sortable').forEach(th => {
+        th.querySelector('.arrow').textContent =
+          th.dataset.sort === key ? (dir === 1 ? '▲' : '▼') : '';
+      });
+
+      document.getElementById('cardsCount').textContent =
+        `${rows.length} от ${overviewRows.length} визитки`;
+
+      const tbody = document.getElementById('cardsTableBody');
+      if (!rows.length) { tbody.innerHTML = emptyRow(10, 'Няма съвпадения.'); return; }
+
+      tbody.innerHTML = rows.map(r => {
+        const role = r.is_boss
+          ? '<span class="badge badge-boss">Шеф</span>'
+          : (r.boss_name
+              ? `<span class="badge badge-staff">Служител</span><div class="person-sub">при ${escapeHtml(r.boss_name)}</div>`
+              : '<span class="badge badge-staff">Служител</span><div class="person-sub">без шеф</div>');
+
+        const account = r.has_account ? '' : '<div class="person-sub" style="color:var(--danger)">няма акаунт</div>';
+
+        return `<tr${r.is_boss ? ' class="boss-row"' : ''}>
+          <td>${personCell(r.name, r.title || r.profile_id, r.avatar_url)}${account}</td>
+          <td class="muted">${escapeHtml(r.company || '—')}</td>
+          <td>${role}</td>
+          <td class="num"><strong>${num(r.scans)}</strong><div class="person-sub">${num(r.scans_30d)} за 30д</div></td>
+          <td class="num"><strong>${num(r.leads)}</strong><div class="person-sub">${num(r.leads_30d)} за 30д</div></td>
+          <td class="num">${num(r.saves)}</td>
+          <td class="muted" style="white-space:nowrap">${ago(r.last_scan)}</td>
+          <td class="muted" style="white-space:nowrap">${ago(r.last_edit)}</td>
+          <td class="muted" style="white-space:nowrap">${r.last_login ? ago(r.last_login) : '<span class="badge badge-off">никога</span>'}</td>
+          <td style="white-space:nowrap">
+            <a class="btn-action btn-view" target="_blank" href="profile.html?id=${encodeURIComponent(r.profile_id)}">Преглед</a>
+            <button class="btn-action btn-del" onclick="handleDeleteProfileBySlug('${escapeHtml(r.profile_id)}')">Изтрий</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function handleDeleteProfileBySlug(slug) {
+      const p = allProfilesList.find(x => x.id === slug);
+      handleDeleteProfile(slug, p ? p.user_id : null);
+    }
+
+    // ---------------------------------------------------------------
+    // Таб „Фирми и екипи“
+    // ---------------------------------------------------------------
+    function subBadge(c) {
+      if (c.sub_status === 'active' && c.sub_period_end && new Date(c.sub_period_end) > new Date()) {
+        return `<span class="badge badge-ok">Платен · ${escapeHtml(c.sub_plan || '')}</span>`;
+      }
+      if (c.sub_status) return `<span class="badge badge-off">Изтекъл / отказан</span>`;
+      if (c.offer_seats) return `<span class="badge badge-warn">Има оферта, не е платена</span>`;
+      return `<span class="badge badge-staff">Без абонамент</span>`;
+    }
+
+    function renderCompanies() {
+      const wrap = document.getElementById('companiesList');
+
+      if (!companiesRows.length) {
+        wrap.innerHTML = '<div class="dash-card"><p class="card-hint">Още няма фирми. Задай фирма на профил от таб „Управление“.</p></div>';
+        return;
+      }
+
+      // Хората по фирми, шефовете най-отгоре
+      const byCompany = new Map();
+      overviewRows.forEach(r => {
+        const k = r.company_id || '__none__';
+        if (!byCompany.has(k)) byCompany.set(k, []);
+        byCompany.get(k).push(r);
+      });
+
+      let html = companiesRows.map((c, i) => {
+        const members = (byCompany.get(c.company_id) || [])
+          .sort((a, b) => (b.is_boss - a.is_boss) || (Number(b.scans) - Number(a.scans)));
+
+        const rows = members.map(m => `
+          <tr${m.is_boss ? ' class="boss-row"' : ''}>
+            <td>${personCell(m.name, m.title || m.profile_id, m.avatar_url)}</td>
+            <td>${m.is_boss ? '<span class="badge badge-boss">👑 Шеф</span>' : '<span class="badge badge-staff">Служител</span>'}</td>
+            <td class="num">${num(m.scans)}</td>
+            <td class="num">${num(m.leads)}</td>
+            <td class="num">${num(m.saves)}</td>
+            <td class="muted" style="white-space:nowrap">${ago(m.last_scan)}</td>
+            <td class="muted" style="white-space:nowrap">${ago(m.last_edit)}</td>
+            <td><a class="btn-action btn-view" target="_blank" href="profile.html?id=${encodeURIComponent(m.profile_id)}">Преглед</a></td>
+          </tr>`).join('');
+
+        const payLine = c.pay_clicks > 0
+          ? `<div class="card-hint" style="margin:0.8rem 0 0">👆 Бутонът за плащане е натискан <strong>${num(c.pay_clicks)}</strong> пъти, последно ${ago(c.last_pay_click)}.</div>`
+          : '';
+
+        const offerLine = c.offer_seats
+          ? `<div class="card-hint" style="margin:0.4rem 0 0">💼 Оферта: ${num(c.offer_seats)} места по ${euro(c.offer_price_cents)}/мес.${c.offer_label ? ' — ' + escapeHtml(c.offer_label) : ''}</div>`
+          : '';
+
+        const subLine = (c.sub_status)
+          ? `<div class="card-hint" style="margin:0.4rem 0 0">💳 ${escapeHtml(c.sub_plan || 'план')} · ${num(c.sub_seats)} места · ${euro(c.sub_price_cents)} / ${c.sub_interval === 'year' ? 'година' : 'месец'} · валиден до ${fmtDate(c.sub_period_end)}</div>`
+          : '';
+
+        return `<div class="company-card${i === 0 ? ' open' : ''}">
+          <div class="company-head" onclick="this.parentElement.classList.toggle('open')">
+            <div>
+              <div class="company-title"><span class="chev">▶</span>${escapeHtml(c.company_name || 'Без име')} ${subBadge(c)}</div>
+              <div class="company-meta">👑 ${escapeHtml(c.bosses || 'няма маркиран шеф')} · ID ${escapeHtml(String(c.company_id || '').slice(0, 8))}</div>
+            </div>
+            <div class="company-nums">
+              <div class="company-num"><b>${num(c.members)}</b><span>Хора</span></div>
+              <div class="company-num"><b>${num(c.scans)}</b><span>Сканирания</span></div>
+              <div class="company-num"><b>${num(c.leads)}</b><span>Контакти</span></div>
+              <div class="company-num"><b>${num(c.saves)}</b><span>Записвания</span></div>
+            </div>
+          </div>
+          <div class="company-body">
+            ${subLine}${offerLine}${payLine}
+            <div class="table-wrap">
+              <table class="tbl" style="min-width:640px">
+                <thead><tr>
+                  <th>Човек</th><th>Роля</th><th class="num">Скан.</th>
+                  <th class="num">Контакти</th><th class="num">Записв.</th>
+                  <th>Последно скан.</th><th>Последна промяна</th><th></th>
+                </tr></thead>
+                <tbody>${rows || emptyRow(8, 'Няма профили.')}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+      // Профилите без фирма — важно е да се виждат, иначе се губят
+      const orphans = byCompany.get('__none__') || [];
+      if (orphans.length) {
+        html += `<div class="company-card">
+          <div class="company-head" onclick="this.parentElement.classList.toggle('open')">
+            <div>
+              <div class="company-title"><span class="chev">▶</span>Без фирма <span class="badge badge-warn">${num(orphans.length)}</span></div>
+              <div class="company-meta">Тези визитки не са в нито една група — шеф не може да ги добави към екип.</div>
+            </div>
+          </div>
+          <div class="company-body">
+            <div class="table-wrap">
+              <table class="tbl" style="min-width:420px">
+                <thead><tr><th>Човек</th><th class="num">Скан.</th><th class="num">Контакти</th><th></th></tr></thead>
+                <tbody>${orphans.map(m => `
+                  <tr>
+                    <td>${personCell(m.name, m.title || m.profile_id, m.avatar_url)}</td>
+                    <td class="num">${num(m.scans)}</td>
+                    <td class="num">${num(m.leads)}</td>
+                    <td><a class="btn-action btn-view" target="_blank" href="profile.html?id=${encodeURIComponent(m.profile_id)}">Преглед</a></td>
+                  </tr>`).join('')}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      wrap.innerHTML = html;
+    }
+
+    // Групиране само по суровите profiles, когато новият SQL липсва
+    function renderCompaniesFallback() {
+      const wrap = document.getElementById('companiesList');
+      const groups = new Map();
+      allProfilesList.forEach(p => {
+        const k = p.company_id || '__none__';
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(p);
+      });
+
+      if (!groups.size) {
+        wrap.innerHTML = '<div class="dash-card"><p class="card-hint">Няма профили.</p></div>';
+        return;
+      }
+
+      wrap.innerHTML = [...groups.entries()].map(([cid, members]) => {
+        const boss = members.find(m => m.is_boss);
+        const label = cid === '__none__' ? 'Без фирма' : ((boss && boss.company) || members[0].company || 'Без име');
+        const sorted = [...members].sort((a, b) => (b.is_boss ? 1 : 0) - (a.is_boss ? 1 : 0));
+        return `<div class="company-card open">
+          <div class="company-head" onclick="this.parentElement.classList.toggle('open')">
+            <div>
+              <div class="company-title"><span class="chev">▶</span>${escapeHtml(label)}</div>
+              <div class="company-meta">👑 ${escapeHtml(boss ? boss.name : 'няма маркиран шеф')}</div>
+            </div>
+            <div class="company-nums"><div class="company-num"><b>${members.length}</b><span>Хора</span></div></div>
+          </div>
+          <div class="company-body">
+            <div class="table-wrap"><table class="tbl" style="min-width:380px">
+              <thead><tr><th>Човек</th><th>Роля</th><th></th></tr></thead>
+              <tbody>${sorted.map(m => `
+                <tr${m.is_boss ? ' class="boss-row"' : ''}>
+                  <td>${personCell(m.name, m.id, m.avatar_url)}</td>
+                  <td>${m.is_boss ? '<span class="badge badge-boss">👑 Шеф</span>' : '<span class="badge badge-staff">Служител</span>'}</td>
+                  <td><a class="btn-action btn-view" target="_blank" href="profile.html?id=${encodeURIComponent(m.id)}">Преглед</a></td>
+                </tr>`).join('')}</tbody>
+            </table></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function toggleAllCompanies() {
+      const cards = document.querySelectorAll('.company-card');
+      const anyClosed = [...cards].some(c => !c.classList.contains('open'));
+      cards.forEach(c => c.classList.toggle('open', anyClosed));
+    }
+
+    // ---------------------------------------------------------------
+    // Таб „Събрани контакти“
+    // ---------------------------------------------------------------
+    function renderLeadsTable() {
+      const q = document.getElementById('leadsSearch').value.trim().toLowerCase();
+      const rows = leadsRows.filter(l => !q || [
+        l.client_name, l.client_phone, l.client_email, l.client_message,
+        l.profile_name, l.profile_id, l.company
+      ].some(v => String(v || '').toLowerCase().includes(q)));
+
+      document.getElementById('leadsCount').textContent =
+        `${rows.length} от ${leadsRows.length} контакта`;
+
+      const tbody = document.getElementById('leadsTableBody');
+      if (!rows.length) {
+        tbody.innerHTML = emptyRow(7, leadsRows.length ? 'Няма съвпадения.' : 'Още няма събрани контакти.');
+        return;
+      }
+
+      tbody.innerHTML = rows.map(l => `
+        <tr>
+          <td class="muted" style="white-space:nowrap">${fmtDateTime(l.created_at)}</td>
+          <td>${escapeHtml(l.profile_name || l.profile_id || '—')}</td>
+          <td class="muted">${escapeHtml(l.company || '—')}</td>
+          <td><strong>${escapeHtml(l.client_name || '—')}</strong></td>
+          <td>${l.client_phone ? `<a class="btn-action" href="tel:${escapeHtml(String(l.client_phone).replace(/[^\d+]/g, ''))}">${escapeHtml(l.client_phone)}</a>` : '<span class="muted">—</span>'}</td>
+          <td>${l.client_email ? `<a class="btn-action" href="mailto:${escapeHtml(l.client_email)}">${escapeHtml(l.client_email)}</a>` : '<span class="muted">—</span>'}</td>
+          <td class="muted">${escapeHtml(l.client_message || '—')}</td>
+        </tr>`).join('');
+    }
+
+    function exportLeadsCsv() {
+      if (!leadsRows.length) { alert('Няма контакти за сваляне.'); return; }
+      const head = ['Дата', 'Визитка', 'Профил ID', 'Фирма', 'Клиент', 'Телефон', 'Имейл', 'Съобщение'];
+      const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const lines = [head.map(esc).join(',')];
+      leadsRows.forEach(l => lines.push([
+        fmtDateTime(l.created_at), l.profile_name, l.profile_id, l.company,
+        l.client_name, l.client_phone, l.client_email, l.client_message
+      ].map(esc).join(',')));
+
+      // BOM-ът кара Excel да прочете кирилицата правилно
+      const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `nfc-kontakti-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // ---------------------------------------------------------------
+    // Таб „Плащания“
+    // ---------------------------------------------------------------
+    function renderPayments() {
+      const subsB = document.getElementById('subsTableBody');
+      const offB  = document.getElementById('offersTableBody');
+      const clkB  = document.getElementById('clicksTableBody');
+
+      if (!paymentsData || paymentsData.ok === false) {
+        subsB.innerHTML = emptyRow(8, 'Няма данни.');
+        offB.innerHTML  = emptyRow(7, 'Няма данни.');
+        clkB.innerHTML  = emptyRow(7, 'Няма данни.');
+        return;
+      }
+
+      const subs = paymentsData.subscriptions || [];
+      subsB.innerHTML = subs.length ? subs.map(s => `
+        <tr>
+          <td>${s.is_live ? '<span class="badge badge-ok">Активен</span>' : `<span class="badge badge-off">${escapeHtml(s.status || '—')}</span>`}</td>
+          <td><strong>${escapeHtml(s.company_name || 'Без име')}</strong><div class="person-sub">👑 ${escapeHtml(s.boss_name || '—')} · ${escapeHtml(s.boss_email || '')}</div></td>
+          <td>${escapeHtml(s.plan || '—')}</td>
+          <td class="num">${num(s.seats)}</td>
+          <td class="num">${euro(s.price_cents)}</td>
+          <td>${s.interval === 'year' ? 'Годишно' : 'Месечно'}</td>
+          <td class="muted">${fmtDate(s.current_period_end)}</td>
+          <td class="muted">${fmtDate(s.created_at)}</td>
+        </tr>`).join('') : emptyRow(8, 'Още няма абонаменти.');
+
+      const offers = paymentsData.offers || [];
+      offB.innerHTML = offers.length ? offers.map(o => `
+        <tr>
+          <td><strong>${escapeHtml(o.company_name || 'Без име')}</strong><div class="person-sub">👑 ${escapeHtml(o.bosses || 'без шеф')} · ${num(o.members)} профила · ID ${escapeHtml(String(o.company_id || '').slice(0, 8))}</div></td>
+          <td class="num">${num(o.seats)}</td>
+          <td class="num">${euro(o.monthly_price_cents)}</td>
+          <td>${o.trial ? '<span class="badge badge-ok">1 месец безплатно</span>' : '<span class="muted">не</span>'}</td>
+          <td class="muted">${escapeHtml(o.label || '—')}</td>
+          <td>${o.activated ? '<span class="badge badge-ok">Активирана</span>' : '<span class="badge badge-warn">Чака плащане</span>'}</td>
+          <td class="muted">${fmtDate(o.updated_at)}</td>
+        </tr>`).join('') : emptyRow(7, 'Няма договорени оферти.');
+
+      const clicks = paymentsData.clicks || [];
+      clkB.innerHTML = clicks.length ? clicks.map(c => `
+        <tr>
+          <td class="muted" style="white-space:nowrap">${fmtDateTime(c.created_at)}</td>
+          <td>${escapeHtml(c.profile_name || '—')}<div class="person-sub">${escapeHtml(c.profile_id || '')}</div></td>
+          <td class="muted">${escapeHtml(c.user_email || '—')}</td>
+          <td>${escapeHtml(c.plan || '—')}</td>
+          <td>${c.interval === 'year' ? 'Годишно' : 'Месечно'}</td>
+          <td>${c.outcome === 'failed'
+                ? '<span class="badge badge-off">грешка</span>'
+                : '<span class="badge badge-staff">към Stripe</span>'}</td>
+          <td>${c.converted ? '<span class="badge badge-ok">✅ да</span>' : '<span class="badge badge-warn">не</span>'}</td>
+        </tr>`).join('') : emptyRow(7, 'Никой още не е натискал бутона за плащане.');
+    }
+
+    // ---------------------------------------------------------------
+    // Таб „Кой какво променя“
+    // ---------------------------------------------------------------
+    const ACTION_LABELS = { update: 'Редакция', insert: 'Създаване', delete: 'Изтриване' };
+
+    function renderActivityTable() {
+      const q = document.getElementById('activitySearch').value.trim().toLowerCase();
+      const rows = activityRows.filter(r => !q || [
+        r.actor_email, r.profile_name, r.profile_id,
+        (r.changed || []).map(fieldLabel).join(' ')
+      ].some(v => String(v || '').toLowerCase().includes(q)));
+
+      document.getElementById('activityCount').textContent =
+        `${rows.length} от ${activityRows.length} записа`;
+
+      const tbody = document.getElementById('activityTableBody');
+      if (!rows.length) {
+        tbody.innerHTML = emptyRow(5, activityRows.length
+          ? 'Няма съвпадения.'
+          : 'Още няма записани промени. Дневникът тръгва от момента, в който пуснеш admin-insights.sql.');
+        return;
+      }
+
+      tbody.innerHTML = rows.map(r => {
+        const badge = r.action === 'delete'
+          ? '<span class="badge badge-off">Изтриване</span>'
+          : r.action === 'insert'
+            ? '<span class="badge badge-ok">Създаване</span>'
+            : '<span class="badge badge-staff">Редакция</span>';
+        return `<tr>
+          <td class="muted" style="white-space:nowrap">${fmtDateTime(r.created_at)}<div class="person-sub">${ago(r.created_at)}</div></td>
+          <td>${escapeHtml(r.actor_email || 'система / SQL')}</td>
+          <td>${escapeHtml(r.profile_name || '—')}<div class="person-sub">${escapeHtml(r.profile_id || '')}</div></td>
+          <td>${badge}</td>
+          <td class="muted">${escapeHtml((r.changed || []).map(fieldLabel).join(', ') || '—')}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ---------------------------------------------------------------
+    // Форми (непроменена логика)
+    // ---------------------------------------------------------------
     function populateDropdowns() {
       const empSelect = document.getElementById('employeeSelect');
       const bossSelect = document.getElementById('bossSelect');
-      
+
       const currentEmpVal = empSelect.value;
       const currentBossVal = bossSelect.value;
 
@@ -647,6 +1983,7 @@
         alert('Бизнес офертата беше записана успешно!');
         document.getElementById('bizOfferForm').reset();
         document.getElementById('bizTrial').checked = true;
+        refreshAll();
       }
     }
 
@@ -666,7 +2003,7 @@
         alert('Грешка: ' + error.message);
       } else if (data && data.ok) {
         alert(data.message);
-        loadProfilesList();
+        refreshAll();
       } else {
         alert((data && data.message) || 'Неуспешен запис.');
       }
@@ -714,7 +2051,7 @@
       } else {
         alert("Клиентът беше създаден успешно!");
         document.getElementById('createClientForm').reset();
-        loadProfilesList();
+        refreshAll();
       }
     }
 
@@ -733,7 +2070,7 @@
         alert("Грешка при изтриване: " + error.message + "\n(Уверете се, че сте инсталирали SQL функцията delete_client в Supabase!)");
       } else {
         alert("Профилът беше изтрит успешно.");
-        loadProfilesList();
+        refreshAll();
       }
     }
 
@@ -761,7 +2098,7 @@
         alert("Грешка при запис на връзката: " + error.message);
       } else {
         alert("Връзката / ролята беше записана успешно!");
-        loadProfilesList();
+        refreshAll();
       }
     }
 

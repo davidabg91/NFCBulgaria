@@ -1914,6 +1914,13 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = 'login.html'; return; }
 
+        // Записваме намерението за плащане, за да се вижда в админ панела кой
+        // е тръгнал да плаща — включително когато не стигне до край. Ако
+        // миграцията admin-insights.sql не е пусната, просто се пропуска.
+        Promise.resolve(
+          supabaseClient.rpc('log_checkout_intent', { p_plan: plan, p_interval: billingInterval })
+        ).catch(() => {});
+
         let res;
         try {
           res = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-checkout-session`, {
@@ -1939,6 +1946,9 @@
         window.location.href = body.url;
       } catch (err) {
         console.error('checkout:', err);
+        Promise.resolve(
+          supabaseClient.rpc('log_checkout_intent', { p_plan: plan, p_interval: billingInterval, p_outcome: 'failed' })
+        ).catch(() => {});
         alert(err.message);
         buttons.forEach(b => b.disabled = false);
         btn.innerText = original;
