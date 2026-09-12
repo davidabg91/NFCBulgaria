@@ -84,9 +84,51 @@
       z-index: 0;
     }
 
-    /* Купеният фон си носи своя мрежа — тогава блобовете пречат. */
-    body.theme-custom::before,
-    body.theme-custom::after { content: none; }
+    /* При купен фон същите два псевдо-елемента сменят ролята си:
+       ::before носи рисунъка (мрежа, платка, контури…), а ::after —
+       голямото светещо петно. Така има реални елементи във фона,
+       без нито един допълнителен таг в HTML-а. */
+    body.theme-custom::before {
+      position: fixed;
+      inset: 0;
+      width: auto;
+      height: auto;
+      background: var(--theme-pattern, none);
+      background-size: var(--theme-pattern-size, auto);
+      pointer-events: none;
+      z-index: 0;
+      animation: themeDrift 90s linear infinite;
+    }
+
+    body.theme-custom::after {
+      position: fixed;
+      inset: 0;
+      width: auto;
+      height: auto;
+      background-image: var(--theme-accent, none);
+      background-position: var(--theme-accent-pos, 50% 50%);
+      background-size: var(--theme-accent-size, 500px 500px);
+      background-repeat: no-repeat;
+      pointer-events: none;
+      z-index: 0;
+      animation: themeBreathe 14s ease-in-out infinite;
+    }
+
+    @keyframes themeDrift {
+      from { background-position: 0 0; }
+      to   { background-position: var(--theme-drift, 0 0); }
+    }
+
+    @keyframes themeBreathe {
+      0%, 100% { opacity: 0.75; }
+      50%      { opacity: 1; }
+    }
+
+    /* Телефон на ток — без излишно движение. */
+    @media (prefers-reduced-motion: reduce) {
+      body.theme-custom::before,
+      body.theme-custom::after { animation: none; }
+    }
 
     /* Card Wrapper */
     .profile-container {

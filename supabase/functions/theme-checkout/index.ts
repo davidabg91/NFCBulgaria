@@ -21,13 +21,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 // платен. Сървърът е авторитетът. Ако добавиш фон в card-themes.js,
 // добави id-то и тук.
 const PAID_THEMES: Record<string, string> = {
-  obsidian:  'Обсидиан и злато',
-  platinum:  'Платина',
+  quantum:   'Квантум',
+  circuit:   'Платка',
+  blueprint: 'Чертеж',
+  forge:     'Ковачница',
+  meridian:  'Меридиан',
+  verdant:   'Върдант',
   aurora:    'Аврора',
-  emerald:   'Смарагд',
-  sapphire:  'Сапфир',
-  copper:    'Мед и графит',
-  noir:      'Ноар',
+  platinum:  'Платина',
   sandstone: 'Пясъчник',
 };
 

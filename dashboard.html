@@ -945,6 +945,10 @@
     .theme-flag.active { background: var(--primary); color: #0b0f19; }
     .theme-body { padding: 0.9rem 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
     .theme-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.95rem; }
+    .theme-industry {
+      font-size: 0.66rem; font-weight: 700; color: var(--primary);
+      letter-spacing: 0.03em; text-transform: uppercase;
+    }
     .theme-tagline { font-size: 0.74rem; color: var(--text-muted); line-height: 1.45; flex: 1; }
     .theme-btn {
       margin-top: 0.7rem;
@@ -1008,12 +1012,45 @@
       align-items: center;
       justify-content: center;
       min-height: 420px;
+      overflow: hidden;
       background-color: var(--bg);
       background-image: var(--theme-grain, none), var(--theme-page, none);
       background-size: 120px 120px, cover;
       background-repeat: repeat, no-repeat;
       transition: background-color 0.35s ease;
     }
+    /* Същите два слоя както при истинската визитка */
+    .tp-stage::before, .tp-stage::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .tp-stage::before {
+      background: var(--theme-pattern, none);
+      background-size: var(--theme-pattern-size, auto);
+      animation: themeDrift 90s linear infinite;
+    }
+    .tp-stage::after {
+      background-image: var(--theme-accent, none);
+      background-position: var(--theme-accent-pos, 50% 50%);
+      background-size: var(--theme-accent-size, 500px 500px);
+      background-repeat: no-repeat;
+      animation: themeBreathe 14s ease-in-out infinite;
+    }
+    @keyframes themeDrift {
+      from { background-position: 0 0; }
+      to   { background-position: var(--theme-drift, 0 0); }
+    }
+    @keyframes themeBreathe {
+      0%, 100% { opacity: 0.75; }
+      50%      { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tp-stage::before, .tp-stage::after { animation: none; }
+    }
+    .tp-card { position: relative; z-index: 2; }
+    .tp-close { z-index: 6; }
 
     /* Умалена, но вярна на оригинала визитка */
     .tp-card {
@@ -1105,6 +1142,10 @@
       font-size: 1.15rem; font-weight: 700; margin: 0;
     }
     .tp-side .tp-tag { font-size: 0.8rem; color: #9ca3af; line-height: 1.55; }
+    .tp-industry {
+      font-size: 0.72rem; font-weight: 700; color: #00f2ff;
+      letter-spacing: 0.03em; text-transform: uppercase;
+    }
     .tp-badge {
       align-self: flex-start;
       padding: 0.2rem 0.55rem; border-radius: 999px;
@@ -1185,6 +1226,7 @@
       <div class="tp-side">
         <span class="tp-badge" id="tpBadge"></span>
         <h4 id="tpThemeName"></h4>
+        <div class="tp-industry" id="tpIndustry"></div>
         <div class="tp-tag" id="tpTagline"></div>
         <ul class="tp-facts">
           <li>Сменя фона на визитката <strong>и</strong> на цялата страница, която вижда клиентът ти.</li>
@@ -2335,6 +2377,7 @@
             </div>
             <div class="theme-body">
               <div class="theme-name">${escapeHtml(t.name)}</div>
+              <div class="theme-industry">${escapeHtml(t.industry || '')}</div>
               <div class="theme-tagline">${escapeHtml(t.tagline)}</div>
               <button class="theme-btn look" type="button"
                       onclick="openThemePreview('${t.id}')">👁 Виж визитката си</button>
@@ -2490,6 +2533,7 @@
       else { ava.removeAttribute('src'); ava.style.visibility = 'hidden'; }
 
       document.getElementById('tpThemeName').textContent = theme.name;
+      document.getElementById('tpIndustry').textContent  = theme.industry || '';
       document.getElementById('tpTagline').textContent   = theme.tagline;
       document.getElementById('tpCounter').textContent   =
         `${list.findIndex(t => t.id === theme.id) + 1} от ${list.length} фона`;

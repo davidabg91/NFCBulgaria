@@ -6,9 +6,13 @@
  *   dashboard.html — галерията, от която клиентът избира / купува
  *   theme-checkout — валидира, че купуваният id съществува
  *
- * Всяка тема задава CSS променливите на страницата. Затова нито
- * profile.html, нито dashboard.html имат нужда от свой CSS за темите —
- * сменя се само стойността на променливите.
+ * Всяка платена тема се състои от четири слоя:
+ *   page     — преливащите се градиенти (основата)
+ *   pattern  — рисунъкът отгоре: мрежа, платки, контури, щрихи…
+ *   accent   — едно голямо светещо петно
+ *   grain    — фината зърнистост, обща за всички
+ * Плюс CSS променливите, по които се боядисват самата визитка и
+ * панелите ѝ, за да е всичко от един тон.
  *
  * ВАЖНО: `id`-тата се пазят в базата (profiles.theme_id) и в Stripe
  * metadata. Не ги преименувай — добавяй нови.
@@ -24,11 +28,84 @@
     // иначе шумът се вижда като квадратна мрежа върху светлите фонове.
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E\")";
 
+  // svg() спестява ръчното кодиране на # и кавичките в data URI-тата.
+  function svg(w, h, body) {
+    return "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' " +
+      "width='" + w + "' height='" + h + "' viewBox='0 0 " + w + " " + h + "'%3E" +
+      body + "%3C/svg%3E\")";
+  }
+
+  // ------------------------------------------------------------------
+  // Рисунъците
+  // ------------------------------------------------------------------
+
+  // Точкова решетка със светещ възел — „данни в пространството"
+  var P_QUANTUM = svg(48, 48,
+    "%3Ccircle cx='1.5' cy='1.5' r='1' fill='%23ffffff' opacity='0.22'/%3E" +
+    "%3Cpath d='M25 25h23M25 25v23' stroke='%237df9ff' stroke-width='0.4' opacity='0.16'/%3E" +
+    "%3Ccircle cx='25' cy='25' r='1.7' fill='%237df9ff' opacity='0.34'/%3E");
+
+  // Печатна платка — пътечки и запоени пъпки
+  var P_CIRCUIT = svg(90, 90,
+    "%3Cg fill='none' stroke='%2345f0a6' stroke-width='1' opacity='0.26'%3E" +
+    "%3Cpath d='M0 18h26v26h28M54 44V18h36M18 90V62h36v28M62 0v26M0 70h18'/%3E" +
+    "%3C/g%3E%3Cg fill='%2345f0a6' opacity='0.34'%3E" +
+    "%3Ccircle cx='26' cy='18' r='2.4'/%3E%3Ccircle cx='54' cy='44' r='2.4'/%3E" +
+    "%3Ccircle cx='54' cy='62' r='2.4'/%3E%3Ccircle cx='62' cy='26' r='2.4'/%3E" +
+    "%3Ccircle cx='18' cy='70' r='2.4'/%3E%3C/g%3E");
+
+  // Технически чертеж — фина мрежа с по-плътни главни линии
+  var P_BLUEPRINT = svg(100, 100,
+    "%3Cg stroke='%23bcd7ff' fill='none'%3E" +
+    "%3Cpath d='M20 0V100M40 0V100M60 0V100M80 0V100M0 20H100M0 40H100M0 60H100M0 80H100' stroke-width='0.6' opacity='0.30'/%3E" +
+    "%3Cpath d='M0 0V100M0 0H100' stroke-width='1.4' opacity='0.45'/%3E" +
+    "%3C/g%3E");
+
+  // Изохипси — плавни контури като на топографска карта
+  var P_TOPO = svg(140, 70,
+    "%3Cg fill='none' stroke='%232f7d5b' stroke-width='1.1' opacity='0.20'%3E" +
+    "%3Cpath d='M0 14q35-20 70 0t70 0'/%3E" +
+    "%3Cpath d='M0 34q35-20 70 0t70 0'/%3E" +
+    "%3Cpath d='M0 54q35-20 70 0t70 0'/%3E" +
+    "%3C/g%3E");
+
+  // Архитектурна мрежа — едра, светла, за печатните материали
+  var P_GRID_LIGHT = svg(120, 120,
+    "%3Cg stroke='%23161a21' fill='none' stroke-width='0.7' opacity='0.10'%3E" +
+    "%3Cpath d='M0 0H120M0 60H120M0 0V120M60 0V120'/%3E%3C/g%3E" +
+    "%3Ccircle cx='60' cy='60' r='1.3' fill='%23161a21' opacity='0.14'/%3E");
+
+  // Звезден прах за Аврора
+  var P_STARS = svg(160, 160,
+    "%3Cg fill='%23ffffff'%3E" +
+    "%3Ccircle cx='18' cy='26' r='1.1' opacity='0.45'/%3E%3Ccircle cx='96' cy='14' r='0.9' opacity='0.32'/%3E" +
+    "%3Ccircle cx='134' cy='58' r='1.2' opacity='0.40'/%3E%3Ccircle cx='52' cy='84' r='0.9' opacity='0.30'/%3E" +
+    "%3Ccircle cx='118' cy='118' r='1.1' opacity='0.38'/%3E%3Ccircle cx='28' cy='140' r='0.9' opacity='0.28'/%3E" +
+    "%3Ccircle cx='76' cy='48' r='0.7' opacity='0.24'/%3E%3Ccircle cx='150' cy='96' r='0.7' opacity='0.24'/%3E" +
+    "%3C/g%3E");
+
+  // Меки дюни за Пясъчник
+  var P_DUNES = svg(180, 90,
+    "%3Cg fill='none' stroke='%239c6644' stroke-width='1.2' opacity='0.16'%3E" +
+    "%3Cpath d='M0 22q45-24 90 0t90 0'/%3E" +
+    "%3Cpath d='M0 48q45-24 90 0t90 0'/%3E" +
+    "%3Cpath d='M0 74q45-24 90 0t90 0'/%3E" +
+    "%3C/g%3E");
+
+  // Диагонални щрихи — четкана стомана
+  var P_STEEL =
+    'repeating-linear-gradient(115deg, rgba(255,255,255,0) 0 7px, rgba(255,255,255,0.035) 7px 8px)';
+
+  // Тънки вертикални райета — костюмен плат
+  var P_PINSTRIPE =
+    'repeating-linear-gradient(90deg, rgba(216,184,119,0) 0 15px, rgba(216,184,119,0.09) 15px 16px)';
+
   var THEMES = [
     {
       id: 'midnight',
       name: 'Полунощен неон',
       tagline: 'Класиката на NFC Bulgaria — студено синьо и мента.',
+      industry: 'Универсален',
       free: true,
       light: false,
       vars: {
@@ -57,67 +134,226 @@
     },
 
     {
-      id: 'obsidian',
-      name: 'Обсидиан и злато',
-      tagline: 'Дълбоко черно с топло злато. За хора, които не се обясняват.',
+      id: 'quantum',
+      name: 'Квантум',
+      tagline: 'Мрежа от светещи възли в дълбок космос. За хора, които продават бъдеще.',
+      industry: 'Технологии · Стартъпи · Иновации',
       free: false,
       light: false,
       vars: {
-        bg: '#07070a',
-        cardBg: 'rgba(20, 19, 17, 0.78)',
-        primary: '#e2c275',
-        primaryGlow: 'rgba(226, 194, 117, 0.30)',
-        secondary: '#f4e6c1',
-        text: '#f6f2ea',
-        textMuted: '#a49b8a',
-        border: 'rgba(226, 194, 117, 0.14)',
-        glassBorder: 'rgba(226, 194, 117, 0.28)',
-        onPrimary: '#0a0908',
-        surface: 'rgba(255, 248, 232, 0.035)',
-        surfaceStrong: 'rgba(255, 248, 232, 0.08)',
-        inputBg: 'rgba(0, 0, 0, 0.35)',
-        primarySoft: 'rgba(226, 194, 117, 0.10)'
+        bg: '#05060f',
+        cardBg: 'rgba(14, 17, 38, 0.72)',
+        primary: '#7df9ff',
+        primaryGlow: 'rgba(125, 249, 255, 0.35)',
+        secondary: '#b98cff',
+        text: '#eef2ff',
+        textMuted: '#8f97c4',
+        border: 'rgba(255, 255, 255, 0.09)',
+        glassBorder: 'rgba(125, 249, 255, 0.26)',
+        onPrimary: '#04050d',
+        surface: 'rgba(255, 255, 255, 0.04)',
+        surfaceStrong: 'rgba(255, 255, 255, 0.08)',
+        inputBg: 'rgba(6, 8, 24, 0.65)',
+        primarySoft: 'rgba(125, 249, 255, 0.12)'
       },
       page:
-        'radial-gradient(1000px 700px at 78% -12%, rgba(226,194,117,0.16), transparent 58%),' +
-        'radial-gradient(700px 520px at 6% 104%, rgba(158,112,50,0.14), transparent 60%),' +
-        'linear-gradient(165deg, #0a0908 0%, #07070a 55%, #100d09 100%)',
-      cardShadow: '0 24px 60px rgba(0, 0, 0, 0.72)'
+        'radial-gradient(760px 560px at 16% -6%, rgba(185,140,255,0.26), transparent 60%),' +
+        'radial-gradient(820px 620px at 90% 106%, rgba(125,249,255,0.20), transparent 62%),' +
+        'linear-gradient(168deg, #05060f 0%, #080a20 60%, #05060f 100%)',
+      pattern: P_QUANTUM,
+      patternSize: '48px 48px',
+      drift: '48px 48px',
+      accent: 'radial-gradient(closest-side, rgba(125,249,255,0.16), transparent 70%)',
+      accentPos: '78% 18%',
+      accentSize: '520px 520px',
+      cardShadow: '0 24px 58px rgba(2, 3, 16, 0.72)'
     },
 
     {
-      id: 'platinum',
-      name: 'Платина',
-      tagline: 'Светла, тиха и много чиста. Идеална за печатни материали.',
+      id: 'circuit',
+      name: 'Платка',
+      tagline: 'Пътечки и запоени възли по тъмна плоскост. Направена за софтуерни хора.',
+      industry: 'ИТ · Софтуер · Електроника',
+      free: false,
+      light: false,
+      vars: {
+        bg: '#060b09',
+        cardBg: 'rgba(10, 21, 18, 0.76)',
+        primary: '#45f0a6',
+        primaryGlow: 'rgba(69, 240, 166, 0.32)',
+        secondary: '#7fe9ff',
+        text: '#e9fff6',
+        textMuted: '#7e9c90',
+        border: 'rgba(255, 255, 255, 0.08)',
+        glassBorder: 'rgba(69, 240, 166, 0.24)',
+        onPrimary: '#04100b',
+        surface: 'rgba(255, 255, 255, 0.035)',
+        surfaceStrong: 'rgba(255, 255, 255, 0.075)',
+        inputBg: 'rgba(4, 16, 12, 0.62)',
+        primarySoft: 'rgba(69, 240, 166, 0.11)'
+      },
+      page:
+        'radial-gradient(860px 620px at 86% -10%, rgba(69,240,166,0.16), transparent 58%),' +
+        'radial-gradient(720px 540px at 4% 104%, rgba(20,110,90,0.26), transparent 62%),' +
+        'linear-gradient(168deg, #040907 0%, #07120f 100%)',
+      pattern: P_CIRCUIT,
+      patternSize: '90px 90px',
+      drift: '90px 0px',
+      accent: 'radial-gradient(closest-side, rgba(69,240,166,0.14), transparent 72%)',
+      accentPos: '20% 82%',
+      accentSize: '480px 480px',
+      cardShadow: '0 22px 54px rgba(0, 14, 10, 0.7)'
+    },
+
+    {
+      id: 'blueprint',
+      name: 'Чертеж',
+      tagline: 'Милиметрова мрежа и жълт молив — езикът на проекта.',
+      industry: 'Строители · Архитекти · Проектанти',
+      free: false,
+      light: false,
+      vars: {
+        bg: '#062348',
+        cardBg: 'rgba(9, 42, 82, 0.74)',
+        primary: '#ffcc66',
+        primaryGlow: 'rgba(255, 204, 102, 0.30)',
+        secondary: '#ffe6b0',
+        text: '#eaf2ff',
+        textMuted: '#9fb6d4',
+        border: 'rgba(188, 215, 255, 0.16)',
+        glassBorder: 'rgba(255, 204, 102, 0.28)',
+        onPrimary: '#062348',
+        surface: 'rgba(188, 215, 255, 0.06)',
+        surfaceStrong: 'rgba(188, 215, 255, 0.12)',
+        inputBg: 'rgba(4, 26, 54, 0.6)',
+        primarySoft: 'rgba(255, 204, 102, 0.12)'
+      },
+      page:
+        'radial-gradient(900px 640px at 12% -8%, rgba(120,170,240,0.20), transparent 60%),' +
+        'radial-gradient(760px 560px at 94% 108%, rgba(255,204,102,0.12), transparent 62%),' +
+        'linear-gradient(168deg, #05203f 0%, #072a54 55%, #041b38 100%)',
+      pattern: P_BLUEPRINT,
+      patternSize: '100px 100px',
+      drift: '0px 100px',
+      accent: 'radial-gradient(closest-side, rgba(255,204,102,0.12), transparent 72%)',
+      accentPos: '86% 12%',
+      accentSize: '460px 460px',
+      cardShadow: '0 22px 54px rgba(2, 14, 30, 0.66)'
+    },
+
+    {
+      id: 'forge',
+      name: 'Ковачница',
+      tagline: 'Четкана стомана и жар от пещта. За хора, които произвеждат неща.',
+      industry: 'Производство · Индустрия · Енергетика',
+      free: false,
+      light: false,
+      vars: {
+        bg: '#100f0e',
+        cardBg: 'rgba(27, 24, 22, 0.78)',
+        primary: '#ff8a3d',
+        primaryGlow: 'rgba(255, 138, 61, 0.30)',
+        secondary: '#ffc189',
+        text: '#f7f1ea',
+        textMuted: '#a3968a',
+        border: 'rgba(255, 255, 255, 0.08)',
+        glassBorder: 'rgba(255, 138, 61, 0.26)',
+        onPrimary: '#0e0c0a',
+        surface: 'rgba(255, 245, 235, 0.04)',
+        surfaceStrong: 'rgba(255, 245, 235, 0.085)',
+        inputBg: 'rgba(0, 0, 0, 0.34)',
+        primarySoft: 'rgba(255, 138, 61, 0.12)'
+      },
+      page:
+        'radial-gradient(900px 620px at 50% 116%, rgba(255,110,40,0.26), transparent 62%),' +
+        'radial-gradient(700px 520px at 8% -8%, rgba(255,255,255,0.06), transparent 58%),' +
+        'linear-gradient(168deg, #14120f 0%, #0d0c0b 100%)',
+      pattern: P_STEEL,
+      patternSize: 'auto',
+      drift: '60px 0px',
+      accent: 'radial-gradient(closest-side, rgba(255,138,61,0.18), transparent 70%)',
+      accentPos: '50% 104%',
+      accentSize: '720px 420px',
+      cardShadow: '0 22px 54px rgba(8, 6, 5, 0.72)'
+    },
+
+    {
+      id: 'meridian',
+      name: 'Меридиан',
+      tagline: 'Костюмено райе и премерено злато. Сдържано, не крещящо.',
+      industry: 'Финанси · Право · Консултанти',
+      free: false,
+      light: false,
+      vars: {
+        bg: '#0a0f1c',
+        cardBg: 'rgba(16, 23, 41, 0.78)',
+        primary: '#d8b877',
+        primaryGlow: 'rgba(216, 184, 119, 0.28)',
+        secondary: '#e8d8ae',
+        text: '#f2f4f9',
+        textMuted: '#94a0b8',
+        border: 'rgba(216, 184, 119, 0.14)',
+        glassBorder: 'rgba(216, 184, 119, 0.26)',
+        onPrimary: '#0a0f1c',
+        surface: 'rgba(255, 255, 255, 0.035)',
+        surfaceStrong: 'rgba(255, 255, 255, 0.075)',
+        inputBg: 'rgba(6, 10, 20, 0.6)',
+        primarySoft: 'rgba(216, 184, 119, 0.11)'
+      },
+      page:
+        'radial-gradient(900px 640px at 82% -10%, rgba(216,184,119,0.16), transparent 58%),' +
+        'radial-gradient(760px 560px at 6% 106%, rgba(30,52,96,0.40), transparent 62%),' +
+        'linear-gradient(168deg, #080d19 0%, #0c1426 100%)',
+      pattern: P_PINSTRIPE,
+      patternSize: 'auto',
+      drift: '32px 0px',
+      accent: 'radial-gradient(closest-side, rgba(216,184,119,0.12), transparent 72%)',
+      accentPos: '84% 16%',
+      accentSize: '500px 500px',
+      cardShadow: '0 22px 54px rgba(2, 6, 16, 0.7)'
+    },
+
+    {
+      id: 'verdant',
+      name: 'Върдант',
+      tagline: 'Светла, с меки контури като на карта. Спокойна и чиста.',
+      industry: 'Здраве · Екология · Земеделие',
       free: false,
       light: true,
       vars: {
-        bg: '#eef0f4',
-        cardBg: 'rgba(255, 255, 255, 0.86)',
-        primary: '#3d5a80',
-        primaryGlow: 'rgba(61, 90, 128, 0.22)',
-        secondary: '#7b8fa8',
-        text: '#161a21',
-        textMuted: '#5d6675',
-        border: 'rgba(22, 26, 33, 0.10)',
-        glassBorder: 'rgba(61, 90, 128, 0.22)',
+        bg: '#edf4ef',
+        cardBg: 'rgba(255, 255, 255, 0.88)',
+        primary: '#2f7d5b',
+        primaryGlow: 'rgba(47, 125, 91, 0.22)',
+        secondary: '#6cbb95',
+        text: '#14251d',
+        textMuted: '#55695f',
+        border: 'rgba(20, 37, 29, 0.10)',
+        glassBorder: 'rgba(47, 125, 91, 0.24)',
         onPrimary: '#ffffff',
-        surface: 'rgba(22, 26, 33, 0.045)',
-        surfaceStrong: 'rgba(22, 26, 33, 0.09)',
+        surface: 'rgba(20, 37, 29, 0.045)',
+        surfaceStrong: 'rgba(20, 37, 29, 0.09)',
         inputBg: 'rgba(255, 255, 255, 0.92)',
-        primarySoft: 'rgba(61, 90, 128, 0.10)'
+        primarySoft: 'rgba(47, 125, 91, 0.10)'
       },
       page:
-        'radial-gradient(900px 620px at 10% -10%, rgba(61,90,128,0.16), transparent 60%),' +
-        'radial-gradient(820px 560px at 96% 110%, rgba(123,143,168,0.20), transparent 62%),' +
-        'linear-gradient(160deg, #f7f8fa 0%, #e9ecf1 100%)',
-      cardShadow: '0 22px 48px rgba(22, 26, 33, 0.14)'
+        'radial-gradient(900px 620px at 10% -10%, rgba(108,187,149,0.34), transparent 60%),' +
+        'radial-gradient(820px 560px at 96% 110%, rgba(47,125,91,0.20), transparent 62%),' +
+        'linear-gradient(160deg, #f5faf6 0%, #e6efe8 100%)',
+      pattern: P_TOPO,
+      patternSize: '140px 70px',
+      drift: '140px 0px',
+      accent: 'radial-gradient(closest-side, rgba(47,125,91,0.10), transparent 72%)',
+      accentPos: '18% 84%',
+      accentSize: '520px 520px',
+      cardShadow: '0 22px 48px rgba(20, 50, 36, 0.14)'
     },
 
     {
       id: 'aurora',
       name: 'Аврора',
-      tagline: 'Виолетово и циан, преливащи като северно сияние.',
+      tagline: 'Виолетово и циан, преливащи като северно сияние, със звезден прах.',
+      industry: 'Творчески · Маркетинг · Медии',
       free: false,
       light: false,
       vars: {
@@ -141,129 +377,56 @@
         'radial-gradient(820px 600px at 88% 20%, rgba(67,223,232,0.18), transparent 58%),' +
         'radial-gradient(760px 560px at 60% 112%, rgba(224,86,190,0.16), transparent 60%),' +
         'linear-gradient(170deg, #080a1c 0%, #0c0a22 100%)',
+      pattern: P_STARS,
+      patternSize: '160px 160px',
+      drift: '160px 160px',
+      accent: 'radial-gradient(closest-side, rgba(67,223,232,0.12), transparent 72%)',
+      accentPos: '88% 22%',
+      accentSize: '520px 520px',
       cardShadow: '0 24px 58px rgba(6, 4, 24, 0.68)'
     },
 
     {
-      id: 'emerald',
-      name: 'Смарагд',
-      tagline: 'Тъмнозелено с нефритов акцент. Спокойно и скъпо.',
+      id: 'platinum',
+      name: 'Платина',
+      tagline: 'Светла, тиха и много чиста, с едва доловима архитектурна мрежа.',
+      industry: 'Корпоративен · Печатни материали',
       free: false,
-      light: false,
+      light: true,
       vars: {
-        bg: '#05110d',
-        cardBg: 'rgba(11, 30, 24, 0.74)',
-        primary: '#35e0a1',
-        primaryGlow: 'rgba(53, 224, 161, 0.32)',
-        secondary: '#b9f2d8',
-        text: '#eef7f2',
-        textMuted: '#8aa79b',
-        border: 'rgba(255, 255, 255, 0.08)',
-        glassBorder: 'rgba(53, 224, 161, 0.22)',
-        onPrimary: '#04100c',
-        surface: 'rgba(255, 255, 255, 0.035)',
-        surfaceStrong: 'rgba(255, 255, 255, 0.075)',
-        inputBg: 'rgba(4, 20, 15, 0.6)',
-        primarySoft: 'rgba(53, 224, 161, 0.10)'
+        bg: '#eef0f4',
+        cardBg: 'rgba(255, 255, 255, 0.86)',
+        primary: '#3d5a80',
+        primaryGlow: 'rgba(61, 90, 128, 0.22)',
+        secondary: '#7b8fa8',
+        text: '#161a21',
+        textMuted: '#5d6675',
+        border: 'rgba(22, 26, 33, 0.10)',
+        glassBorder: 'rgba(61, 90, 128, 0.22)',
+        onPrimary: '#ffffff',
+        surface: 'rgba(22, 26, 33, 0.045)',
+        surfaceStrong: 'rgba(22, 26, 33, 0.09)',
+        inputBg: 'rgba(255, 255, 255, 0.92)',
+        primarySoft: 'rgba(61, 90, 128, 0.10)'
       },
       page:
-        'radial-gradient(900px 640px at 84% -10%, rgba(53,224,161,0.20), transparent 58%),' +
-        'radial-gradient(760px 540px at 4% 106%, rgba(16,120,90,0.26), transparent 62%),' +
-        'linear-gradient(165deg, #04100c 0%, #061912 100%)',
-      cardShadow: '0 22px 54px rgba(0, 20, 14, 0.66)'
-    },
-
-    {
-      id: 'sapphire',
-      name: 'Сапфир',
-      tagline: 'Корпоративно синьо без да е скучно. Работи навсякъде.',
-      free: false,
-      light: false,
-      vars: {
-        bg: '#040a19',
-        cardBg: 'rgba(13, 25, 48, 0.74)',
-        primary: '#5b9dff',
-        primaryGlow: 'rgba(91, 157, 255, 0.34)',
-        secondary: '#b9d4ff',
-        text: '#eef3fb',
-        textMuted: '#8fa2c2',
-        border: 'rgba(255, 255, 255, 0.08)',
-        glassBorder: 'rgba(91, 157, 255, 0.22)',
-        onPrimary: '#03081a',
-        surface: 'rgba(255, 255, 255, 0.04)',
-        surfaceStrong: 'rgba(255, 255, 255, 0.08)',
-        inputBg: 'rgba(4, 12, 32, 0.6)',
-        primarySoft: 'rgba(91, 157, 255, 0.13)'
-      },
-      page:
-        'radial-gradient(920px 640px at 14% -8%, rgba(91,157,255,0.26), transparent 58%),' +
-        'radial-gradient(780px 560px at 92% 104%, rgba(28,64,138,0.34), transparent 62%),' +
-        'linear-gradient(165deg, #030818 0%, #061334 100%)',
-      cardShadow: '0 22px 54px rgba(2, 8, 26, 0.7)'
-    },
-
-    {
-      id: 'copper',
-      name: 'Мед и графит',
-      tagline: 'Топъл метал върху студен графит. Занаятчийски, не крещящ.',
-      free: false,
-      light: false,
-      vars: {
-        bg: '#121110',
-        cardBg: 'rgba(28, 25, 23, 0.76)',
-        primary: '#e08a5b',
-        primaryGlow: 'rgba(224, 138, 91, 0.30)',
-        secondary: '#f2c3a3',
-        text: '#f5efe9',
-        textMuted: '#a4968b',
-        border: 'rgba(255, 255, 255, 0.08)',
-        glassBorder: 'rgba(224, 138, 91, 0.24)',
-        onPrimary: '#0f0e0d',
-        surface: 'rgba(255, 245, 235, 0.035)',
-        surfaceStrong: 'rgba(255, 245, 235, 0.08)',
-        inputBg: 'rgba(0, 0, 0, 0.32)',
-        primarySoft: 'rgba(224, 138, 91, 0.12)'
-      },
-      page:
-        'radial-gradient(880px 620px at 88% -8%, rgba(224,138,91,0.22), transparent 58%),' +
-        'radial-gradient(720px 540px at 8% 108%, rgba(120,66,40,0.26), transparent 62%),' +
-        'linear-gradient(165deg, #0f0e0d 0%, #191513 100%)',
-      cardShadow: '0 22px 54px rgba(10, 8, 7, 0.7)'
-    },
-
-    {
-      id: 'noir',
-      name: 'Ноар',
-      tagline: 'Само черно, бяло и сиво. Типографията говори.',
-      free: false,
-      light: false,
-      vars: {
-        bg: '#0c0c0d',
-        cardBg: 'rgba(24, 24, 26, 0.78)',
-        primary: '#ededed',
-        primaryGlow: 'rgba(255, 255, 255, 0.20)',
-        secondary: '#9d9d9f',
-        text: '#f7f7f7',
-        textMuted: '#8e8e90',
-        border: 'rgba(255, 255, 255, 0.10)',
-        glassBorder: 'rgba(255, 255, 255, 0.22)',
-        onPrimary: '#0c0c0d',
-        surface: 'rgba(255, 255, 255, 0.045)',
-        surfaceStrong: 'rgba(255, 255, 255, 0.09)',
-        inputBg: 'rgba(0, 0, 0, 0.35)',
-        primarySoft: 'rgba(255, 255, 255, 0.08)'
-      },
-      page:
-        'radial-gradient(900px 640px at 22% -10%, rgba(255,255,255,0.12), transparent 58%),' +
-        'radial-gradient(760px 560px at 90% 110%, rgba(255,255,255,0.07), transparent 60%),' +
-        'linear-gradient(165deg, #0a0a0b 0%, #111112 100%)',
-      cardShadow: '0 22px 54px rgba(0, 0, 0, 0.75)'
+        'radial-gradient(900px 620px at 10% -10%, rgba(61,90,128,0.16), transparent 60%),' +
+        'radial-gradient(820px 560px at 96% 110%, rgba(123,143,168,0.20), transparent 62%),' +
+        'linear-gradient(160deg, #f7f8fa 0%, #e9ecf1 100%)',
+      pattern: P_GRID_LIGHT,
+      patternSize: '120px 120px',
+      drift: '120px 0px',
+      accent: 'radial-gradient(closest-side, rgba(61,90,128,0.09), transparent 72%)',
+      accentPos: '14% 86%',
+      accentSize: '520px 520px',
+      cardShadow: '0 22px 48px rgba(22, 26, 33, 0.14)'
     },
 
     {
       id: 'sandstone',
       name: 'Пясъчник',
-      tagline: 'Топла светла тема с кафяв акцент. Мека за окото.',
+      tagline: 'Топла светла тема с кафяв акцент и меки дюни. Мека за окото.',
+      industry: 'Занаяти · Хотелиерство · Ресторанти',
       free: false,
       light: true,
       vars: {
@@ -286,6 +449,12 @@
         'radial-gradient(880px 620px at 14% -10%, rgba(195,154,118,0.32), transparent 60%),' +
         'radial-gradient(800px 560px at 94% 108%, rgba(156,102,68,0.20), transparent 62%),' +
         'linear-gradient(160deg, #faf5ed 0%, #efe5d6 100%)',
+      pattern: P_DUNES,
+      patternSize: '180px 90px',
+      drift: '180px 0px',
+      accent: 'radial-gradient(closest-side, rgba(156,102,68,0.10), transparent 72%)',
+      accentPos: '86% 84%',
+      accentSize: '540px 540px',
       cardShadow: '0 22px 48px rgba(60, 45, 32, 0.16)'
     }
   ];
@@ -310,7 +479,9 @@
     '--on-primary', '--surface', '--surface-strong', '--input-bg',
     '--primary-soft', '--theme-page', '--theme-card-shadow', '--theme-grain',
     '--btn-save-glow', '--lang-bg', '--lang-active-glow', '--hover-text',
-    '--avatar-glow'
+    '--avatar-glow',
+    '--theme-pattern', '--theme-pattern-size', '--theme-drift',
+    '--theme-accent', '--theme-accent-pos', '--theme-accent-size'
   ];
 
   /* Задава CSS променливите на дадения елемент (обикновено
@@ -332,6 +503,7 @@
       PROPS.forEach(function (p) { s.removeProperty(p); });
       return t;
     }
+
     s.setProperty('--bg', v.bg);
     s.setProperty('--card-bg', v.cardBg);
     s.setProperty('--primary', v.primary);
@@ -354,16 +526,34 @@
     s.setProperty('--theme-page', t.page);
     s.setProperty('--theme-card-shadow', t.cardShadow);
     s.setProperty('--theme-grain', GRAIN);
+    s.setProperty('--theme-pattern', t.pattern || 'none');
+    s.setProperty('--theme-pattern-size', t.patternSize || 'auto');
+    s.setProperty('--theme-drift', t.drift || '0 0');
+    s.setProperty('--theme-accent', t.accent || 'none');
+    s.setProperty('--theme-accent-pos', t.accentPos || '50% 50%');
+    s.setProperty('--theme-accent-size', t.accentSize || '500px 500px');
     return t;
   }
 
-  /* Малко квадратче за галерията — същите цветове, умалена визитка. */
+  /* Малко квадратче за галерията — същите слоеве, умалена визитка. */
   function previewHtml(id) {
     var t = getTheme(id);
     var v = t.vars;
-    return '' +
-      '<div style="position:absolute;inset:0;background:' + t.page + ';"></div>' +
-      '<div style="position:absolute;inset:0;background:' + GRAIN + ';opacity:0.9;"></div>' +
+    var layers = '<div style="position:absolute;inset:0;background:' + t.page + ';"></div>';
+
+    if (t.pattern) {
+      layers += '<div style="position:absolute;inset:0;background-image:' + t.pattern +
+        ';background-size:' + (t.patternSize || 'auto') + ';"></div>';
+    }
+    if (t.accent) {
+      layers += '<div style="position:absolute;inset:0;background-image:' + t.accent +
+        ';background-position:' + (t.accentPos || '50% 50%') +
+        ';background-size:' + (t.accentSize || '500px 500px') +
+        ';background-repeat:no-repeat;"></div>';
+    }
+    layers += '<div style="position:absolute;inset:0;background:' + GRAIN + ';opacity:0.9;"></div>';
+
+    return layers +
       '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);' +
       'width:62%;height:72%;border-radius:14px;background:' + v.cardBg + ';' +
       'border:1px solid ' + v.border + ';box-shadow:' + t.cardShadow + ';' +
