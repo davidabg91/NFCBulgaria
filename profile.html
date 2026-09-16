@@ -404,6 +404,13 @@
       margin-top: 0;
     }
 
+    /* Лого, правено за тъмен фон (бяло или много светло), се слива със
+       светлата подложка. При него я махаме — логото се чете и без нея,
+       направо върху тъмната плочка. Класът се слага от applyLogoPlate. */
+    body.has-company-logo.logo-is-light .link-item-website .website-logo-bg {
+      background-color: transparent;
+    }
+
     /* Lead Capture Section */
     .lead-section {
       background: var(--surface, rgba(255, 255, 255, 0.02));
@@ -1025,6 +1032,7 @@
         // Класът пуска фирмения банер. Слага се само тук, тоест профил без
         // качено лого остава точно както си е бил — без празна подложка.
         document.body.classList.add('has-company-logo');
+        applyLogoPlate(data.company_logo);
       }
 
       // Google Maps link
@@ -1241,6 +1249,43 @@
     function vcardN(full) {
       const n = splitName(full);
       return [n.family, n.given, n.middle, n.prefix, ''].map(vcEscape).join(';');
+    }
+
+    // Подложката под логото е светла, за да се четат тъмните лога. Но лого,
+    // правено за тъмен фон, се слива с нея. Затова мерим светлотата на самото
+    // лого и на светлите махаме подложката — те се четат и без нея.
+    // Ако меренето не стане (чужд домейн без CORS цапа canvas-а), оставаме на
+    // светлата подложка: тя е права за огромната част от логата.
+    function applyLogoPlate(url) {
+      if (!url) return;
+      const img = new Image();
+      if (!/^data:/i.test(url)) img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        try {
+          if (!img.naturalWidth || !img.naturalHeight) return;
+          // Смалено копие — за средна светлота повече пиксели не помагат.
+          const W = 48;
+          const H = Math.max(1, Math.round(W * img.naturalHeight / img.naturalWidth));
+          const canvas = document.createElement('canvas');
+          canvas.width = W;
+          canvas.height = H;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, W, H);
+          const px = ctx.getImageData(0, 0, W, H).data;
+          let sum = 0, n = 0;
+          for (let i = 0; i < px.length; i += 4) {
+            // Прозрачното е фон, не е част от логото.
+            if (px[i + 3] < 32) continue;
+            sum += (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
+            n++;
+          }
+          if (!n) return;
+          if (sum / n > 0.62) document.body.classList.add('logo-is-light');
+        } catch (err) {
+          /* оставаме на светлата подложка */
+        }
+      };
+      img.src = url;
     }
 
     // Снимката от визитката влиза и в контакта на телефона. Подготвя се
