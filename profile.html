@@ -357,6 +357,53 @@
       opacity: 0.2;
     }
 
+    /* --- Фирмен банер --------------------------------------------------
+       Важи само когато профилът има качено лого (класът се слага в JS-а).
+       Преди логото беше фон с cover и opacity .12: широките лога се режеха
+       отстрани, а на тъмния фон едва се виждаха. Сега логото е самото
+       съдържание на плочката — contain, за да се побира цяло независимо от
+       пропорциите му, върху светла подложка, за да има контраст и когато
+       логото е тъмно. */
+    body.has-company-logo .link-item-website {
+      padding: 0.85rem 0.9rem 0.7rem;
+      gap: 0.5rem;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+    }
+
+    /* глобусът и надписът „Уебсайт на компанията“ отпадат — логото казва
+       същото и се бие с тях за място */
+    body.has-company-logo .link-item-website .link-icon,
+    body.has-company-logo .link-item-website .link-label {
+      display: none;
+    }
+
+    body.has-company-logo .link-item-website .website-logo-bg {
+      position: relative;
+      inset: auto;
+      flex: 0 0 auto;
+      width: 100%;
+      height: 62px;
+      opacity: 1;
+      background-color: #fff;
+      background-size: contain;
+      background-origin: content-box;
+      padding: 8px 14px;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+    }
+
+    /* без този ред hover-ът по-горе избледнява логото до 0.2 */
+    body.has-company-logo .link-item-website:hover .website-logo-bg,
+    body.has-company-logo .link-item-website:active .website-logo-bg {
+      opacity: 1;
+      transform: scale(1.02);
+    }
+
+    body.has-company-logo .link-item-website .link-value {
+      opacity: 0.85;
+      margin-top: 0;
+    }
+
     /* Lead Capture Section */
     .lead-section {
       background: var(--surface, rgba(255, 255, 255, 0.02));
@@ -975,6 +1022,9 @@
       // Company logo as background on website button
       if (data.company_logo) {
         document.getElementById('websiteLogoBg').style.backgroundImage = `url('${data.company_logo}')`;
+        // Класът пуска фирмения банер. Слага се само тук, тоест профил без
+        // качено лого остава точно както си е бил — без празна подложка.
+        document.body.classList.add('has-company-logo');
       }
 
       // Google Maps link
