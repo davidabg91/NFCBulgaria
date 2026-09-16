@@ -884,6 +884,11 @@ window.I18N_DATA = {
     "този екран": "this screen",
     "и отворете Вариант C. Дръжте картината в кадър, докато се раздвижи.": "and open Option C. Keep the picture in frame until it starts moving.",
     "Отвори Вариант C": "Open Option C",
+    // Демо панел — етикети, сглобени в JS
+    "Запази": "Save",
+    "сканирания": "scans",
+    "контакти": "contacts",
+    "Добави служител": "Add employee",
 },
   ro: {
     "(вашето лого, продукти и цветове) и двуканална технология (NFC + QR код).": "(logoul, produsele și culorile tale) și tehnologie pe două canale (NFC + cod QR).",
@@ -1762,6 +1767,11 @@ window.I18N_DATA = {
     "този екран": "acest ecran",
     "и отворете Вариант C. Дръжте картината в кадър, докато се раздвижи.": "și deschideți Varianta C. Țineți imaginea în cadru până începe să se miște.",
     "Отвори Вариант C": "Deschide Varianta C",
+    // Демо панел — етикети, сглобени в JS
+    "Запази": "Salvează",
+    "сканирания": "scanări",
+    "контакти": "contacte",
+    "Добави служител": "Adaugă angajat",
 }
 };
 
@@ -1782,6 +1792,7 @@ window.I18N_PATTERNS = {
     [new RegExp("^Събрани контакти от (.+) \\(Демо\\)$"), "Contacts collected by $1 (Demo)"],
     [new RegExp("^Събрани контакти от (.+)$"), "Contacts collected by $1"],
     [new RegExp("^Активни карти: (\\d+) от (\\d+) в абонамента$"), "Active cards: $1 of $2 in the subscription"],
+    [new RegExp("^Свободни места: (\\d+)$"), "Free seats: $1"],
   ],
   ro: [
     [new RegExp("^(\\d+) места · (\\d+) €/мес\\. · първи месец безплатно$"), "$1 locuri · $2 €/lună · prima lună gratuit"],
@@ -1798,5 +1809,6 @@ window.I18N_PATTERNS = {
     [new RegExp("^Събрани контакти от (.+) \\(Демо\\)$"), "Contacte colectate de $1 (Demo)"],
     [new RegExp("^Събрани контакти от (.+)$"), "Contacte colectate de $1"],
     [new RegExp("^Активни карти: (\\d+) от (\\d+) в абонамента$"), "Carduri active: $1 din $2 în abonament"],
+    [new RegExp("^Свободни места: (\\d+)$"), "Locuri libere: $1"],
   ]
 };
