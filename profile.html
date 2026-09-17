@@ -382,7 +382,14 @@
       inset: auto;
       flex: 0 0 auto;
       width: 100%;
-      height: 62px;
+      /* Височината следва широчината на плочката, за да опира логото в
+         страните ѝ, а не в тавана. С фиксирана височина се получаваше
+         201x46 и на телефон, и на десктоп — таванът беше ограничителят и
+         логото стоеше дребно насред празна подложка. min-height хваща
+         браузърите без aspect-ratio. */
+      height: auto;
+      aspect-ratio: 3.2 / 1;
+      min-height: 62px;
       opacity: 1;
       background-color: #fff;
       background-size: contain;
