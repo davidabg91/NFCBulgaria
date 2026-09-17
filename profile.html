@@ -362,12 +362,24 @@
        Преди логото беше фон с cover и opacity .12: широките лога се режеха
        отстрани, а на тъмния фон едва се виждаха. Сега логото е самото
        съдържание на плочката — contain, за да се побира цяло независимо от
-       пропорциите му, върху светла подложка, за да има контраст и когато
-       логото е тъмно. */
+       пропорциите му, върху бяла плочка, за да има контраст и когато логото
+       е тъмно. */
     body.has-company-logo .link-item-website {
-      padding: 0.85rem 0.9rem 0.7rem;
-      gap: 0.5rem;
+      padding: 0.75rem 0.75rem 0.55rem;
+      gap: 0.35rem;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+      /* Бялото е самата плочка, от край до край. Преди стоеше като по-малък
+         бял правоъгълник в тъмна рамка и ядеше от мястото на логото. */
+      background: #fff;
+      border-color: rgba(0, 0, 0, 0.10);
+    }
+
+    /* Hover-ът по подразбиране осветлява плочката — върху бяло не личи,
+       само я посивява. Тук само рамката потъмнява. */
+    body.has-company-logo .link-item-website:hover,
+    body.has-company-logo .link-item-website:active {
+      background: #fff;
+      border-color: rgba(0, 0, 0, 0.18);
     }
 
     /* глобусът и надписът „Уебсайт на компанията“ отпадат — логото казва
@@ -388,14 +400,11 @@
          логото стоеше дребно насред празна подложка. min-height хваща
          браузърите без aspect-ratio. */
       height: auto;
-      aspect-ratio: 3.2 / 1;
+      aspect-ratio: 3.4 / 1;
       min-height: 62px;
       opacity: 1;
-      background-color: #fff;
+      background-color: transparent;
       background-size: contain;
-      background-origin: content-box;
-      padding: 8px 14px;
-      border-radius: 10px;
       transition: transform 0.3s ease;
     }
 
@@ -406,16 +415,26 @@
       transform: scale(1.02);
     }
 
+    /* адресът вече стои върху бялото */
     body.has-company-logo .link-item-website .link-value {
-      opacity: 0.85;
+      color: #55606b;
+      opacity: 1;
       margin-top: 0;
     }
 
     /* Лого, правено за тъмен фон (бяло или много светло), се слива със
        светлата подложка. При него я махаме — логото се чете и без нея,
        направо върху тъмната плочка. Класът се слага от applyLogoPlate. */
-    body.has-company-logo.logo-is-light .link-item-website .website-logo-bg {
-      background-color: transparent;
+    body.has-company-logo.logo-is-light .link-item-website,
+    body.has-company-logo.logo-is-light .link-item-website:hover,
+    body.has-company-logo.logo-is-light .link-item-website:active {
+      background: var(--surface, rgba(255, 255, 255, 0.03));
+      border-color: var(--border);
+    }
+
+    body.has-company-logo.logo-is-light .link-item-website .link-value {
+      color: var(--text-muted);
+      opacity: 0.85;
     }
 
     /* Lead Capture Section */
