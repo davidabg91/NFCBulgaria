@@ -388,6 +388,55 @@
       opacity: 0.2;
     }
 
+    /* --- Фирмен банер ----------------------------------------------------
+       Същият вид като на истинските визитки (profile.html). Логото е
+       съдържанието на плочката — contain, за да се побира цяло — върху
+       бяла плочка от край до край, за да има контраст. */
+    body.has-company-logo .link-item-website {
+      padding: 0.75rem 0.75rem 0.55rem;
+      gap: 0.35rem;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+      background: #fff;
+      border-color: rgba(0, 0, 0, 0.10);
+    }
+
+    body.has-company-logo .link-item-website:hover,
+    body.has-company-logo .link-item-website:active {
+      background: #fff;
+      border-color: rgba(0, 0, 0, 0.18);
+    }
+
+    body.has-company-logo .link-item-website .link-icon,
+    body.has-company-logo .link-item-website .link-label {
+      display: none;
+    }
+
+    body.has-company-logo .link-item-website .website-logo-bg {
+      position: relative;
+      inset: auto;
+      flex: 0 0 auto;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 3.4 / 1;
+      min-height: 62px;
+      opacity: 1;
+      background-color: transparent;
+      background-size: contain;
+      transition: transform 0.3s ease;
+    }
+
+    body.has-company-logo .link-item-website:hover .website-logo-bg,
+    body.has-company-logo .link-item-website:active .website-logo-bg {
+      opacity: 1;
+      transform: scale(1.02);
+    }
+
+    body.has-company-logo .link-item-website .link-value {
+      color: #55606b;
+      opacity: 1;
+      margin-top: 0;
+    }
+
     /* Toast Notification */
     .toast {
       position: fixed;
@@ -552,7 +601,7 @@
     .work-schedule { color: var(--text-muted); font-size: 0.82rem; }
   </style>
 </head>
-<body class="has-demo-banner">
+<body class="has-demo-banner has-company-logo">
 
   <!-- Demo Banner pointing to admin panel -->
   <div class="demo-top-banner">
@@ -640,7 +689,7 @@
       </a>
 
       <a href="https://www.arhproekt.bg" target="_blank" class="link-item link-item-website" style="grid-column: span 2;" id="websiteLink">
-        <div class="website-logo-bg" style="background-image: url('assets/demo-logo-arhproekt.png');"></div>
+        <div class="website-logo-bg" style="background-image: url('assets/demo-logo-arhproekt-banner.png');"></div>
         <div class="link-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         </div>
