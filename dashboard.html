@@ -535,6 +535,22 @@
     .add-emp p { font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.9rem; line-height: 1.5; }
     .add-emp-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
     .add-emp-row .form-input { flex: 1; min-width: 210px; }
+
+    /* Преводи на длъжност и описание (EN / DE / RO) */
+    .i18n-box { background: rgba(255,255,255,0.02); padding: 1rem 1.2rem; border-radius: 12px; border: 1px solid var(--border); }
+    .i18n-box summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; list-style: none; display: flex; align-items: center; gap: 8px; }
+    .i18n-box summary::-webkit-details-marker { display: none; }
+    .i18n-box summary::after { content: '▾'; margin-left: auto; transition: transform .2s; color: var(--text-muted); }
+    .i18n-box[open] summary::after { transform: rotate(180deg); }
+    .i18n-hint { font-size: 0.78rem; color: var(--text-muted); margin: 0.7rem 0 0.9rem; line-height: 1.5; }
+    .i18n-tabs { display: flex; gap: 6px; margin-bottom: 0.9rem; flex-wrap: wrap; }
+    .i18n-tab { background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 8px; padding: 0.35rem 0.8rem; font: inherit; font-size: 0.8rem; cursor: pointer; }
+    .i18n-tab.active { border-color: var(--primary); color: var(--primary); background: rgba(0, 242, 255, 0.06); }
+    .i18n-tab .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin-left: 6px; vertical-align: middle; visibility: hidden; }
+    .i18n-tab.filled .dot { visibility: visible; }
+    .i18n-pane { display: none; }
+    .i18n-pane.active { display: block; }
+    .i18n-pane .form-group { margin-bottom: 0.8rem; }
     .add-emp-btn {
       padding: 0 1.3rem;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -738,6 +754,49 @@
           <div class="form-group full-width">
             <label for="bioInput">📝 Кратко описание на дейността (незадължително)</label>
             <textarea id="bioInput" class="form-input" rows="3" placeholder="Описание на фирмената дейност, специализация или услуги..." style="resize: vertical; min-height: 80px;"></textarea>
+          </div>
+
+          <!-- Преводи: показват се във визитката при смяна на езика (profiles.i18n) -->
+          <div class="form-group full-width">
+            <details class="i18n-box" id="i18nBox">
+              <summary>🌐 Длъжност и описание на други езици (EN / DE / RO)</summary>
+              <p class="i18n-hint">Когато посетителят смени езика на визитката, ще вижда текстовете оттук. Ако поле остане празно, длъжността се превежда автоматично (ако е от често срещаните), а описанието се показва на български.</p>
+              <div class="i18n-tabs">
+                <button type="button" class="i18n-tab active" data-lang="en" onclick="switchI18nTab('en')" data-i18n-skip>EN · English<span class="dot"></span></button>
+                <button type="button" class="i18n-tab" data-lang="de" onclick="switchI18nTab('de')" data-i18n-skip>DE · Deutsch<span class="dot"></span></button>
+                <button type="button" class="i18n-tab" data-lang="ro" onclick="switchI18nTab('ro')" data-i18n-skip>RO · Română<span class="dot"></span></button>
+              </div>
+              <div class="i18n-pane active" data-lang="en">
+                <div class="form-group">
+                  <label for="titleInput_en">Длъжност (EN)</label>
+                  <input type="text" id="titleInput_en" class="form-input i18n-field" placeholder="Executive Director" data-i18n-skip>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="bioInput_en">Кратко описание на дейността (EN)</label>
+                  <textarea id="bioInput_en" class="form-input i18n-field" rows="3" placeholder="Short description in English..." style="resize: vertical; min-height: 80px;" data-i18n-skip></textarea>
+                </div>
+              </div>
+              <div class="i18n-pane" data-lang="de">
+                <div class="form-group">
+                  <label for="titleInput_de">Длъжност (DE)</label>
+                  <input type="text" id="titleInput_de" class="form-input i18n-field" placeholder="Geschäftsführer" data-i18n-skip>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="bioInput_de">Кратко описание на дейността (DE)</label>
+                  <textarea id="bioInput_de" class="form-input i18n-field" rows="3" placeholder="Kurzbeschreibung auf Deutsch..." style="resize: vertical; min-height: 80px;" data-i18n-skip></textarea>
+                </div>
+              </div>
+              <div class="i18n-pane" data-lang="ro">
+                <div class="form-group">
+                  <label for="titleInput_ro">Длъжност (RO)</label>
+                  <input type="text" id="titleInput_ro" class="form-input i18n-field" placeholder="Director executiv" data-i18n-skip>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="bioInput_ro">Кратко описание на дейността (RO)</label>
+                  <textarea id="bioInput_ro" class="form-input i18n-field" rows="3" placeholder="Scurtă descriere în română..." style="resize: vertical; min-height: 80px;" data-i18n-skip></textarea>
+                </div>
+              </div>
+            </details>
           </div>
 
           <!-- Настройки: Работно време + Споделяне -->
@@ -1702,6 +1761,66 @@
       renderBizOffer();
     }
 
+    // --- Преводи на длъжност и описание (profiles.i18n) ---
+    // Формат: {"en":{"title":"...","bio":"..."},"de":{...},"ro":{...}}.
+    // Други ключове (name, company), въведени ръчно през SQL, се запазват.
+    const I18N_CARD_LANGS = ['en', 'de', 'ro'];
+    let currentI18n = {};
+
+    function parseI18n(raw) {
+      if (!raw) return {};
+      if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch (e) { return {}; } }
+      return (raw && typeof raw === 'object') ? raw : {};
+    }
+
+    function i18nVal(field, lang) {
+      return document.getElementById(field + 'Input_' + lang).value.trim();
+    }
+
+    function hasI18nInput() {
+      return I18N_CARD_LANGS.some(l => i18nVal('title', l) || i18nVal('bio', l));
+    }
+
+    function fillI18nInputs(raw) {
+      currentI18n = parseI18n(raw);
+      I18N_CARD_LANGS.forEach(l => {
+        const o = currentI18n[l] || {};
+        document.getElementById('titleInput_' + l).value = o.title || '';
+        document.getElementById('bioInput_' + l).value = o.bio || '';
+      });
+      document.getElementById('i18nBox').open = hasI18nInput();
+      refreshI18nTabs();
+    }
+
+    function gatherI18n() {
+      const out = JSON.parse(JSON.stringify(currentI18n || {}));
+      I18N_CARD_LANGS.forEach(l => {
+        const o = Object.assign({}, out[l]);
+        const title = i18nVal('title', l);
+        const bio = i18nVal('bio', l);
+        if (title) o.title = title; else delete o.title;
+        if (bio) o.bio = bio; else delete o.bio;
+        if (Object.keys(o).length) out[l] = o; else delete out[l];
+      });
+      return Object.keys(out).length ? out : null;
+    }
+
+    function switchI18nTab(lang) {
+      document.querySelectorAll('.i18n-tab').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      document.querySelectorAll('.i18n-pane').forEach(p => p.classList.toggle('active', p.dataset.lang === lang));
+    }
+
+    // Точка до езика, за който вече има въведен превод
+    function refreshI18nTabs() {
+      document.querySelectorAll('.i18n-tab').forEach(b => {
+        const l = b.dataset.lang;
+        b.classList.toggle('filled', !!(i18nVal('title', l) || i18nVal('bio', l)));
+      });
+    }
+    document.addEventListener('input', e => {
+      if (e.target.classList && e.target.classList.contains('i18n-field')) refreshI18nTabs();
+    });
+
     // Static Demo Data loader
     function loadDemoData() {
       // populate forms with current alexander data
@@ -1718,6 +1837,7 @@
       document.getElementById('websiteInput').value = "www.arhproekt.bg";
       document.getElementById('googleMapsInput').value = "https://maps.google.com/?q=АРХПРОЕКТ+Плевен";
       document.getElementById('bioInput').value = "Специализираме в архитектурно проектиране и строителен надзор на жилищни и офис згради за целия регион на Северна България.";
+      fillI18nInputs({ en: { title: 'Chief Architect', bio: 'We specialise in architectural design and construction supervision of residential and office buildings across Northern Bulgaria.' } });
       document.getElementById('companyLogoInput').value = "assets/demo-logo-arhproekt.png";
       document.getElementById('companyLogoPreview').src = "assets/demo-logo-arhproekt.png";
       document.getElementById('companyLogoPreview').style.display = 'block';
@@ -1775,6 +1895,7 @@
         document.getElementById('websiteInput').value = profile.website || '';
         document.getElementById('googleMapsInput').value = profile.google_maps || '';
         document.getElementById('bioInput').value = profile.bio || '';
+        fillI18nInputs(profile.i18n);
         document.getElementById('avatarInput').value = profile.avatar_url || '';
         if (profile.avatar_url) {
           document.getElementById('avatarPreview').src = profile.avatar_url;
@@ -2049,6 +2170,19 @@
         .eq('user_id', session.user.id);
       if (settingsError) {
         console.warn("Настройките за работно време/споделяне не са записани (пуснете supabase/profile-enhancements.sql):", settingsError.message);
+      }
+
+      // Преводите на длъжност/описание — отделно, за да не спъват основния запис,
+      // ако колоната i18n още я няма (supabase/profile-i18n.sql).
+      const { error: i18nError } = await supabaseClient
+        .from('profiles')
+        .update({ i18n: gatherI18n() })
+        .eq('user_id', session.user.id);
+      if (i18nError) {
+        console.warn("Преводите не са записани (пуснете supabase/profile-i18n.sql):", i18nError.message);
+        if (hasI18nInput()) {
+          alert(__t("Преводите на длъжност и описание не бяха записани: ") + i18nError.message);
+        }
       }
 
       // Update password if entered
@@ -3135,7 +3269,7 @@
     }
   </script>
   <!-- Превод BG / EN / RO -->
-  <script src="i18n-data.js?v=20260916"></script>
+  <script src="i18n-data.js?v=20260929"></script>
   <script src="i18n.js?v=20260824"></script>
 </body>
 </html>

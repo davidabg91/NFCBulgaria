@@ -1797,7 +1797,10 @@
       if (companyEl) companyEl.innerText = company || '';
 
       const bioEl = document.getElementById('profileBio');
-      if (bioEl && bio) bioEl.innerText = bio;
+      if (bioEl) {
+        bioEl.innerText = bio;
+        bioEl.style.display = bio.trim() ? 'block' : 'none';
+      }
 
       document.title = name ? `${name} - ${t.pageTitleSuffix}` : t.pageTitleSuffix;
     }
