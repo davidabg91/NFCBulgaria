@@ -17,6 +17,7 @@ const PLANS: Record<string, { seats: number; amount: number; label: string }> = 
   team5:  { seats: 5,  amount: 600,  label: 'Фирмен Портал — 5 служителя' },
   team10: { seats: 10, amount: 1000, label: 'Фирмен Портал — 10 служителя' },
   team20: { seats: 20, amount: 1800, label: 'Фирмен Портал — 20 служителя' },
+  team40: { seats: 40, amount: 3500, label: 'Фирмен Портал — 40 служителя' },
 };
 
 // Годишно = месечно × 11 (една такса безплатна).

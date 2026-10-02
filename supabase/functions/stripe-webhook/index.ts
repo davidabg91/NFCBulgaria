@@ -37,6 +37,7 @@ const PLAN_SEATS: Record<string, { seats: number; amount: number }> = {
   team5:  { seats: 5,  amount: 600 },
   team10: { seats: 10, amount: 1000 },
   team20: { seats: 20, amount: 1800 },
+  team40: { seats: 40, amount: 3500 },
 };
 
 /** Край на периода: това, което Stripe казва, иначе +1 месец. */

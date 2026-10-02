@@ -412,9 +412,9 @@
 
     .plan-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.1rem;
-      max-width: 820px;
+      max-width: 960px;
       margin: 0 auto;
     }
     .plan-card {
@@ -1532,15 +1532,21 @@
         <div class="plan-card">
           <div class="plan-seats">20 служителя</div>
           <div class="plan-price" data-monthly="18" data-annual="198"><span class="pp-num">18</span><small class="pp-unit"> €/мес.</small></div>
-          <div class="plan-per" data-monthly="0.90 € на служител — най-изгодно" data-annual="198 €/год. — спестявате 18 €">0.90 € на служител — най-изгодно</div>
+          <div class="plan-per" data-monthly="0.90 € на служител" data-annual="198 €/год. — спестявате 18 €">0.90 € на служител</div>
           <button class="plan-btn" data-plan="team20" onclick="startCheckout('team20', this)">Избери пакета</button>
+        </div>
+        <div class="plan-card">
+          <div class="plan-seats">40 служителя</div>
+          <div class="plan-price" data-monthly="35" data-annual="385"><span class="pp-num">35</span><small class="pp-unit"> €/мес.</small></div>
+          <div class="plan-per" data-monthly="0.88 € на служител — най-изгодно" data-annual="385 €/год. — спестявате 35 €">0.88 € на служител — най-изгодно</div>
+          <button class="plan-btn" data-plan="team40" onclick="startCheckout('team40', this)">Избери пакета</button>
         </div>
       </div>
 
       <p class="plan-note" id="planNote">
         <span id="planNoteText">Месечен абонамент — активира се веднага след плащането и важи 1 месец.
         Може да се откаже по всяко време.</span><br>
-        <b>Над 20 служителя?</b> Пишете ни за индивидуална бизнес оферта.
+        <b>Над 40 служителя?</b> Пишете ни за индивидуална бизнес оферта.
       </p>
     </div>
   </div>

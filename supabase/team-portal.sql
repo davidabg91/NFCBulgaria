@@ -32,7 +32,7 @@ create table if not exists public.team_subscriptions (
   company_id          uuid not null,
   boss_user_id        uuid not null references auth.users (id) on delete cascade,
 
-  plan                text not null check (plan in ('team5', 'team10', 'team20')),
+  plan                text not null check (plan in ('team5', 'team10', 'team20', 'team40', 'business')),
   seats               int  not null check (seats > 0),
   price_cents         int  not null,
 
@@ -72,7 +72,8 @@ as $$
   select * from (values
     ('team5',   5, 600),   -- 6 €
     ('team10', 10, 1000),  -- 10 €
-    ('team20', 20, 1800)   -- 18 €
+    ('team20', 20, 1800),  -- 18 €
+    ('team40', 40, 3500)   -- 35 €
   ) as t(plan, seats, price_cents);
 $$;
 
