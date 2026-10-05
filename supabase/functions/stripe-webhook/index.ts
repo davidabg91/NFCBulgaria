@@ -193,6 +193,27 @@ Deno.serve(async (req) => {
           customerId: typeof sub.customer === 'string' ? sub.customer : null,
           subscriptionId: sub.id,
         });
+
+        // Записваме плащането за админ панела — оттам се издава фактурата
+        // в Revolut. Триалната фактура за 0 € не е плащане.
+        if (invObj.id && (invObj.amount_paid ?? 0) > 0) {
+          const paidAt = invObj.status_transitions?.paid_at;
+          const { error: payErr } = await supabase
+            .from('subscription_payments')
+            .upsert({
+              stripe_invoice_id: invObj.id,
+              company_id: companyId,
+              plan,
+              interval: sub.metadata?.interval === 'year' ? 'year' : 'month',
+              amount_cents: invObj.amount_paid,
+              currency: invObj.currency ?? 'eur',
+              paid_at: paidAt ? new Date(paidAt * 1000).toISOString() : new Date().toISOString(),
+              period_start: new Date(sub.current_period_start * 1000).toISOString(),
+              period_end: new Date(sub.current_period_end * 1000).toISOString(),
+              receipt_url: invObj.hosted_invoice_url ?? null,
+            }, { onConflict: 'stripe_invoice_id', ignoreDuplicates: true });
+          if (payErr) console.error('Неуспешен запис на плащане:', payErr.message);
+        }
         break;
       }
 

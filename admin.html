@@ -797,6 +797,26 @@
       </div>
 
       <div class="dash-card" style="margin-bottom:1.5rem">
+        <h3 class="card-title">🧾 Плащания за фактуриране (Revolut)</h3>
+        <p class="card-hint" id="invoiceHint">
+          Всяко плащане по абонамент от Stripe, включително автоматичните подновявания.
+          Stripe праща на клиента само разписка, а фактурата я издаваш от Revolut с данните отдолу.
+          След това отбележи „Издадена“.
+        </p>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Платено на</th><th>Фирма</th><th class="num">Сума</th>
+                <th>Период</th><th>Данни за фактура</th><th>Фактура</th>
+              </tr>
+            </thead>
+            <tbody id="invoicePayBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dash-card" style="margin-bottom:1.5rem">
         <h3 class="card-title">✅ Абонаменти</h3>
         <div class="table-wrap">
           <table class="tbl">
@@ -1391,6 +1411,10 @@
       paymentsData = payRes.error ? null : payRes.data;
       renderPayments();
 
+      const invRes = await supabaseClient.rpc('admin_list_payments');
+      invoicePayRows = invRes.error ? null : (invRes.data || []);
+      renderInvoicePayments();
+
       // Продажбите на фонове живеят в card-themes.sql — ако той още не е
       // пуснат, картата просто остава скрита.
       const themeRes = await supabaseClient.rpc('admin_theme_sales');
@@ -1833,6 +1857,98 @@
       a.download = `nfc-kontakti-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
+    }
+
+    // ---------------------------------------------------------------
+    // Плащания за фактуриране в Revolut
+    // ---------------------------------------------------------------
+    let invoicePayRows = null;
+
+    // Данните за фактура като текст — за копиране в Revolut
+    function billingText(b) {
+      if (!b) return '';
+      return [
+        b.company_name,
+        `ЕИК: ${b.eik}`,
+        b.vat_number ? `ДДС №: ${b.vat_number}` : '',
+        [b.address, [b.postal_code, b.city].filter(Boolean).join(' ')].filter(Boolean).join(', '),
+        `МОЛ: ${b.mol}`,
+        b.email ? `Имейл: ${b.email}` : ''
+      ].filter(Boolean).join('\n');
+    }
+
+    function renderInvoicePayments() {
+      const body = document.getElementById('invoicePayBody');
+      if (invoicePayRows === null) {
+        body.innerHTML = emptyRow(6, 'Няма данни — пусни supabase/subscription-payments.sql.');
+        return;
+      }
+      if (!invoicePayRows.length) {
+        body.innerHTML = emptyRow(6, 'Още няма плащания по абонаменти.');
+        return;
+      }
+      body.innerHTML = invoicePayRows.map(p => {
+        const billing = p.billing
+          ? `<div style="white-space:pre-line; font-size:0.8rem; line-height:1.45">${escapeHtml(billingText(p.billing))}</div>
+             <button class="btn-action" style="margin-top:0.35rem" onclick="copyBilling(${p.id}, this)">📋 Копирай</button>`
+          : '<span class="badge badge-warn">Няма попълнени данни</span>';
+        const period = `${p.plan_interval === 'year' ? 'Годишно' : 'Месечно'} · ${escapeHtml(p.plan || '')}
+          <div class="person-sub">${fmtDate(p.period_start)} – ${fmtDate(p.period_end)}</div>`;
+        const inv = p.invoiced
+          ? `<span class="badge badge-ok">Издадена</span>
+             ${p.invoice_note ? `<div class="person-sub">№ ${escapeHtml(p.invoice_note)}</div>` : ''}
+             <button class="btn-action" style="margin-top:0.35rem" onclick="markInvoiced(${p.id}, false)">Отмени</button>`
+          : `<span class="badge badge-warn">Чака фактура</span>
+             <button class="btn-action" style="margin-top:0.35rem" onclick="markInvoiced(${p.id}, true)">✔ Издадена</button>`;
+        const receipt = p.receipt_url
+          ? `<div class="person-sub"><a href="${escapeHtml(p.receipt_url)}" target="_blank" rel="noopener" style="color:var(--primary)">разписка ↗</a></div>`
+          : '';
+        return `
+          <tr>
+            <td>${fmtDateTime(p.paid_at)}${receipt}</td>
+            <td><strong>${escapeHtml(p.company_label || 'Без име')}</strong></td>
+            <td class="num">${euro(p.amount_cents)}</td>
+            <td>${period}</td>
+            <td>${billing}</td>
+            <td>${inv}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    // Копира данните + сумата и периода — готово за поставяне в Revolut
+    async function copyBilling(id, btn) {
+      const p = (invoicePayRows || []).find(r => r.id === id);
+      if (!p) return;
+      const amount = (p.amount_cents / 100).toFixed(2).replace('.', ',');
+      const text = billingText(p.billing) +
+        `\n\nСума: ${amount} € · ${p.plan_interval === 'year' ? 'годишен' : 'месечен'} абонамент Фирмен портал` +
+        ` (${fmtDate(p.period_start)} – ${fmtDate(p.period_end)})` +
+        `\nПлатено с карта на ${fmtDate(p.paid_at)}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = '✔ Копирано';
+      } catch {
+        btn.textContent = 'Неуспешно копиране';
+      }
+      setTimeout(() => { btn.textContent = '📋 Копирай'; }, 1800);
+    }
+
+    async function markInvoiced(id, invoiced) {
+      let note = null;
+      if (invoiced) {
+        note = prompt('Номер на фактурата от Revolut (по желание):', '');
+        if (note === null) return;   // отказ
+      }
+      const { data, error } = await supabaseClient.rpc('admin_mark_payment_invoiced', {
+        p_id: id, p_invoiced: invoiced, p_note: note
+      });
+      if (error || !data || !data.ok) {
+        alert('Не успях да запиша: ' + ((error && error.message) || 'опитай пак'));
+        return;
+      }
+      const row = invoicePayRows.find(r => r.id === id);
+      if (row) { row.invoiced = invoiced; row.invoice_note = invoiced ? ((note || '').trim() || null) : null; }
+      renderInvoicePayments();
     }
 
     // ---------------------------------------------------------------

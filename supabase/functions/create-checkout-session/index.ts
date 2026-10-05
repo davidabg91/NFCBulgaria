@@ -42,9 +42,6 @@ const json = (body: unknown, status = 200) =>
     headers: { ...cors, 'Content-Type': 'application/json' },
   });
 
-// Не сме регистрирани по ДДС — основанието трябва да стои на всяка фактура.
-const INVOICE_FOOTER = 'Основание за неначисляване на ДДС: чл. 113, ал. 9 от ЗДДС.';
-
 type Billing = {
   company_id: string;
   company_name: string;
@@ -57,15 +54,11 @@ type Billing = {
   email: string | null;
 };
 
-// Един Stripe клиент на фирма (по metadata.company_id). Данните се
-// презаписват при всяко плащане, за да са винаги актуални; оттук ги
-// наследяват всички фактури — първата и подновяванията.
+// Един Stripe клиент на фирма (по metadata.company_id), само с име, имейл
+// и адрес — за разписката. Истинската фактура (с ЕИК, МОЛ и основанието
+// по ЗДДС) се издава ръчно от Revolut по данните в админ панела, затова
+// документът от Stripe нарочно не прилича на българска фактура.
 async function upsertBillingCustomer(b: Billing, fallbackEmail: string): Promise<string> {
-  const fields = [
-    { name: 'ЕИК', value: b.eik },
-    ...(b.vat_number ? [{ name: 'ДДС №', value: b.vat_number }] : []),
-    { name: 'МОЛ', value: b.mol },
-  ];
   const data = {
     name: b.company_name,
     email: b.email || fallbackEmail || undefined,
@@ -76,7 +69,8 @@ async function upsertBillingCustomer(b: Billing, fallbackEmail: string): Promise
       country: 'BG',
     },
     preferred_locales: ['bg'],
-    invoice_settings: { custom_fields: fields, footer: INVOICE_FOOTER },
+    // '' изчиства полета, ако клиентът е създаден с тях по-рано
+    invoice_settings: { custom_fields: '' as const, footer: '' },
     metadata: { company_id: b.company_id },
   };
 
