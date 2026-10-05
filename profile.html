@@ -400,7 +400,7 @@
          логото стоеше дребно насред празна подложка. min-height хваща
          браузърите без aspect-ratio. */
       height: auto;
-      aspect-ratio: 3.4 / 1;
+      aspect-ratio: var(--logo-ratio, 3.4);
       min-height: 62px;
       opacity: 1;
       background-color: transparent;
@@ -435,6 +435,37 @@
     body.has-company-logo.logo-is-light .link-item-website .link-value {
       color: var(--text-muted);
       opacity: 0.85;
+    }
+
+    /* Лого със собствен фон (банер, снимка): заема цялата плочка от край до
+       край, във формата на самата картинка, без бяла подложка и без рязане.
+       Лентата с адреса взима цвета на ръба ѝ. Класът се слага от applyLogoPlate. */
+    body.logo-full-bleed .link-item-website,
+    body.logo-full-bleed .link-item-website:hover,
+    body.logo-full-bleed .link-item-website:active {
+      padding: 0;
+      gap: 0;
+      background: var(--logo-edge, #111);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    body.logo-full-bleed .link-item-website .website-logo-bg {
+      aspect-ratio: var(--logo-ratio, 1.5);
+      min-height: 0;
+      background-size: cover;
+    }
+
+    body.logo-full-bleed .link-item-website:hover .website-logo-bg,
+    body.logo-full-bleed .link-item-website:active .website-logo-bg {
+      transform: scale(1.015);
+    }
+
+    body.logo-full-bleed .link-item-website .link-value {
+      position: relative;
+      color: var(--logo-edge-text, rgba(255, 255, 255, 0.86));
+      padding: 0.55rem 0.75rem 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     /* Lead Capture Section */
@@ -1289,24 +1320,63 @@
       img.onload = function () {
         try {
           if (!img.naturalWidth || !img.naturalHeight) return;
-          // Смалено копие — за средна светлота повече пиксели не помагат.
+          const tile = document.getElementById('websiteLink');
+          const ratio = img.naturalWidth / img.naturalHeight;
+
+          // Смалено копие — за светлота и цвят на ръба повече пиксели не помагат.
           const W = 48;
-          const H = Math.max(1, Math.round(W * img.naturalHeight / img.naturalWidth));
+          const H = Math.max(1, Math.round(W / ratio));
           const canvas = document.createElement('canvas');
           canvas.width = W;
           canvas.height = H;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, W, H);
           const px = ctx.getImageData(0, 0, W, H).data;
+          const lum = i => (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
+
           let sum = 0, n = 0;
           for (let i = 0; i < px.length; i += 4) {
             // Прозрачното е фон, не е част от логото.
             if (px[i + 3] < 32) continue;
-            sum += (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
+            sum += lum(i);
             n++;
           }
-          if (!n) return;
-          if (sum / n > 0.62) document.body.classList.add('logo-is-light');
+
+          // Ръбът на картинката: ако е плътен и не е бял, логото си носи
+          // собствен фон (банер, снимка). Такова лого не се слага върху
+          // бялата подложка, а заема цялата плочка от край до край.
+          let er = 0, eg = 0, eb = 0, edge = 0, opaque = 0, whiteish = 0;
+          for (let y = 0; y < H; y++) {
+            for (let x = 0; x < W; x++) {
+              if (x > 1 && x < W - 2 && y > 1 && y < H - 2) continue;
+              const i = (y * W + x) * 4;
+              edge++;
+              if (px[i + 3] < 200) continue;
+              opaque++;
+              if (lum(i) > 0.9) whiteish++;
+              er += px[i]; eg += px[i + 1]; eb += px[i + 2];
+            }
+          }
+          const fullBleed = edge && opaque / edge > 0.95 && whiteish / Math.max(opaque, 1) < 0.25;
+
+          if (fullBleed) {
+            const r = Math.round(er / opaque), g = Math.round(eg / opaque), b = Math.round(eb / opaque);
+            const edgeLum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+            tile.style.setProperty('--logo-ratio', Math.min(4, Math.max(1.2, ratio)).toFixed(3));
+            tile.style.setProperty('--logo-edge', `rgb(${r}, ${g}, ${b})`);
+            tile.style.setProperty('--logo-edge-text', edgeLum > 0.55 ? 'rgba(0, 0, 0, 0.72)' : 'rgba(255, 255, 255, 0.86)');
+            document.body.classList.add('logo-full-bleed');
+            return;
+          }
+
+          // Логото върху бяла подложка: плочката следва формата му, за да
+          // опира в страните. Много високи лога не надуваме над 2.2:1.
+          if (ratio < 3.4) tile.style.setProperty('--logo-ratio', Math.max(2.2, ratio).toFixed(3));
+
+          // Картинка с плътен бял фон не е „светло лого“ — бялото ѝ се слива с
+          // бялата подложка. Тъмна плочка искат само лога с прозрачен фон.
+          const whiteBg = edge && opaque / edge > 0.95 && whiteish / Math.max(opaque, 1) > 0.6;
+          if (!whiteBg && n && sum / n > 0.62) document.body.classList.add('logo-is-light');
         } catch (err) {
           /* оставаме на светлата подложка */
         }

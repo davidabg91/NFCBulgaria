@@ -2488,16 +2488,25 @@
           const img = new Image();
           img.onload = function() {
             const canvas = document.createElement('canvas');
-            const MAX_W = 600;
-            const MAX_H = 300;
+            // Логото може да заеме цялата широчина на плочката (~300px), а
+            // телефоните са с плътност 3x — 600x300 се размазваше.
+            const MAX_W = 1000;
+            const MAX_H = 700;
             let w = img.width;
             let h = img.height;
             if (w > MAX_W) { h *= MAX_W / w; w = MAX_W; }
             if (h > MAX_H) { w *= MAX_H / h; h = MAX_H; }
+            w = Math.round(w); h = Math.round(h);
             canvas.width = w;
             canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            const compressed = canvas.toDataURL('image/png');
+            const lctx = canvas.getContext('2d');
+            lctx.drawImage(img, 0, 0, w, h);
+            // Прозрачно лого остава PNG; плътна картинка (банер, снимка) става
+            // JPEG — като PNG в тази големина тежи няколко пъти повече.
+            const px = lctx.getImageData(0, 0, w, h).data;
+            let transparent = false;
+            for (let i = 3; i < px.length; i += 16) { if (px[i] < 250) { transparent = true; break; } }
+            const compressed = transparent ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.86);
             logoPreview.src = compressed;
             logoPreview.style.display = 'block';
             logoPlaceholder.style.display = 'none';
