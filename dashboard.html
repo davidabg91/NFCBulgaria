@@ -2460,9 +2460,10 @@
           const offer = Array.isArray(offers) ? offers[0] : offers;
           if (offer) {
             showBusinessActivateBanner(offer);
-            if (lockedTxt) lockedTxt.textContent =
-              'Данните на екипа са заключени. Натиснете „Активирай“ по-горе, за да отключите ' +
-              'статистиката и събраните контакти (първият месец е безплатен).';
+            // Безплатният месец се обещава само ако офертата наистина го има.
+            if (lockedTxt) lockedTxt.textContent = offer.trial
+              ? 'Данните на екипа са заключени. Натиснете „Активирай“ по-горе, за да отключите статистиката и събраните контакти (първият месец е безплатен).'
+              : 'Данните на екипа са заключени. Натиснете „Активирай“ по-горе, за да отключите статистиката и събраните контакти.';
           } else {
             if (bizBanner) bizBanner.style.display = 'none';
             if (lockedTxt) lockedTxt.textContent =
