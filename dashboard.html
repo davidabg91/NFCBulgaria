@@ -688,6 +688,10 @@
         <span><svg class="ico ico-title" aria-hidden="true"><use href="#i-identity"/></svg> Редактирай Профила</span>
         <a id="myProfileLink" href="profile.html" target="_blank" class="btn-logout" style="color: var(--primary); border-color: var(--glass-border); text-decoration: none; font-size: 0.75rem; padding: 0.4rem 0.8rem; background: rgba(0, 242, 255, 0.05); display: inline-flex; align-items: center; gap: 4px;">Виж моята визитка 📱</a>
       </h3>
+      <div class="edit-target-banner" id="editTargetBanner" style="display: none;">
+        <span>✏️ Редактирате визитката на <strong id="editTargetName"></strong></span>
+        <button type="button" class="btn-logout" onclick="exitEmployeeEdit()">← Обратно към моята</button>
+      </div>
       <form id="profileForm" onsubmit="saveProfile(event)">
         <div class="form-grid">
           
@@ -828,7 +832,7 @@
             </label>
           </div>
 
-          <div class="form-group">
+          <div class="form-group own-only">
             <label for="newPasswordInput">Нова парола</label>
             <div class="password-container">
               <input type="password" id="newPasswordInput" class="form-input" placeholder="••••••••" autocomplete="new-password">
@@ -841,7 +845,7 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group own-only">
             <label for="confirmPasswordInput">Потвърди новата парола</label>
             <div class="password-container">
               <input type="password" id="confirmPasswordInput" class="form-input" placeholder="••••••••" autocomplete="new-password">
@@ -1182,6 +1186,25 @@
       z-index: 3;
     }
     .notice-close:hover { color: var(--text); border-color: var(--primary); }
+
+    /* --- Шефът редактира служител ---------------------------------- */
+    .edit-target-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: -0.4rem 0 1.2rem;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      background: rgba(255, 204, 102, 0.1);
+      border: 1px solid rgba(255, 204, 102, 0.45);
+      color: var(--text);
+      font-size: 0.88rem;
+    }
+    .edit-target-banner strong { color: #ffcc66; }
+    .edit-target-banner .btn-logout { font-size: 0.78rem; padding: 0.4rem 0.8rem; }
+    body.editing-employee .own-only { display: none; }
 
     /* --- Данни за фактура ------------------------------------------ */
     #billingOverlay { overflow-y: auto; align-items: flex-start; }
@@ -1785,6 +1808,8 @@
     }
 
     let currentBossUserId = null;
+    let myProfile = null;    // визитката на влезлия
+    let editTarget = null;   // {id, name} — когато шефът редактира служител
     let isCompanyAdminMode = false;
     let billingInterval = 'month';
     let currentLeads = [];
@@ -1958,43 +1983,10 @@
         .single();
       
       if (profile) {
+        myProfile = profile;
         document.getElementById('userName').innerText = profile.name;
-        document.getElementById('myProfileLink').href = `profile.html?id=${profile.id}`;
-        document.getElementById('nameInput').value = profile.name || '';
-        document.getElementById('titleInput').value = profile.title || '';
-        document.getElementById('companyInput').value = profile.company || '';
-        document.getElementById('phoneInput').value = profile.phone || '';
-        document.getElementById('emailInput').value = profile.email || '';
-        document.getElementById('viberInput').value = profile.viber || '';
-        document.getElementById('whatsappInput').value = profile.whatsapp || '';
-        document.getElementById('linkedinInput').value = profile.linkedin || '';
-        document.getElementById('facebookInput').value = profile.facebook || '';
-        document.getElementById('instagramInput').value = profile.instagram || '';
-        document.getElementById('websiteInput').value = profile.website || '';
-        document.getElementById('googleMapsInput').value = profile.google_maps || '';
-        document.getElementById('bioInput').value = profile.bio || '';
-        fillI18nInputs(profile.i18n);
-        document.getElementById('avatarInput').value = profile.avatar_url || '';
-        if (profile.avatar_url) {
-          document.getElementById('avatarPreview').src = profile.avatar_url;
-        } else {
-          document.getElementById('avatarPreview').src = "assets/avatar-alexandar.webp";
-        }
-        document.getElementById('companyLogoInput').value = profile.company_logo || '';
-        if (profile.company_logo) {
-          document.getElementById('companyLogoPreview').src = profile.company_logo;
-          document.getElementById('companyLogoPreview').style.display = 'block';
-          document.getElementById('companyLogoPlaceholder').style.display = 'none';
-        } else {
-          document.getElementById('companyLogoPreview').style.display = 'none';
-          document.getElementById('companyLogoPlaceholder').style.display = 'block';
-        }
-
-        // Работно време + споделяне
-        document.getElementById('shareEnabledInput').checked = !!profile.share_enabled;
-        document.getElementById('hoursEnabledInput').checked = !!profile.hours_enabled;
-        applyWorkingHours(profile.working_hours);
-        toggleHoursBuilder();
+        // Ако шефът е по средата на редакция на служител, не му сменяме формата
+        if (!editTarget) fillProfileForm(profile);
 
         // Портал или оферта — решава се от абонамента/фирмения статус, не от ръчен флаг
         loadTeamGate(profile.user_id, 0, profile.company_id);
@@ -2005,6 +1997,46 @@
         // Load stats & leads for this profile
         loadStatsAndLeads(profile.id, profile.saves_count);
       }
+    }
+
+    // Попълва формата с дадена визитка — своята или на служител
+    function fillProfileForm(profile) {
+      document.getElementById('myProfileLink').href = `profile.html?id=${profile.id}`;
+      document.getElementById('nameInput').value = profile.name || '';
+      document.getElementById('titleInput').value = profile.title || '';
+      document.getElementById('companyInput').value = profile.company || '';
+      document.getElementById('phoneInput').value = profile.phone || '';
+      document.getElementById('emailInput').value = profile.email || '';
+      document.getElementById('viberInput').value = profile.viber || '';
+      document.getElementById('whatsappInput').value = profile.whatsapp || '';
+      document.getElementById('linkedinInput').value = profile.linkedin || '';
+      document.getElementById('facebookInput').value = profile.facebook || '';
+      document.getElementById('instagramInput').value = profile.instagram || '';
+      document.getElementById('websiteInput').value = profile.website || '';
+      document.getElementById('googleMapsInput').value = profile.google_maps || '';
+      document.getElementById('bioInput').value = profile.bio || '';
+      fillI18nInputs(profile.i18n);
+      document.getElementById('avatarInput').value = profile.avatar_url || '';
+      if (profile.avatar_url) {
+      document.getElementById('avatarPreview').src = profile.avatar_url;
+      } else {
+      document.getElementById('avatarPreview').src = "assets/avatar-alexandar.webp";
+    }
+      document.getElementById('companyLogoInput').value = profile.company_logo || '';
+      if (profile.company_logo) {
+      document.getElementById('companyLogoPreview').src = profile.company_logo;
+      document.getElementById('companyLogoPreview').style.display = 'block';
+      document.getElementById('companyLogoPlaceholder').style.display = 'none';
+      } else {
+      document.getElementById('companyLogoPreview').style.display = 'none';
+      document.getElementById('companyLogoPlaceholder').style.display = 'block';
+    }
+
+      // Работно време + споделяне
+      document.getElementById('shareEnabledInput').checked = !!profile.share_enabled;
+      document.getElementById('hoursEnabledInput').checked = !!profile.hours_enabled;
+      applyWorkingHours(profile.working_hours);
+      toggleHoursBuilder();
     }
 
     async function loadStatsAndLeads(profileId, savesCount) {
@@ -2224,6 +2256,23 @@
         }
         document.getElementById('newPasswordInput').value = '';
         document.getElementById('confirmPasswordInput').value = '';
+        return;
+      }
+
+      // Шефът редактира служител — само през RPC-то, което пуска полетата
+      // със съдържание (без собственик, фирма и платени фонове).
+      if (editTarget) {
+        const { data: res, error: empErr } = await supabaseClient.rpc('boss_update_employee_profile', {
+          p_profile_id: editTarget.id,
+          p_data: Object.assign({}, profileData, settingsData, { i18n: gatherI18n() })
+        });
+        if (empErr || !res || !res.ok) {
+          alert(__t("Грешка при записване на профила: ") + ((res && res.message) || (empErr && empErr.message) || ''));
+          return;
+        }
+        alert(__t("Визитката на служителя е обновена успешно!"));
+        editEmployee(editTarget.id);   // презареждаме записаното
+        if (isCompanyAdminMode) loadCompanyAdminData();
         return;
       }
 
@@ -3258,9 +3307,13 @@
           <td style="padding: 0.8rem 1rem; text-align: center; color: var(--secondary); font-weight: 700;">${emp.employee_saves}</td>
           <td style="padding: 0.8rem 1rem; text-align: center; color: #fff; font-weight: 700;">${emp.leads_count}</td>
           <td style="padding: 0.8rem 1rem; text-align: center;">
-            <button class="btn-logout" style="background: rgba(0, 242, 255, 0.1); border-color: rgba(0, 242, 255, 0.2); color: var(--primary); font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="viewEmployeeLeads('${emp.employee_id}', '${emp.employee_name}')">Преглед на лийдове</button>
+            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+              <button type="button" class="btn-logout js-edit-emp" style="background: rgba(255, 204, 102, 0.1); border-color: rgba(255, 204, 102, 0.35); color: #ffcc66; font-size: 0.75rem; padding: 0.3rem 0.6rem;">✏️ Редактирай</button>
+              <button class="btn-logout" style="background: rgba(0, 242, 255, 0.1); border-color: rgba(0, 242, 255, 0.2); color: var(--primary); font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="viewEmployeeLeads('${emp.employee_id}', '${emp.employee_name}')">Преглед на лийдове</button>
+            </div>
           </td>
         `;
+        tr.querySelector('.js-edit-emp').addEventListener('click', () => editEmployee(emp.employee_id));
         tbody.appendChild(tr);
       });
 
@@ -3308,6 +3361,39 @@
 
       document.getElementById('employeeLeadsDetailSection').style.display = 'block';
       document.getElementById('employeeLeadsDetailSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // --- Шефът редактира визитка на служител ---------------------------
+    async function editEmployee(profileId) {
+      // Собственият ред в списъка → просто своята визитка
+      if (myProfile && profileId === myProfile.id) {
+        exitEmployeeEdit();
+        document.getElementById('profileForm').closest('.dash-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      const { data: emp, error } = await supabaseClient
+        .from('profiles').select('*').eq('id', profileId).single();
+      if (error || !emp) {
+        alert(__t("Визитката не можа да се зареди."));
+        return;
+      }
+      editTarget = { id: emp.id, name: emp.name || emp.id };
+      fillProfileForm(emp);
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmPasswordInput').value = '';
+      document.body.classList.add('editing-employee');
+      document.getElementById('editTargetName').textContent = editTarget.name;
+      document.getElementById('editTargetBanner').style.display = 'flex';
+      document.getElementById('myProfileLink').textContent = __t('Виж визитката 📱');
+      document.getElementById('profileForm').closest('.dash-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function exitEmployeeEdit() {
+      editTarget = null;
+      document.body.classList.remove('editing-employee');
+      document.getElementById('editTargetBanner').style.display = 'none';
+      document.getElementById('myProfileLink').textContent = __t('Виж моята визитка 📱');
+      if (myProfile) fillProfileForm(myProfile);
     }
 
     function closeEmployeeDetails() {

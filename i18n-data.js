@@ -8,6 +8,14 @@
  * ===================================================================== */
 window.I18N_DATA = {
   en: {
+    "✏️ Редактирай": "✏️ Edit",
+    "← Обратно към моята": "← Back to mine",
+    "✏️ Редактирате визитката на": "✏️ You are editing the card of",
+    "Визитката на служителя е обновена успешно!": "The employee's card was updated successfully!",
+    "Визитката не можа да се зареди.": "The card could not be loaded.",
+    "Виж визитката 📱": "View card 📱",
+    "Нямате право да редактирате тази визитка.": "You are not allowed to edit this card.",
+    "Името не може да е празно.": "The name cannot be empty.",
     "Данни за фактура": "Invoice details",
     "Попълват се веднъж. С тях издаваме фактурата за всяко плащане, включително при автоматичното подновяване.": "You fill these in once. We use them to issue the invoice for every payment, including automatic renewals.",
     "Фирма *": "Company *",
@@ -923,6 +931,14 @@ window.I18N_DATA = {
     "Добави служител": "Add employee",
 },
   ro: {
+    "✏️ Редактирай": "✏️ Editează",
+    "← Обратно към моята": "← Înapoi la a mea",
+    "✏️ Редактирате визитката на": "✏️ Editezi cartea de vizită a lui",
+    "Визитката на служителя е обновена успешно!": "Cartea de vizită a angajatului a fost actualizată!",
+    "Визитката не можа да се зареди.": "Cartea de vizită nu a putut fi încărcată.",
+    "Виж визитката 📱": "Vezi cartea 📱",
+    "Нямате право да редактирате тази визитка.": "Nu ai dreptul să editezi această carte de vizită.",
+    "Името не може да е празно.": "Numele nu poate fi gol.",
     "Данни за фактура": "Date de facturare",
     "Попълват се веднъж. С тях издаваме фактурата за всяко плащане, включително при автоматичното подновяване.": "Se completează o singură dată. Le folosim pentru factura fiecărei plăți, inclusiv la reînnoirea automată.",
     "Фирма *": "Companie *",
