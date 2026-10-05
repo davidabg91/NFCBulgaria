@@ -1183,6 +1183,30 @@
     }
     .notice-close:hover { color: var(--text); border-color: var(--primary); }
 
+    /* --- Данни за фактура ------------------------------------------ */
+    #billingOverlay { overflow-y: auto; align-items: flex-start; }
+    .billing-box { max-width: 560px; margin: auto; }
+    .billing-form {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 0.8rem;
+      margin-top: 1.2rem;
+    }
+    .billing-form .form-group { margin-bottom: 0.85rem; }
+    .billing-form .full { grid-column: 1 / -1; }
+    .billing-error {
+      grid-column: 1 / -1;
+      color: #f87171;
+      font-size: 0.82rem;
+      min-height: 0;
+      margin: 0;
+    }
+    .billing-error:empty { display: none; }
+    @media (max-width: 520px) {
+      .billing-form { grid-template-columns: 1fr; }
+    }
+
     /* --- Преглед на визитката с избрания фон ------------------------ */
     .tp-overlay {
       position: fixed;
@@ -1463,6 +1487,54 @@
       <p id="noticeText"></p>
       <ul class="notice-steps" id="noticeSteps" style="display:none"></ul>
       <div class="notice-actions" id="noticeActions"></div>
+    </div>
+  </div>
+
+  <!-- Данни за фактура — попълват се веднъж преди първото плащане -->
+  <div class="notice-overlay" id="billingOverlay" onclick="if(event.target===this)closeBillingForm()">
+    <div class="notice-box billing-box">
+      <button class="notice-close" onclick="closeBillingForm()" aria-label="Затвори">×</button>
+      <div class="notice-ico">🧾</div>
+      <h3>Данни за фактура</h3>
+      <p>Попълват се веднъж. С тях издаваме фактурата за всяко плащане, включително при автоматичното подновяване.</p>
+      <form class="billing-form" id="billingForm" onsubmit="submitBillingForm(event)">
+        <div class="form-group full">
+          <label for="billCompany">Фирма *</label>
+          <input type="text" id="billCompany" class="form-input" required maxlength="120">
+        </div>
+        <div class="form-group">
+          <label for="billEik">ЕИК *</label>
+          <input type="text" id="billEik" class="form-input" required inputmode="numeric" pattern="\s*[0-9]{9}([0-9]{4})?\s*" placeholder="123456789">
+        </div>
+        <div class="form-group">
+          <label for="billVat">ДДС № (ако има)</label>
+          <input type="text" id="billVat" class="form-input" placeholder="BG123456789">
+        </div>
+        <div class="form-group full">
+          <label for="billAddress">Адрес *</label>
+          <input type="text" id="billAddress" class="form-input" required maxlength="200" placeholder="ул. Примерна 1">
+        </div>
+        <div class="form-group">
+          <label for="billCity">Град *</label>
+          <input type="text" id="billCity" class="form-input" required maxlength="80">
+        </div>
+        <div class="form-group">
+          <label for="billPostal">Пощенски код</label>
+          <input type="text" id="billPostal" class="form-input" inputmode="numeric" maxlength="10">
+        </div>
+        <div class="form-group">
+          <label for="billMol">МОЛ *</label>
+          <input type="text" id="billMol" class="form-input" required maxlength="120">
+        </div>
+        <div class="form-group">
+          <label for="billEmail">Имейл за фактури</label>
+          <input type="email" id="billEmail" class="form-input">
+        </div>
+        <p class="billing-error" id="billingError"></p>
+        <div class="notice-actions full">
+          <button type="submit" class="notice-btn primary" id="billingSubmit">Продължи към плащане</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -2714,11 +2786,71 @@
         Promise.resolve(
           supabaseClient.rpc('log_checkout_intent', { p_plan: plan, p_interval: billingInterval, p_outcome: 'failed' })
         ).catch(() => {});
-        const name = (document.getElementById('nameInput') || {}).value || '';
-        showNotice(noticeForCheckoutError(err.code, err.message, name));
         buttons.forEach(b => b.disabled = false);
         btn.innerText = original;
+        // Няма данни за фактура → формата, после пак към плащането
+        if (err.code === 'need_billing') { openBillingForm(plan, btn); return; }
+        const name = (document.getElementById('nameInput') || {}).value || '';
+        showNotice(noticeForCheckoutError(err.code, err.message, name));
       }
+    }
+
+    // --- Данни за фактура ---------------------------------------------
+    let pendingCheckout = null;
+
+    async function openBillingForm(plan, btn) {
+      pendingCheckout = { plan, btn };
+      document.getElementById('billingError').textContent = '';
+      const set = (id, v) => { const el = document.getElementById(id); if (!el.value) el.value = v || ''; };
+
+      // Ако вече има записани данни — показваме ги за проверка
+      const { data } = await supabaseClient.rpc('get_my_billing_details');
+      const b = (Array.isArray(data) ? data[0] : data) || {};
+      const { data: { session } } = await supabaseClient.auth.getSession();
+
+      set('billCompany', b.company_name || (document.getElementById('companyInput') || {}).value);
+      set('billEik', b.eik);
+      set('billVat', b.vat_number);
+      set('billAddress', b.address);
+      set('billCity', b.city);
+      set('billPostal', b.postal_code);
+      set('billMol', b.mol || (document.getElementById('nameInput') || {}).value);
+      set('billEmail', b.email || (session && session.user && session.user.email));
+
+      document.getElementById('billingOverlay').classList.add('open');
+    }
+
+    function closeBillingForm() {
+      document.getElementById('billingOverlay').classList.remove('open');
+    }
+
+    async function submitBillingForm(e) {
+      e.preventDefault();
+      const v = id => document.getElementById(id).value.trim();
+      const submit = document.getElementById('billingSubmit');
+      const errEl = document.getElementById('billingError');
+      errEl.textContent = '';
+      submit.disabled = true;
+
+      const { data, error } = await supabaseClient.rpc('save_my_billing_details', {
+        p_company_name: v('billCompany'),
+        p_eik:          v('billEik'),
+        p_vat_number:   v('billVat'),
+        p_address:      v('billAddress'),
+        p_city:         v('billCity'),
+        p_postal_code:  v('billPostal'),
+        p_mol:          v('billMol'),
+        p_email:        v('billEmail')
+      });
+      submit.disabled = false;
+
+      if (error || !data || !data.ok) {
+        errEl.textContent = (data && data.message) || 'Данните не можаха да се запишат. Опитайте отново.';
+        return;
+      }
+
+      closeBillingForm();
+      if (pendingCheckout) startCheckout(pendingCheckout.plan, pendingCheckout.btn);
     }
 
 

@@ -42,6 +42,56 @@ const json = (body: unknown, status = 200) =>
     headers: { ...cors, 'Content-Type': 'application/json' },
   });
 
+// Не сме регистрирани по ДДС — основанието трябва да стои на всяка фактура.
+const INVOICE_FOOTER = 'Основание за неначисляване на ДДС: чл. 113, ал. 9 от ЗДДС.';
+
+type Billing = {
+  company_id: string;
+  company_name: string;
+  eik: string;
+  vat_number: string | null;
+  address: string;
+  city: string;
+  postal_code: string | null;
+  mol: string;
+  email: string | null;
+};
+
+// Един Stripe клиент на фирма (по metadata.company_id). Данните се
+// презаписват при всяко плащане, за да са винаги актуални; оттук ги
+// наследяват всички фактури — първата и подновяванията.
+async function upsertBillingCustomer(b: Billing, fallbackEmail: string): Promise<string> {
+  const fields = [
+    { name: 'ЕИК', value: b.eik },
+    ...(b.vat_number ? [{ name: 'ДДС №', value: b.vat_number }] : []),
+    { name: 'МОЛ', value: b.mol },
+  ];
+  const data = {
+    name: b.company_name,
+    email: b.email || fallbackEmail || undefined,
+    address: {
+      line1: b.address,
+      city: b.city,
+      postal_code: b.postal_code ?? undefined,
+      country: 'BG',
+    },
+    preferred_locales: ['bg'],
+    invoice_settings: { custom_fields: fields, footer: INVOICE_FOOTER },
+    metadata: { company_id: b.company_id },
+  };
+
+  const found = await stripe.customers.search({
+    query: `metadata['company_id']:'${b.company_id}'`,
+    limit: 1,
+  });
+  if (found.data[0]) {
+    await stripe.customers.update(found.data[0].id, data);
+    return found.data[0].id;
+  }
+  const created = await stripe.customers.create(data);
+  return created.id;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
@@ -120,6 +170,24 @@ Deno.serve(async (req) => {
       }, 409);
     }
 
+    // Клиент с токена на потребителя — за RPC-тата, които гледат auth.uid()
+    const userClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+
+    // --- Данни за фактура: без тях не тръгваме към Stripe ---
+    // Таблото показва формата при този код и после пробва отново.
+    const { data: billingRows } = await userClient.rpc('get_my_billing_details');
+    const billing = Array.isArray(billingRows) ? billingRows[0] : billingRows;
+    if (!billing) {
+      return json({
+        code: 'need_billing',
+        error: 'Попълнете данните за фактура, за да продължите към плащането.',
+      }, 409);
+    }
+
     // --- Определяме места / месечна цена / етикет / триал ---
     let seats: number;
     let monthlyAmount: number;
@@ -129,11 +197,6 @@ Deno.serve(async (req) => {
     if (isBusiness) {
       // Договорената оферта се чете СЪРВЪРНО (никога от браузъра), с токена
       // на потребителя — RPC-то връща офертата за неговата фирма.
-      const userClient = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_ANON_KEY')!,
-        { global: { headers: { Authorization: authHeader } } },
-      );
       const { data: offers } = await userClient.rpc('get_my_business_offer');
       const offer = Array.isArray(offers) ? offers[0] : offers;
       if (!offer) {
@@ -172,9 +235,11 @@ Deno.serve(async (req) => {
       interval,
     };
 
+    const customerId = await upsertBillingCustomer(billing, user.email ?? '');
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      customer_email: user.email ?? undefined,
+      customer: customerId,
       client_reference_id: user.id,
       line_items: [{
         quantity: 1,
