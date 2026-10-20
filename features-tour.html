@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Какво може визитката ви | NFC Bulgaria</title>
+<link rel="icon" type="image/webp" href="assets/favicon.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&subset=cyrillic&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f19; --primary: #00f2ff; --secondary: #a1e8af; --text: #f3f4f6;
+    --muted: #9ca3af; --border: rgba(255,255,255,0.08); --gold: #ffd479;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Manrope', system-ui, sans-serif; font-feature-settings: 'locl' 0; }
+  html, body { height: 100%; background: #05070d; color: var(--text); overflow: hidden; }
+  body { display: grid; place-items: center; }
+
+  /* ---------- Сцената: 16:10 на компютър, 9:16 на телефон ---------- */
+  .tour {
+    position: relative; overflow: hidden; container-type: size;
+    width: min(100vw, 160vh); aspect-ratio: 16 / 10;
+    background: radial-gradient(120% 90% at 15% 10%, #10233a 0%, #0b0f19 45%, #070a12 100%);
+    border-radius: 0; user-select: none; -webkit-user-select: none;
+  }
+  @media (max-aspect-ratio: 4/5) { .tour { width: min(100vw, 56.25vh); aspect-ratio: 9 / 16; } }
+  @media (min-width: 900px) and (min-aspect-ratio: 4/5) { .tour { border-radius: 22px; width: min(94vw, 150vh); box-shadow: 0 40px 120px rgba(0,0,0,0.6); } }
+
+  /* Плаващи светлини във фона */
+  .glow { position: absolute; border-radius: 50%; filter: blur(8cqmin); opacity: 0.5; pointer-events: none; }
+  .glow.a { width: 50cqmin; height: 50cqmin; background: rgba(0,242,255,0.35); top: -12cqmin; left: -10cqmin; animation: drift 14s ease-in-out infinite; }
+  .glow.b { width: 42cqmin; height: 42cqmin; background: rgba(161,232,175,0.25); bottom: -14cqmin; right: -8cqmin; animation: drift 18s ease-in-out infinite reverse; }
+  @keyframes drift { 50% { transform: translate(6cqmin, 4cqmin) scale(1.1); } }
+  .grid-bg {
+    position: absolute; inset: 0; opacity: 0.35; pointer-events: none;
+    background-image: linear-gradient(rgba(0,242,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,255,0.06) 1px, transparent 1px);
+    background-size: 6cqmin 6cqmin; mask-image: radial-gradient(circle at 50% 50%, #000 30%, transparent 75%);
+  }
+
+  /* ---------- Прогрес (като Stories) ---------- */
+  .bars { position: absolute; top: 3cqmin; left: 4cqw; right: 4cqw; display: flex; gap: 0.8cqmin; z-index: 20; }
+  .bar { flex: 1; height: 0.55cqmin; min-height: 3px; border-radius: 9px; background: rgba(255,255,255,0.15); overflow: hidden; cursor: pointer; }
+  .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+  .bar.done i { width: 100%; }
+  .ctrl { position: absolute; top: 5.5cqmin; right: 4cqw; z-index: 20; display: flex; gap: 1cqmin; }
+  .ctrl button {
+    width: max(30px, 5.5cqmin); height: max(30px, 5.5cqmin); border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.07); color: #fff;
+    font-size: max(13px, 2.2cqmin); display: grid; place-items: center; backdrop-filter: blur(6px);
+  }
+  .ctrl button:hover { background: rgba(255,255,255,0.15); }
+  .brand { position: absolute; top: 6cqmin; left: 4cqw; z-index: 20; font-family: 'Manrope', sans-serif; font-weight: 800; font-weight: 700; font-size: max(12px, 2.3cqmin); letter-spacing: 0.02em; }
+  .brand b { color: var(--primary); }
+  .tapzone { position: absolute; top: 12cqmin; bottom: 0; width: 30%; z-index: 15; }
+  .tapzone.l { left: 0; } .tapzone.r { right: 0; }
+
+  /* ---------- Сцени ---------- */
+  .scene {
+    position: absolute; inset: 0; display: grid; grid-template-columns: 1.05fr 1fr; align-items: center;
+    padding: 12cqmin 6cqw 5cqmin; gap: 4cqw; opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .scene.on { opacity: 1; pointer-events: auto; }
+  @container (max-aspect-ratio: 4/5) {
+    .scene { grid-template-columns: 1fr; grid-template-rows: auto 1fr; padding: 15cqh 6cqw 4cqh; gap: 3cqh; align-items: start; text-align: center; }
+    .scene .copy { justify-items: center; }
+    .scene .visual { align-self: center; }
+  }
+  .copy { display: grid; gap: 2cqmin; align-content: center; }
+  .tag {
+    justify-self: start; padding: 0.7cqmin 1.8cqmin; border-radius: 99px; font-size: max(10px, 1.8cqmin);
+    font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    border: 1px solid rgba(161,232,175,0.5); color: var(--secondary); background: rgba(161,232,175,0.08);
+  }
+  .tag.paid { border-color: rgba(255,212,121,0.55); color: var(--gold); background: rgba(255,212,121,0.08); }
+  @container (max-aspect-ratio: 4/5) { .tag { justify-self: center; } }
+  h2 { font-family: 'Manrope', sans-serif; font-weight: 800; font-weight: 700; font-size: 5.6cqmin; line-height: 1.05; letter-spacing: -0.02em; }
+  h2 em { font-style: normal; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .copy p { font-size: 2.5cqmin; color: var(--muted); line-height: 1.5; max-width: 52ch; }
+  .copy p strong { color: var(--text); }
+  .price { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 2.6cqmin; font-weight: 700; color: var(--gold); }
+  .where { font-size: 2cqmin; color: var(--primary); font-weight: 600; }
+  @container (max-aspect-ratio: 4/5) {
+    h2 { font-size: 7.4cqw; } .copy p { font-size: 3.7cqw; } .price { font-size: 4cqw; } .where { font-size: 3.2cqw; } .tag { font-size: 2.7cqw; }
+  }
+
+  /* Влизане на текста */
+  .copy > * { opacity: 0; transform: translateY(2.5cqmin); transition: opacity 0.6s ease, transform 0.7s cubic-bezier(.16,1,.3,1); }
+  .scene.on .copy > * { opacity: 1; transform: none; }
+  .scene.on .copy > *:nth-child(2) { transition-delay: 0.12s; }
+  .scene.on .copy > *:nth-child(3) { transition-delay: 0.24s; }
+  .scene.on .copy > *:nth-child(4) { transition-delay: 0.36s; }
+  .scene.on .copy > *:nth-child(5) { transition-delay: 0.48s; }
+
+  .visual { position: relative; display: grid; place-items: center; height: 100%; min-height: 0; }
+
+  /* ---------- Телефонът ---------- */
+  .phone {
+    position: relative; height: min(70cqh, 100%); aspect-ratio: 9 / 18.5; border-radius: 5.5cqmin;
+    padding: 1cqmin; background: linear-gradient(145deg, #2a3242, #0d121c);
+    box-shadow: 0 3cqmin 8cqmin rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.08);
+    transform: translateY(4cqmin) rotate(-2deg); opacity: 0;
+    transition: transform 0.9s cubic-bezier(.16,1,.3,1), opacity 0.6s;
+  }
+  @container (max-aspect-ratio: 4/5) { .phone { height: 52cqh; } }
+  .scene.on .phone { transform: none; opacity: 1; }
+  .screen {
+    position: relative; width: 100%; height: 100%; border-radius: 4.6cqmin; overflow: hidden;
+    background: var(--theme-page, radial-gradient(circle at 20% 0%, #12304a, #0b0f19 60%));
+    background-color: var(--bg); color: var(--text, #f3f4f6);
+    display: flex; flex-direction: column; align-items: center; padding: 5cqmin 1.6cqmin 1.6cqmin; gap: 1cqmin;
+    font-size: 1.35cqmin;
+  }
+  .screen::before { content: ''; position: absolute; top: 1cqmin; left: 50%; transform: translateX(-50%); width: 28%; height: 1.6cqmin; border-radius: 9px; background: #05070d; z-index: 5; }
+  .ava { width: 9cqmin; height: 9cqmin; border-radius: 50%; padding: 0.4cqmin; background: linear-gradient(135deg, var(--primary), var(--secondary)); flex-shrink: 0; }
+  .ava div { width: 100%; height: 100%; border-radius: 50%; background: #1f2937 url(assets/avatar-alexandar.webp) center/cover; }
+  .nm { font-family: 'Manrope', sans-serif; font-weight: 800; font-weight: 700; font-size: 1.9cqmin; }
+  .ttl { color: var(--primary); font-weight: 700; font-size: 1.1cqmin; letter-spacing: 0.06em; text-transform: uppercase; }
+  .save {
+    width: 100%; padding: 1.1cqmin; border-radius: 1.4cqmin; text-align: center; font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #0b0f19; font-size: 1.3cqmin;
+  }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8cqmin; width: 100%; }
+  .tile {
+    border-radius: 1.3cqmin; padding: 1.1cqmin 0.6cqmin; text-align: center; font-size: 1.1cqmin; color: var(--muted);
+    background: var(--surface, rgba(255,255,255,0.04)); border: 1px solid var(--border);
+  }
+  .tile b { display: block; font-size: 2cqmin; color: var(--primary); margin-bottom: 0.3cqmin; }
+
+  /* ---------- Сцена 0: докосване ---------- */
+  .card3d {
+    position: absolute; width: 34cqmin; aspect-ratio: 1.586; border-radius: 2cqmin; z-index: 3;
+    background: linear-gradient(135deg, #1b2230, #070a10); border: 1px solid rgba(0,242,255,0.3);
+    box-shadow: 0 2cqmin 6cqmin rgba(0,0,0,0.6), 0 0 4cqmin rgba(0,242,255,0.15);
+    display: flex; align-items: center; justify-content: center; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 2.4cqmin;
+    left: -10%; top: 30%; transform: rotate(-18deg); opacity: 0;
+  }
+  .card3d span { color: var(--primary); }
+  .scene.on .card3d { animation: tapIn 2.6s cubic-bezier(.16,1,.3,1) forwards 0.3s; }
+  @keyframes tapIn {
+    0% { opacity: 0; transform: translate(-20cqmin, 6cqmin) rotate(-30deg); }
+    55% { opacity: 1; transform: translate(14cqmin, 0) rotate(-8deg); }
+    70% { transform: translate(15cqmin, -1cqmin) rotate(-8deg) scale(0.97); }
+    100% { opacity: 1; transform: translate(-2cqmin, 8cqmin) rotate(-14deg); }
+  }
+  .ripple { position: absolute; width: 10cqmin; height: 10cqmin; border-radius: 50%; border: 2px solid var(--primary); opacity: 0; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 4; }
+  .scene.on .ripple { animation: ripple 1.4s ease-out 1.7s 2; }
+  .scene.on .ripple.r2 { animation-delay: 2s; }
+  @keyframes ripple { from { opacity: 0.9; transform: translate(-50%,-50%) scale(0.4); } to { opacity: 0; transform: translate(-50%,-50%) scale(3); } }
+  .s0 .screen > * { opacity: 0; transform: translateY(1cqmin); }
+  .scene.on.s0 .screen > * { animation: pop 0.6s cubic-bezier(.16,1,.3,1) forwards; }
+  .scene.on.s0 .screen > *:nth-child(1) { animation-delay: 1.9s; }
+  .scene.on.s0 .screen > *:nth-child(2) { animation-delay: 2.0s; }
+  .scene.on.s0 .screen > *:nth-child(3) { animation-delay: 2.1s; }
+  .scene.on.s0 .screen > *:nth-child(4) { animation-delay: 2.2s; }
+  .scene.on.s0 .screen > *:nth-child(5) { animation-delay: 2.35s; }
+  @keyframes pop { to { opacity: 1; transform: none; } }
+
+  /* ---------- Сцена 1: бутони ---------- */
+  .orbit { position: absolute; inset: 0; pointer-events: none; }
+  .chip {
+    position: absolute; left: 50%; top: 50%; padding: 1cqmin 1.6cqmin; border-radius: 99px; white-space: nowrap;
+    background: rgba(13,19,32,0.85); border: 1px solid rgba(0,242,255,0.3); font-size: 1.8cqmin; font-weight: 600;
+    box-shadow: 0 1cqmin 3cqmin rgba(0,0,0,0.4); opacity: 0; transform: translate(-50%,-50%) scale(0.4);
+    transition: transform 0.8s cubic-bezier(.16,1,.3,1), opacity 0.5s;
+  }
+  .scene.on .chip { opacity: 1; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1); }
+  @container (max-aspect-ratio: 4/5) { .chip { font-size: 2.6cqw; } }
+  .vcard {
+    position: absolute; bottom: 8%; left: 50%; transform: translate(-50%, 4cqmin); opacity: 0; z-index: 4;
+    background: #fff; color: #111; border-radius: 1.6cqmin; padding: 1.2cqmin 1.8cqmin; font-size: 1.6cqmin; font-weight: 600;
+    display: flex; gap: 1cqmin; align-items: center; box-shadow: 0 1.5cqmin 4cqmin rgba(0,0,0,0.5); white-space: nowrap;
+  }
+  .scene.on .vcard { animation: toast 3.2s ease 2.2s forwards; }
+  @keyframes toast { 15%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 1; transform: translate(-50%, 0); } }
+
+  /* ---------- Сцена 2: запитвания ---------- */
+  .field { width: 100%; border-radius: 1.2cqmin; padding: 1cqmin 1.2cqmin; background: var(--input-bg, rgba(15,23,42,0.7)); border: 1px solid var(--border); font-size: 1.25cqmin; color: var(--muted); min-height: 3.6cqmin; text-align: left; }
+  .field.typing { color: var(--text); border-color: rgba(0,242,255,0.4); }
+  .lead-title { font-family: 'Manrope', sans-serif; font-weight: 800; font-weight: 700; font-size: 1.6cqmin; margin: 1cqmin 0 0.4cqmin; }
+  .sent { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(5,8,15,0.75); opacity: 0; transition: opacity 0.4s; font-size: 2cqmin; font-weight: 700; color: var(--secondary); z-index: 6; }
+  .sent.show { opacity: 1; }
+  .inbox {
+    position: absolute; right: -6%; top: 50%; width: 46%; border-radius: 1.8cqmin; padding: 1.6cqmin; z-index: 7;
+    background: rgba(13,19,32,0.95); border: 1px solid rgba(161,232,175,0.35); box-shadow: 0 2cqmin 5cqmin rgba(0,0,0,0.5);
+    opacity: 0; transform: translateX(4cqmin); transition: all 0.7s cubic-bezier(.16,1,.3,1); font-size: 1.5cqmin;
+  }
+  .inbox.show { opacity: 1; transform: none; }
+  .inbox h4 { font-size: 1.6cqmin; margin-bottom: 1cqmin; }
+  .row { display: flex; justify-content: space-between; gap: 1cqmin; padding: 0.8cqmin 0; border-top: 1px solid var(--border); color: var(--muted); }
+  .row b { color: var(--text); font-weight: 600; }
+  .row.new { color: var(--secondary); animation: flash 1.2s ease 2; }
+  @keyframes flash { 50% { background: rgba(161,232,175,0.12); } }
+  .xls { margin-top: 1cqmin; display: inline-block; padding: 0.6cqmin 1.2cqmin; border-radius: 1cqmin; background: #1d6f42; color: #fff; font-weight: 700; font-size: 1.3cqmin; }
+  @container (max-aspect-ratio: 4/5) { .inbox { right: -4%; width: 52%; top: 4%; } }
+
+  /* ---------- Сцена 3: статистики ---------- */
+  .dash { width: 92%; max-width: 60cqmin; border-radius: 2.4cqmin; padding: 2.4cqmin; background: rgba(13,19,32,0.88); border: 1px solid var(--border); box-shadow: 0 3cqmin 8cqmin rgba(0,0,0,0.5); opacity: 0; transform: scale(0.94); transition: all 0.8s cubic-bezier(.16,1,.3,1); }
+  .scene.on .dash { opacity: 1; transform: none; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2cqmin; margin-bottom: 2cqmin; }
+  .kpi { border-radius: 1.4cqmin; padding: 1.4cqmin; background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+  .kpi small { display: block; color: var(--muted); font-size: 1.3cqmin; margin-bottom: 0.4cqmin; }
+  .kpi b { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 3.2cqmin; }
+  .kpi:nth-child(1) b { color: var(--primary); } .kpi:nth-child(4) b { color: var(--secondary); }
+  .chart { display: flex; align-items: flex-end; gap: 1.2cqmin; height: 18cqmin; padding-top: 1cqmin; border-bottom: 1px solid var(--border); }
+  .chart i { flex: 1; border-radius: 0.8cqmin 0.8cqmin 0 0; background: linear-gradient(180deg, var(--primary), rgba(0,242,255,0.15)); height: 0; transition: height 1.1s cubic-bezier(.16,1,.3,1); }
+  .days { display: flex; gap: 1.2cqmin; margin-top: 0.8cqmin; } .days span { flex: 1; text-align: center; font-size: 1.2cqmin; color: var(--muted); }
+  @container (max-aspect-ratio: 4/5) { .kpis { grid-template-columns: repeat(2, 1fr); } .dash { width: 100%; } }
+
+  /* ---------- Сцена 4: езици / часове / сподели ---------- */
+  .langs { display: flex; gap: 0.5cqmin; padding: 0.4cqmin; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); align-self: flex-start; }
+  .langs span { padding: 0.4cqmin 1cqmin; border-radius: 99px; font-size: 1.05cqmin; font-weight: 700; color: var(--muted); transition: all 0.3s; }
+  .langs span.on { background: var(--primary); color: #0b0f19; }
+  .topbar { display: flex; justify-content: space-between; width: 100%; align-items: center; }
+  .share { padding: 0.5cqmin 1.1cqmin; border-radius: 99px; border: 1px solid rgba(0,242,255,0.35); color: var(--primary); font-size: 1.05cqmin; font-weight: 700; }
+  .scene.on .share { animation: pulse 1.6s ease-in-out infinite 1s; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 0.8cqmin rgba(0,242,255,0.18); } }
+  .hours { display: inline-flex; align-items: center; gap: 0.6cqmin; padding: 0.5cqmin 1.1cqmin; border-radius: 99px; background: rgba(161,232,175,0.12); color: var(--secondary); font-size: 1.1cqmin; font-weight: 700; }
+  .hours i { width: 0.9cqmin; height: 0.9cqmin; border-radius: 50%; background: var(--secondary); box-shadow: 0 0 1cqmin var(--secondary); }
+  .swap { transition: opacity 0.25s; }
+  .flags { position: absolute; inset: 0; pointer-events: none; }
+  .flag { position: absolute; font-size: 4.5cqmin; opacity: 0; transition: all 0.8s cubic-bezier(.16,1,.3,1); filter: drop-shadow(0 1cqmin 2cqmin rgba(0,0,0,0.5)); }
+  .scene.on .flag { opacity: 1; }
+
+  /* ---------- Сцена 5: лого ---------- */
+  .web-tile { grid-column: span 2; position: relative; overflow: hidden; height: 7cqmin; border-radius: 1.3cqmin; border: 1px solid var(--border); display: grid; place-items: center; font-size: 1.2cqmin; color: #fff; font-weight: 700; }
+  .web-tile .logo-bg { position: absolute; inset: 0; background: #fff url(assets/demo-logo-arhproekt.png) center/62% no-repeat; transform: scale(1.4); opacity: 0; transition: all 1s cubic-bezier(.16,1,.3,1); }
+  .web-tile.show .logo-bg { transform: none; opacity: 1; }
+  .web-tile span { position: absolute; bottom: 0; left: 0; right: 0; padding: 0.4cqmin; background: rgba(0,0,0,0.55); z-index: 2; }
+  .flylogo { position: absolute; width: 16cqmin; aspect-ratio: 1.6; border-radius: 1.6cqmin; background: #fff url(assets/demo-logo-arhproekt.png) center/80% no-repeat; box-shadow: 0 2cqmin 5cqmin rgba(0,0,0,0.5); left: 64%; top: 18%; z-index: 6; opacity: 0; }
+  .scene.on .flylogo { animation: flyLogo 2.2s cubic-bezier(.65,0,.35,1) 0.6s forwards; }
+  @keyframes flyLogo { 0% { opacity: 0; transform: scale(0.6) rotate(8deg); } 25% { opacity: 1; transform: scale(1) rotate(-4deg); } 100% { opacity: 0; transform: translate(-20cqmin, 22cqmin) scale(0.4); } }
+  @container (max-aspect-ratio: 4/5) { .flylogo { left: 60%; top: 2%; } }
+
+  /* ---------- Сцена 6: портфолио ---------- */
+  .pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45cqmin; width: 100%; border-radius: 1.4cqmin; overflow: hidden; }
+  .pgrid div { aspect-ratio: 1; background: #1f2937 center/cover; opacity: 0; transform: scale(0.6); transition: all 0.6s cubic-bezier(.16,1,.3,1); position: relative; }
+  .pgrid div:first-child { grid-column: span 2; grid-row: span 2; }
+  .pgrid div.show { opacity: 1; transform: none; }
+  .pgrid .vid::after { content: '▶'; position: absolute; inset: 0; margin: auto; width: 3.2cqmin; height: 3.2cqmin; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,0.25); color: #fff; font-size: 1.3cqmin; backdrop-filter: blur(4px); }
+  .lightbox { position: absolute; inset: 0; background: rgba(4,6,12,0.96); display: grid; place-items: center; z-index: 6; opacity: 0; transition: opacity 0.4s; padding: 2cqmin; }
+  .lightbox.show { opacity: 1; }
+  .lightbox .ph { width: 100%; aspect-ratio: 1; border-radius: 1.2cqmin; background: center/cover; transition: transform 0.5s cubic-bezier(.16,1,.3,1), opacity 0.4s; }
+  .lightbox small { position: absolute; bottom: 10%; left: 6%; right: 6%; text-align: center; font-size: 1.2cqmin; color: #ddd; }
+  .shrink { position: absolute; left: -6%; top: 14%; z-index: 5; display: grid; gap: 1cqmin; }
+  .shrink div { padding: 1cqmin 1.6cqmin; border-radius: 1.4cqmin; background: rgba(13,19,32,0.92); border: 1px solid rgba(255,212,121,0.35); font-size: 1.6cqmin; opacity: 0; transform: translateX(-3cqmin); transition: all 0.6s cubic-bezier(.16,1,.3,1); white-space: nowrap; }
+  .shrink div.show { opacity: 1; transform: none; }
+  .shrink b { color: var(--gold); }
+  .shrink s { color: var(--muted); }
+  @container (max-aspect-ratio: 4/5) { .shrink { left: -4%; top: 0; } .shrink div { font-size: 2.3cqw; } }
+
+  /* ---------- Сцена 7: фонове ---------- */
+  .theme-name { position: absolute; bottom: 4%; left: 50%; transform: translateX(-50%); padding: 0.8cqmin 1.8cqmin; border-radius: 99px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); font-size: 1.8cqmin; font-weight: 700; white-space: nowrap; z-index: 6; backdrop-filter: blur(6px); }
+  .screen.themed { transition: background 0.8s ease; }
+  .screen .pattern { position: absolute; inset: 0; background: var(--theme-pattern, none); background-size: var(--theme-pattern-size, auto); opacity: 0.9; pointer-events: none; }
+  .screen .accent { position: absolute; inset: 0; background-image: var(--theme-accent, none); background-position: var(--theme-accent-pos, 50% 50%); background-size: var(--theme-accent-size, 46% 60%); background-repeat: no-repeat; pointer-events: none; }
+  .screen > .z { position: relative; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1cqmin; }
+  .swatches { position: absolute; right: -4%; top: 10%; display: grid; gap: 1cqmin; z-index: 6; }
+  .swatches i { width: 5cqmin; height: 5cqmin; border-radius: 1.4cqmin; border: 2px solid rgba(255,255,255,0.15); transition: transform 0.3s, border-color 0.3s; background-size: cover; }
+  .swatches i.on { transform: scale(1.18); border-color: #fff; }
+  @container (max-aspect-ratio: 4/5) { .swatches { right: -8%; } }
+
+  /* ---------- Сцена 8: фирмен портал ---------- */
+  .team { width: 94%; max-width: 62cqmin; border-radius: 2.4cqmin; padding: 2.2cqmin; background: rgba(13,19,32,0.9); border: 1px solid var(--border); box-shadow: 0 3cqmin 8cqmin rgba(0,0,0,0.5); }
+  .team h4 { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 2cqmin; margin-bottom: 1.4cqmin; display: flex; justify-content: space-between; }
+  .team h4 span { color: var(--secondary); font-size: 1.5cqmin; }
+  .member { display: grid; grid-template-columns: 4.2cqmin 1fr auto auto; gap: 1.4cqmin; align-items: center; padding: 1.1cqmin 0; border-top: 1px solid var(--border); opacity: 0; transform: translateY(1.5cqmin); transition: all 0.5s cubic-bezier(.16,1,.3,1); }
+  .member.show { opacity: 1; transform: none; }
+  .member .m-ava { width: 4.2cqmin; height: 4.2cqmin; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: grid; place-items: center; color: #0b0f19; font-weight: 800; font-size: 1.5cqmin; }
+  .member b { font-size: 1.6cqmin; display: block; } .member small { font-size: 1.25cqmin; color: var(--muted); }
+  .member .sc { font-family: 'Manrope', sans-serif; font-weight: 800; font-weight: 700; font-size: 1.8cqmin; color: var(--primary); text-align: right; }
+  .member .ed { font-size: 1.2cqmin; padding: 0.5cqmin 1cqmin; border-radius: 0.9cqmin; border: 1px solid var(--border); color: var(--muted); }
+  .member.edit .ed { border-color: var(--primary); color: var(--primary); background: rgba(0,242,255,0.08); }
+  .medal { margin-right: 0.4cqmin; }
+
+  /* ---------- Финал ---------- */
+  .final { grid-template-columns: 1fr; text-align: center; justify-items: center; align-content: center; }
+  .final .copy { justify-items: center; }
+  .final h2 { font-size: 7cqmin; }
+  .final .tag { justify-self: center; }
+  .menu { display: grid; grid-template-columns: repeat(3, auto); gap: 1.4cqmin; justify-content: center; margin-top: 1cqmin; }
+  .menu span { padding: 1.2cqmin 2cqmin; border-radius: 1.6cqmin; background: rgba(255,255,255,0.04); border: 1px solid var(--border); font-size: 2cqmin; font-weight: 600; }
+  .menu span.p { border-color: rgba(255,212,121,0.4); }
+  .menu span small { display: block; font-size: 1.5cqmin; color: var(--gold); font-weight: 700; margin-top: 0.3cqmin; }
+  .cta { margin-top: 2cqmin; display: inline-block; padding: 1.8cqmin 4cqmin; border-radius: 99px; font-weight: 800; font-size: 2.4cqmin; color: #0b0f19; background: linear-gradient(135deg, var(--primary), var(--secondary)); box-shadow: 0 1.5cqmin 5cqmin rgba(0,242,255,0.3); cursor: pointer; border: 0; animation: pulse 2s ease-in-out infinite; }
+  .replay { margin-top: 1.4cqmin; background: none; border: 0; color: var(--muted); font-size: 1.8cqmin; cursor: pointer; text-decoration: underline; }
+  @container (max-aspect-ratio: 4/5) {
+    .final h2 { font-size: 9cqw; } .menu { grid-template-columns: repeat(2, auto); } .menu span { font-size: 3.2cqw; } .menu span small { font-size: 2.6cqw; } .cta { font-size: 4cqw; } .replay { font-size: 3.2cqw; }
+  }
+
+  /* Вграден на началната страница: без ✕ и без рамка — рамката е на родителя */
+  .embed .tour { width: 100vw !important; height: 100vh; aspect-ratio: auto !important; border-radius: 0 !important; box-shadow: none !important; }
+  .embed #btnClose { display: none; }
+  .paused-ind { position: absolute; top: 5.6cqmin; left: 50%; transform: translateX(-50%); z-index: 14; pointer-events: none; opacity: 0; transition: opacity 0.2s; font-size: max(11px, 1.8cqmin); font-weight: 700; letter-spacing: 0.1em; color: var(--muted); }
+  .tour.paused .paused-ind { opacity: 1; }
+  .tour.paused * { animation-play-state: paused !important; }
+
+  @media (prefers-reduced-motion: reduce) { .glow { animation: none; } }
+</style>
+</head>
+<body>
+
+<div class="tour" id="tour">
+  <div class="glow a"></div><div class="glow b"></div><div class="grid-bg"></div>
+  <div class="bars" id="bars"></div>
+  <div class="brand">NFC<b>Bulgaria</b></div>
+  <div class="ctrl">
+    <button id="btnPause" type="button" aria-label="Пауза">❚❚</button>
+    <button id="btnClose" type="button" aria-label="Затвори">✕</button>
+  </div>
+  <div class="tapzone l" onclick="Tour.prev()"></div>
+  <div class="tapzone r" onclick="Tour.next()"></div>
+  <div class="paused-ind">ПАУЗА</div>
+
+  <!-- 0. Докосване -->
+  <section class="scene s0" data-dur="5200">
+    <div class="copy">
+      <span class="tag">NFC визитка</span>
+      <h2>Едно докосване.<br><em>Цялата ви визитка.</em></h2>
+      <p>Допрете картата до телефона — без приложение, без сканиране. Ето какво още може да включите в панела си.</p>
+    </div>
+    <div class="visual">
+      <div class="card3d">NFC<span>Bulgaria</span></div>
+      <div class="ripple"></div><div class="ripple r2"></div>
+      <div class="phone"><div class="screen">
+        <div class="ava"><div></div></div>
+        <div class="nm">Александър Петров</div>
+        <div class="ttl">Главен архитект</div>
+        <div class="save">Запази контакта</div>
+        <div class="tiles"><div class="tile"><b>☎</b>Телефон</div><div class="tile"><b>✉</b>Имейл</div><div class="tile"><b>◎</b>Viber</div><div class="tile"><b>✆</b>WhatsApp</div></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 1. Контакт + бутони -->
+  <section class="scene s1" data-dur="5200">
+    <div class="copy">
+      <span class="tag">Включено</span>
+      <h2>Запазват ви <em>с един бутон</em></h2>
+      <p>„Запази контакта“ слага името, телефона, имейла и снимката ви директно в телефона на клиента. Плюс бутони за <strong>Viber, WhatsApp, LinkedIn, Facebook, Instagram, сайт и Google Maps</strong>.</p>
+      <span class="where">Панел → Редактирай профила</span>
+    </div>
+    <div class="visual">
+      <div class="phone"><div class="screen">
+        <div class="ava"><div></div></div>
+        <div class="nm">Александър Петров</div>
+        <div class="ttl">Главен архитект</div>
+        <div class="save">Запази контакта</div>
+        <div class="tiles"><div class="tile"><b>☎</b>Телефон</div><div class="tile"><b>✉</b>Имейл</div><div class="tile"><b>in</b>LinkedIn</div><div class="tile"><b>⌖</b>Карта</div></div>
+      </div></div>
+      <div class="orbit">
+        <span class="chip" style="--x:-21.6cqmin;--y:-22.0cqmin">💬 Viber</span>
+        <span class="chip" style="--x:20.2cqmin;--y:-20.0cqmin">🟢 WhatsApp</span>
+        <span class="chip" style="--x:-23.8cqmin;--y:2.0cqmin">💼 LinkedIn</span>
+        <span class="chip" style="--x:22.3cqmin;--y:4.0cqmin">📸 Instagram</span>
+        <span class="chip" style="--x:-20.2cqmin;--y:24.0cqmin">🌐 Уебсайт</span>
+        <span class="chip" style="--x:19.4cqmin;--y:26.0cqmin">📍 Google Maps</span>
+      </div>
+      <div class="vcard">✅ Контактът е запазен в телефона</div>
+    </div>
+  </section>
+
+  <!-- 2. Запитвания -->
+  <section class="scene s2" data-dur="6400">
+    <div class="copy">
+      <span class="tag">Включено</span>
+      <h2>Клиентът ви <em>оставя контакт</em></h2>
+      <p>Формата „Изпрати ми твоите контакти“ ви праща името и телефона му. Всички запитвания са в панела и се свалят в <strong>Excel</strong> с един клик.</p>
+      <span class="where">Панел → Получени контакти</span>
+    </div>
+    <div class="visual">
+      <div class="phone"><div class="screen">
+        <div class="ava"><div></div></div>
+        <div class="nm">Александър Петров</div>
+        <div class="lead-title">Изпрати ми твоите контакти</div>
+        <div class="field" id="f1">Твоето име</div>
+        <div class="field" id="f2">Твоят телефон</div>
+        <div class="field" id="f3" style="min-height:6cqmin">Запитване...</div>
+        <div class="save">Изпрати обратно</div>
+        <div class="sent" id="sent">✓ Изпратено</div>
+      </div></div>
+      <div class="inbox" id="inbox">
+        <h4>📥 Получени контакти</h4>
+        <div class="row new"><b>Мария Иванова</b><span>сега</span></div>
+        <div class="row"><b>Георги Петков</b><span>вчера</span></div>
+        <div class="row"><b>Ивайло Стоянов</b><span>12.10</span></div>
+        <span class="xls">⬇ Свали в Excel</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Статистики -->
+  <section class="scene s3" data-dur="5400">
+    <div class="copy">
+      <span class="tag">Включено</span>
+      <h2>Виждате <em>кой ви отваря</em></h2>
+      <p>Сканирания по дни, колко души са запазили контакта ви, колко запитвания сте получили и какъв процент от отворилите се превръщат в клиенти.</p>
+      <span class="where">Панел → Анализи и активност</span>
+    </div>
+    <div class="visual">
+      <div class="dash">
+        <div class="kpis">
+          <div class="kpi"><small>Сканирания</small><b data-count="165">0</b></div>
+          <div class="kpi"><small>Запазвания</small><b data-count="142">0</b></div>
+          <div class="kpi"><small>Запитвания</small><b data-count="12">0</b></div>
+          <div class="kpi"><small>Конверсия</small><b data-count="7.2" data-suffix="%">0</b></div>
+        </div>
+        <div class="chart" id="chart"><i data-h="36"></i><i data-h="60"></i><i data-h="44"></i><i data-h="72"></i><i data-h="100"></i><i data-h="52"></i><i data-h="43"></i></div>
+        <div class="days"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Езици, часове, сподели -->
+  <section class="scene s4" data-dur="5600">
+    <div class="copy">
+      <span class="tag">Включено</span>
+      <h2>Говори <em>4 езика</em></h2>
+      <p>Визитката се отваря на езика на телефона — <strong>български, английски, немски, румънски</strong>. Включете и <strong>работно време</strong> („В момента е на работа“) и бутон <strong>„Сподели“</strong>.</p>
+      <span class="where">Панел → Редактирай профила → Преводи и настройки</span>
+    </div>
+    <div class="visual">
+      <div class="phone"><div class="screen">
+        <div class="topbar"><div class="langs" id="langs"><span class="on">BG</span><span>EN</span><span>DE</span><span>RO</span></div><span class="share" id="shareTxt">Сподели</span></div>
+        <div class="ava" style="margin-top:1cqmin"><div></div></div>
+        <div class="nm">Александър Петров</div>
+        <div class="ttl swap" id="ttlTxt">Главен архитект</div>
+        <span class="hours"><i></i><span class="swap" id="hrsTxt">В момента е на работа</span></span>
+        <div class="save swap" id="saveTxt">Запази контакта</div>
+        <div class="tiles"><div class="tile"><b>☎</b><span class="swap" id="telTxt">Телефон</span></div><div class="tile"><b>✉</b><span class="swap" id="mailTxt">Имейл</span></div></div>
+      </div></div>
+      <div class="flags">
+        <span class="flag" style="left:6%;top:10%">🇧🇬</span><span class="flag" style="right:6%;top:18%">🇬🇧</span>
+        <span class="flag" style="left:4%;bottom:18%">🇩🇪</span><span class="flag" style="right:8%;bottom:10%">🇷🇴</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Лого и снимка -->
+  <section class="scene s5" data-dur="4800">
+    <div class="copy">
+      <span class="tag">Включено</span>
+      <h2>Вашият <em>бранд</em> отпред</h2>
+      <p>Качете профилна снимка и логото на фирмата. Логото стои като банер на бутона към сайта ви, а снимката ви влиза в контакта, който клиентът запазва.</p>
+      <span class="where">Панел → Редактирай профила → Лого на фирмата</span>
+    </div>
+    <div class="visual">
+      <div class="flylogo"></div>
+      <div class="phone"><div class="screen">
+        <div class="ava"><div></div></div>
+        <div class="nm">Александър Петров</div>
+        <div class="ttl">АРХПРОЕКТ</div>
+        <div class="save">Запази контакта</div>
+        <div class="tiles"><div class="tile"><b>☎</b>Телефон</div><div class="tile"><b>✉</b>Имейл</div>
+          <div class="web-tile" id="webTile"><div class="logo-bg"></div><span>arhproekt.bg</span></div></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 6. Портфолио -->
+  <section class="scene s6" data-dur="7200">
+    <div class="copy">
+      <span class="tag paid">Ново · платено</span>
+      <h2>Покажете <em>работата си</em></h2>
+      <p>Снимки и видеа с описания направо във визитката — галерия на цял екран със суайп. Файловете се смаляват автоматично, затова визитката остава светкавично бърза.</p>
+      <span class="price">от 8,99 €/мес · Фото + Видео 16,99 € · Про 25,99 €</span>
+      <span class="where">Панел → 🖼️ Портфолио във визитката</span>
+    </div>
+    <div class="visual">
+      <div class="shrink" id="shrink">
+        <div>📸 <s>4,8 MB</s> → <b>190 KB</b></div>
+        <div>🎬 <s>85 MB</s> → <b>12 MB</b> · 720p</div>
+      </div>
+      <div class="phone"><div class="screen">
+        <div class="nm" style="align-self:flex-start;font-size:1.6cqmin">— Портфолио</div>
+        <div class="pgrid" id="pgrid">
+          <div style="background-image:url(assets/card_full.webp)"></div>
+          <div style="background-image:url(assets/business_sign.webp)"></div>
+          <div class="vid" style="background-image:url(assets/invites/koychev/poster.jpg)"></div>
+          <div style="background-image:url(assets/stickers.webp)"></div>
+          <div style="background-image:url(assets/tap.webp)"></div>
+          <div style="background-image:url(assets/table-models.webp)"></div>
+        </div>
+        <div class="save" style="background:none;border:1px solid var(--border);color:var(--text)">Виж всички (14)</div>
+        <div class="lightbox" id="lb"><div class="ph" id="lbph"></div><small id="lbcap">Метални визитки — серия за ЕЛКАБЕЛ</small></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 7. Фонове -->
+  <section class="scene s7" data-dur="6400">
+    <div class="copy">
+      <span class="tag paid">Платено</span>
+      <h2>Фон, който <em>ви отличава</em></h2>
+      <p>9 премиум фона за различни бизнеси — сменят и визитката, и цялата страница, която вижда клиентът. Купувате веднъж и си остава ваш.</p>
+      <span class="price">9,99 € еднократно</span>
+      <span class="where">Панел → 🎨 Фон на визитката</span>
+    </div>
+    <div class="visual">
+      <div class="swatches" id="swatches"></div>
+      <div class="phone"><div class="screen themed" id="themeScreen">
+        <div class="pattern"></div><div class="accent"></div>
+        <div class="z">
+          <div class="ava"><div></div></div>
+          <div class="nm">Александър Петров</div>
+          <div class="ttl">Главен архитект</div>
+          <div class="save">Запази контакта</div>
+          <div class="tiles"><div class="tile"><b>☎</b>Телефон</div><div class="tile"><b>✉</b>Имейл</div><div class="tile"><b>in</b>LinkedIn</div><div class="tile"><b>⌖</b>Карта</div></div>
+        </div>
+      </div></div>
+      <div class="theme-name" id="themeName">Квантум</div>
+    </div>
+  </section>
+
+  <!-- 8. Фирмен портал -->
+  <section class="scene s8" data-dur="6400">
+    <div class="copy">
+      <span class="tag paid">За фирми · платено</span>
+      <h2>Целият екип <em>на едно място</em></h2>
+      <p>Като управител виждате визитките на всички служители: кой колко пъти е сканиран, класация, запитвания — и <strong>редактирате всяка визитка</strong> от своето табло.</p>
+      <span class="price">от 6 €/мес · 5, 10, 20 или 40 служителя</span>
+      <span class="where">Панел → Фирмен портал</span>
+    </div>
+    <div class="visual">
+      <div class="team">
+        <h4>👥 Екипът · този месец <span>+38%</span></h4>
+        <div class="member"><div class="m-ava">ИС</div><div><b><span class="medal">🥇</span>Иван Стоянов</b><small>Търговски отдел</small></div><div class="sc" data-count="214">0</div><span class="ed">✏️ Редактирай</span></div>
+        <div class="member"><div class="m-ava">МГ</div><div><b><span class="medal">🥈</span>Мария Георгиева</b><small>Продажби</small></div><div class="sc" data-count="187">0</div><span class="ed">✏️ Редактирай</span></div>
+        <div class="member"><div class="m-ava">ПД</div><div><b><span class="medal">🥉</span>Петър Димов</b><small>Инспекции</small></div><div class="sc" data-count="152">0</div><span class="ed">✏️ Редактирай</span></div>
+        <div class="member"><div class="m-ava">ЕК</div><div><b>Елена Колева</b><small>Офис</small></div><div class="sc" data-count="96">0</div><span class="ed">✏️ Редактирай</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Финал -->
+  <section class="scene final" data-dur="8000">
+    <div class="copy">
+      <span class="tag">Всичко е в панела ви</span>
+      <h2>Включете това, <em>което ви трябва</em></h2>
+      <div class="menu">
+        <span>📇 Контакт и бутони</span><span>📥 Запитвания</span><span>📊 Статистики</span>
+        <span class="p">🖼️ Портфолио<small>от 8,99 €/мес</small></span><span class="p">🎨 Премиум фон<small>9,99 € веднъж</small></span><span class="p">🏢 Фирмен портал<small>от 6 €/мес</small></span>
+      </div>
+      <button class="cta" type="button" onclick="Tour.done()">Към панела →</button>
+      <button class="replay" type="button" onclick="Tour.go(0)">↺ Гледай отново</button>
+    </div>
+  </section>
+</div>
+
+<script src="card-themes.js"></script>
+<script>
+(function () {
+  const tour = document.getElementById('tour');
+  const EMBED = new URLSearchParams(location.search).get('embed') === '1';
+  const scenes = [...tour.querySelectorAll('.scene')];
+  const barsEl = document.getElementById('bars');
+  barsEl.innerHTML = scenes.map((_, i) => `<div class="bar" data-i="${i}"><i></i></div>`).join('');
+  const bars = [...barsEl.children];
+  bars.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); go(+b.dataset.i); }));
+
+  let idx = -1, timers = [], start = 0, elapsed = 0, paused = false, raf = 0;
+
+  const later = (ms, fn) => { timers.push({ at: ms, fn, done: false }); };
+  const clearTimers = () => { timers = []; };
+
+  // ---- Действия вътре във всяка сцена (по време, в ms от началото ѝ) ----
+  const scripts = {
+    2: s => {
+      const type = (id, text, at) => {
+        const el = s.querySelector('#' + id);
+        el.textContent = el.dataset.ph || (el.dataset.ph = el.textContent); el.classList.remove('typing');
+        [...text].forEach((ch, k) => later(at + k * 55, () => {
+          if (k === 0) { el.textContent = ''; el.classList.add('typing'); }
+          el.textContent += ch;
+        }));
+      };
+      s.querySelector('#sent').classList.remove('show');
+      s.querySelector('#inbox').classList.remove('show');
+      type('f1', 'Мария Иванова', 600);
+      type('f2', '0888 123 456', 1500);
+      type('f3', 'Оферта за проект?', 2300);
+      later(3500, () => s.querySelector('#sent').classList.add('show'));
+      later(4100, () => s.querySelector('#inbox').classList.add('show'));
+    },
+    3: s => {
+      s.querySelectorAll('#chart i').forEach(i => { i.style.height = '0'; });
+      s.querySelectorAll('[data-count]').forEach(el => el.textContent = '0');
+      later(400, () => s.querySelectorAll('#chart i').forEach((i, k) => setTimeout(() => i.style.height = i.dataset.h + '%', k * 90)));
+      later(300, () => countUp(s, 1600));
+    },
+    4: s => {
+      const L = {
+        BG: ['Главен архитект', 'В момента е на работа', 'Запази контакта', 'Телефон', 'Имейл', 'Сподели'],
+        EN: ['Chief Architect', 'Currently at work', 'Save Contact', 'Phone', 'Email', 'Share'],
+        DE: ['Chefarchitekt', 'Gerade im Dienst', 'Kontakt speichern', 'Telefon', 'E-Mail', 'Teilen'],
+        RO: ['Arhitect șef', 'În prezent la lucru', 'Salvare contact', 'Telefon', 'E-mail', 'Distribuie'],
+      };
+      const ids = ['ttlTxt', 'hrsTxt', 'saveTxt', 'telTxt', 'mailTxt', 'shareTxt'];
+      const set = lang => {
+        s.querySelectorAll('#langs span').forEach(x => x.classList.toggle('on', x.textContent === lang));
+        ids.forEach((id, k) => { const el = s.querySelector('#' + id); el.style.opacity = 0; setTimeout(() => { el.textContent = L[lang][k]; el.style.opacity = 1; }, 220); });
+      };
+      set('BG');
+      ['EN', 'DE', 'RO', 'BG'].forEach((l, k) => later(1200 + k * 1100, () => set(l)));
+    },
+    5: s => {
+      const w = s.querySelector('#webTile'); w.classList.remove('show');
+      later(2300, () => w.classList.add('show'));
+    },
+    6: s => {
+      const cells = [...s.querySelectorAll('#pgrid div')];
+      const lb = s.querySelector('#lb'), ph = s.querySelector('#lbph'), cap = s.querySelector('#lbcap');
+      const sh = [...s.querySelectorAll('#shrink div')];
+      cells.forEach(c => c.classList.remove('show')); lb.classList.remove('show'); sh.forEach(x => x.classList.remove('show'));
+      cells.forEach((c, k) => later(500 + k * 160, () => c.classList.add('show')));
+      sh.forEach((x, k) => later(1200 + k * 500, () => x.classList.add('show')));
+      const shots = [['assets/card_full.webp', 'Метални визитки — серия за ЕЛКАБЕЛ'], ['assets/table-models.webp', 'Табели за витрина — 3 модела'], ['assets/tap.webp', 'Докосни и запази контакта']];
+      later(3000, () => { ph.style.backgroundImage = `url(${shots[0][0]})`; cap.textContent = shots[0][1]; ph.style.transform = 'none'; lb.classList.add('show'); });
+      [1, 2].forEach((n, k) => later(4200 + k * 1100, () => {
+        ph.style.transform = 'translateX(-30%)'; ph.style.opacity = 0;
+        setTimeout(() => { ph.style.backgroundImage = `url(${shots[n][0]})`; cap.textContent = shots[n][1]; ph.style.transition = 'none'; ph.style.transform = 'translateX(30%)';
+          requestAnimationFrame(() => { ph.style.transition = ''; ph.style.transform = 'none'; ph.style.opacity = 1; }); }, 250);
+      }));
+    },
+    7: s => {
+      if (!window.CardThemes) return;
+      const ids = ['quantum', 'circuit', 'aurora', 'platinum', 'forge', 'meridian'];
+      const scr = s.querySelector('#themeScreen'), nameEl = s.querySelector('#themeName'), sw = s.querySelector('#swatches');
+      sw.innerHTML = ids.map(id => `<i style="background:${CardThemes.get(id).page}"></i>`).join('');
+      const set = k => {
+        const t = CardThemes.apply(scr, ids[k], true);
+        nameEl.textContent = t.name;
+        [...sw.children].forEach((x, j) => x.classList.toggle('on', j === k));
+      };
+      set(0);
+      ids.slice(1).forEach((_, k) => later(1000 + k * 1000, () => set(k + 1)));
+    },
+    8: s => {
+      const m = [...s.querySelectorAll('.member')];
+      m.forEach(x => x.classList.remove('show', 'edit'));
+      s.querySelectorAll('[data-count]').forEach(el => el.textContent = '0');
+      m.forEach((x, k) => later(400 + k * 220, () => x.classList.add('show')));
+      later(800, () => countUp(s, 1400));
+      later(3600, () => m[1].classList.add('edit'));
+    },
+  };
+
+  function countUp(root, ms) {
+    root.querySelectorAll('[data-count]').forEach(el => {
+      const to = parseFloat(el.dataset.count), suf = el.dataset.suffix || '', dec = String(el.dataset.count).includes('.') ? 1 : 0;
+      const t0 = performance.now();
+      const step = now => {
+        if (paused) { requestAnimationFrame(step); return; }
+        const p = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+        el.textContent = (to * e).toFixed(dec).replace('.', ',') + suf;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  }
+
+  // Рестарт на CSS анимациите на сцената — махаме и връщаме .on
+  function go(i) {
+    if (i < 0) i = 0;
+    if (i >= scenes.length) { return; }
+    clearTimers();
+    scenes.forEach(s => s.classList.remove('on'));
+    const s = scenes[i];
+    void s.offsetWidth;
+    s.classList.add('on');
+    idx = i; elapsed = 0; start = performance.now();
+    bars.forEach((b, k) => { b.classList.toggle('done', k < i); b.firstChild.style.width = k < i ? '100%' : '0'; });
+    if (scripts[i]) scripts[i](s);
+    setPaused(false);
+  }
+
+  function tick(now) {
+    raf = requestAnimationFrame(tick);
+    if (paused || idx < 0) { start = now - elapsed; return; }
+    elapsed = now - start;
+    const dur = +scenes[idx].dataset.dur;
+    timers.forEach(t => { if (!t.done && elapsed >= t.at) { t.done = true; t.fn(); } });
+    bars[idx].firstChild.style.width = Math.min(100, elapsed / dur * 100) + '%';
+    if (elapsed >= dur) {
+      if (idx < scenes.length - 1) go(idx + 1);
+      else { bars[idx].classList.add('done'); paused = true; }   // финалът остава на екрана
+    }
+  }
+
+  function setPaused(p) {
+    paused = p;
+    tour.classList.toggle('paused', p && idx < scenes.length - 1);
+    document.getElementById('btnPause').textContent = p ? '▶' : '❚❚';
+  }
+
+  function done() {
+    try { localStorage.setItem('nfc_tour_seen', '1'); } catch (e) {}
+    // Вграден в панела (iframe) → казваме на родителя да го затвори
+    if (window.parent !== window) window.parent.postMessage({ type: 'nfc-tour-close' }, '*');
+    else window.location.href = 'dashboard.html';
+  }
+
+  document.getElementById('btnPause').addEventListener('click', () => setPaused(!paused));
+  document.getElementById('btnClose').addEventListener('click', done);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') go(idx + 1);
+    if (e.key === 'ArrowLeft') go(idx - 1);
+    if (e.key === ' ') { e.preventDefault(); setPaused(!paused); }
+    if (e.key === 'Escape') done();
+  });
+  // Задържане с пръст = пауза (като Stories)
+  let holdT, heldPause = false;
+  tour.addEventListener('pointerdown', e => {
+    if (e.target.closest('button,.bar') || paused) return;
+    holdT = setTimeout(() => { heldPause = true; setPaused(true); }, 250);
+  });
+  let suppressTap = false;
+  const release = () => {
+    clearTimeout(holdT);
+    if (heldPause) { heldPause = false; setPaused(false); suppressTap = true; setTimeout(() => suppressTap = false, 0); }
+  };
+  tour.addEventListener('pointerup', release);
+  tour.addEventListener('pointercancel', release);
+  // Задържането не бива да се брои за „напред/назад“
+  tour.addEventListener('click', e => { if (e.target.classList.contains('tapzone') && suppressTap) e.stopPropagation(); }, true);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) setPaused(true); });
+
+  window.Tour = { go, next: () => go(idx + 1), prev: () => go(idx - 1), done };
+  requestAnimationFrame(tick);
+  go(0);
+
+  // ?embed=1 — на началната страница. Чака родителят да каже „видимо“.
+  if (EMBED) {
+    document.documentElement.classList.add('embed');
+    const cta = tour.querySelector('.cta');
+    cta.textContent = 'Поръчай своята визитка →';
+    cta.onclick = () => window.parent.postMessage({ type: 'nfc-tour-cta' }, location.origin);
+    tour.querySelector('.final h2').innerHTML = 'Всичко това — <em>с една карта</em>';
+    tour.querySelector('.final .tag').textContent = 'Включва се от панела на визитката';
+    setPaused(true);
+    let started = false;
+    window.addEventListener('message', e => {
+      if (e.origin !== location.origin || !e.data) return;
+      if (e.data.type === 'nfc-tour-play') {
+        if (!started) { started = true; go(0); }
+        else if (idx < scenes.length - 1) setPaused(false);
+      }
+      if (e.data.type === 'nfc-tour-pause') setPaused(true);
+    });
+  }
+})();
+</script>
+</body>
+</html>
