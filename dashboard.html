@@ -962,6 +962,212 @@
   </div>
 
 
+  <!-- ============ ПОРТФОЛИО ВЪВ ВИЗИТКАТА ============ -->
+  <style>
+    .pf-intro { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+    .pf-intro strong { color: var(--text); }
+    .pf-toggle {
+      display: inline-flex; gap: 4px; padding: 4px; margin: 1.1rem 0 0.2rem;
+      border: 1px solid var(--border); border-radius: 999px; background: rgba(15,23,42,0.5);
+    }
+    .pf-toggle button {
+      border: 0; background: transparent; color: var(--text-muted);
+      font-family: inherit; font-size: 0.78rem; font-weight: 700;
+      padding: 0.45rem 0.95rem; border-radius: 999px; cursor: pointer;
+    }
+    .pf-toggle button.active { background: var(--primary); color: #0b0f19; }
+    .pf-toggle .pf-save { font-size: 0.62rem; opacity: 0.8; margin-left: 4px; }
+    .pf-plans {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem; margin-top: 1rem;
+    }
+    .pf-plan {
+      position: relative; display: flex; flex-direction: column; gap: 0.5rem;
+      padding: 1.2rem 1.1rem 1.1rem; border-radius: 16px;
+      border: 1px solid var(--border); background: rgba(15, 23, 42, 0.45);
+    }
+    .pf-plan.featured {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary), 0 12px 32px rgba(0, 242, 255, 0.12);
+    }
+    .pf-plan.current { border-color: var(--secondary); }
+    .pf-ribbon {
+      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+      padding: 0.15rem 0.6rem; border-radius: 999px; white-space: nowrap;
+      font-size: 0.6rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+      background: var(--primary); color: #0b0f19;
+    }
+    .pf-plan.current .pf-ribbon { background: var(--secondary); }
+    .pf-plan-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; }
+    .pf-plan-price { font-family: 'Space Grotesk', sans-serif; font-size: 1.7rem; font-weight: 700; }
+    .pf-plan-price small { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+    .pf-plan-per { font-size: 0.7rem; color: var(--text-muted); min-height: 1em; }
+    .pf-plan ul { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin: 0.3rem 0 0.4rem; flex: 1; }
+    .pf-plan li { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; padding-left: 1.3rem; position: relative; }
+    .pf-plan li::before { content: '✓'; position: absolute; left: 0; color: var(--secondary); font-weight: 800; }
+    .pf-plan li.no::before { content: '—'; color: var(--text-muted); }
+    .pf-plan li strong { color: var(--text); }
+
+    .pf-status {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.4rem;
+      margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: 14px;
+      border: 1px solid var(--glass-border); background: rgba(0, 242, 255, 0.04);
+    }
+    .pf-status-plan { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+    .pf-status-sub { font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; }
+    .pf-meter { min-width: 130px; flex: 1; }
+    .pf-meter-top { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px; }
+    .pf-meter-top b { color: var(--text); }
+    .pf-meter-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .pf-meter-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+    .pf-status-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .pf-link {
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text);
+      font-family: inherit; font-size: 0.74rem; font-weight: 700; cursor: pointer;
+      padding: 0.45rem 0.8rem; border-radius: 9px;
+    }
+    .pf-link:hover { border-color: var(--primary); color: var(--primary); }
+    .pf-link.danger:hover { border-color: #f87171; color: #f87171; }
+
+    .pf-drop {
+      margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;
+    }
+    @media (max-width: 520px) { .pf-drop { grid-template-columns: 1fr; } }
+    .pf-add {
+      display: flex; align-items: center; gap: 0.8rem; cursor: pointer;
+      padding: 1rem 1.1rem; border-radius: 14px; border: 1.5px dashed rgba(0,242,255,0.35);
+      background: rgba(0,242,255,0.03); transition: all 0.2s ease;
+    }
+    .pf-add:hover, .pf-add.drag { border-color: var(--primary); background: rgba(0,242,255,0.08); }
+    .pf-add.locked { border-color: var(--border); opacity: 0.6; cursor: not-allowed; }
+    .pf-add-ico {
+      width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+      display: grid; place-items: center; font-size: 1.2rem;
+      background: linear-gradient(135deg, rgba(0,242,255,0.18), rgba(161,232,175,0.18));
+    }
+    .pf-add-title { font-weight: 700; font-size: 0.88rem; }
+    .pf-add-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .pf-add input { display: none; }
+
+    .pf-queue { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem; }
+    .pf-job {
+      display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center;
+      padding: 0.6rem 0.8rem; border-radius: 10px; border: 1px solid var(--border);
+      background: rgba(15,23,42,0.5); font-size: 0.74rem;
+    }
+    .pf-job-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pf-job-state { color: var(--text-muted); white-space: nowrap; }
+    .pf-job.err .pf-job-state { color: #f87171; white-space: normal; }
+    .pf-job.done .pf-job-state { color: var(--secondary); }
+    .pf-job-bar { grid-column: 1 / -1; height: 4px; border-radius: 99px; background: rgba(255,255,255,0.07); overflow: hidden; }
+    .pf-job-bar i { display: block; height: 100%; width: 0; background: var(--primary); transition: width 0.25s ease; }
+
+    .pf-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 0.9rem; margin-top: 1.2rem;
+    }
+    .pf-item {
+      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+      background: rgba(15,23,42,0.45); display: flex; flex-direction: column;
+    }
+    .pf-item.hidden-over { opacity: 0.45; }
+    .pf-thumb { position: relative; aspect-ratio: 1 / 1; background: #0f1626; }
+    .pf-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pf-badge {
+      position: absolute; left: 8px; bottom: 8px; padding: 0.15rem 0.5rem; border-radius: 99px;
+      font-size: 0.64rem; font-weight: 800; background: rgba(0,0,0,0.6); color: #fff;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    .pf-over {
+      position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+      background: rgba(11,15,25,0.65); font-size: 0.7rem; font-weight: 700; padding: 0.6rem;
+    }
+    .pf-item textarea {
+      width: 100%; border: 0; border-top: 1px solid var(--border); resize: none;
+      background: transparent; color: var(--text); font-family: inherit; font-size: 0.76rem;
+      padding: 0.6rem 0.7rem; min-height: 58px; outline: none; line-height: 1.4;
+    }
+    .pf-item textarea:focus { background: rgba(0,242,255,0.04); }
+    .pf-tools { display: flex; align-items: center; gap: 4px; padding: 0.35rem 0.5rem; border-top: 1px solid var(--border); }
+    .pf-tools button {
+      border: 0; background: transparent; color: var(--text-muted); cursor: pointer;
+      font-size: 0.85rem; padding: 0.3rem 0.45rem; border-radius: 7px;
+    }
+    .pf-tools button:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+    .pf-tools button.del:hover { color: #f87171; }
+    .pf-tools .pf-saved { margin-left: auto; font-size: 0.66rem; color: var(--secondary); opacity: 0; transition: opacity 0.3s; }
+    .pf-tools .pf-saved.show { opacity: 1; }
+    .pf-empty { margin-top: 1.2rem; padding: 1.6rem; text-align: center; color: var(--text-muted); font-size: 0.82rem; border: 1px dashed var(--border); border-radius: 14px; }
+    .pf-tip { margin-top: 0.9rem; font-size: 0.72rem; color: var(--text-muted); line-height: 1.55; }
+  </style>
+
+  <div class="container" id="portfolioSection" style="display: none; margin-bottom: 2rem;">
+    <div class="dash-card">
+      <h3 class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <span>🖼️ Портфолио във визитката</span>
+        <a id="portfolioProfileLink" href="profile.html" target="_blank" class="btn-logout" style="color: var(--primary); border-color: var(--glass-border); text-decoration: none; font-size: 0.75rem; padding: 0.4rem 0.8rem; background: rgba(0, 242, 255, 0.05);">Виж на живо 📱</a>
+      </h3>
+
+      <!-- Без пакет: витрина с пакетите -->
+      <div id="pfOffer" style="display:none">
+        <p class="pf-intro">
+          Покажете <strong>работата си</strong> направо във визитката — готови обекти, продукти,
+          преди/след, кратки видеа. Всяка снимка и видео може да има <strong>описание</strong>.
+          Файловете се смаляват автоматично при качване, така че визитката остава
+          <strong>светкавично бърза</strong>, а видеата се зареждат чак когато някой ги пусне.
+        </p>
+      </div>
+
+      <!-- С пакет: статус + качване + мрежа -->
+      <div id="pfManage" style="display:none">
+        <div class="pf-status">
+          <div>
+            <div class="pf-status-plan" id="pfPlanName"></div>
+            <div class="pf-status-sub" id="pfPlanSub"></div>
+          </div>
+          <div class="pf-meter" id="pfMeterPhotos"></div>
+          <div class="pf-meter" id="pfMeterVideos"></div>
+          <div class="pf-status-actions" id="pfStatusActions"></div>
+        </div>
+
+        <div class="pf-drop">
+          <label class="pf-add" id="pfAddImage" onclick="pfAddClick(event, 'image')">
+            <span class="pf-add-ico">📸</span>
+            <span>
+              <div class="pf-add-title">Добави снимки</div>
+              <div class="pf-add-sub">JPG, PNG, WebP · може няколко наведнъж</div>
+            </span>
+            <input type="file" accept="image/*" multiple onchange="pfPickFiles(this.files, 'image'); this.value=''">
+          </label>
+          <label class="pf-add" id="pfAddVideo" onclick="pfAddClick(event, 'video')">
+            <span class="pf-add-ico">🎬</span>
+            <span>
+              <div class="pf-add-title">Добави видео</div>
+              <div class="pf-add-sub" id="pfVideoHint">MP4 / MOV · до 60 сек</div>
+            </span>
+            <input type="file" accept="video/*" onchange="pfPickFiles(this.files, 'video'); this.value=''">
+          </label>
+        </div>
+        <div class="pf-queue" id="pfQueue"></div>
+        <div class="pf-grid" id="pfGrid"></div>
+        <p class="pf-tip">
+          💡 Снимките се записват до 1600 px, видеата — в 720p. Така изглеждат остро на всеки телефон,
+          а визитката не тежи. Подредбата тук е подредбата във визитката — първите 6 се виждат веднага.
+        </p>
+      </div>
+
+      <!-- Пакетите (витрина и смяна на пакет) -->
+      <div id="pfPlansWrap" style="display:none">
+        <div class="pf-toggle" id="pfToggle">
+          <button type="button" data-iv="month" class="active" onclick="pfSetInterval('month')">Месечно</button>
+          <button type="button" data-iv="year" onclick="pfSetInterval('year')">Годишно <span class="pf-save">2 месеца подарък</span></button>
+        </div>
+        <div class="pf-plans" id="pfPlans"></div>
+      </div>
+    </div>
+  </div>
+
+
   <!-- ============ ФОНОВЕ НА ВИЗИТКАТА ============ -->
   <style>
     .theme-grid {
@@ -1991,6 +2197,9 @@
         // Портал или оферта — решава се от абонамента/фирмения статус, не от ръчен флаг
         loadTeamGate(profile.user_id, 0, profile.company_id);
 
+        // Портфолио (иска portfolio.sql; без него се скрива)
+        loadPortfolio(profile.id);
+
         // Галерията с фонове (иска card-themes.sql; без него се скрива)
         loadThemeGallery(profile.id);
 
@@ -2915,6 +3124,647 @@
     // =================================================================
     // Фонове на визитката (9,99 € еднократно за премиум фон)
     // =================================================================
+    // ============ ПОРТФОЛИО ВЪВ ВИЗИТКАТА ============
+    // Иска supabase/portfolio.sql и функцията portfolio-checkout. Без тях
+    // секцията се скрива. Цените тук са само за показване — истинските
+    // са в Stripe (lookup_key portfolio_<plan>_<interval>).
+    const PF_PLANS = [
+      { id: 'foto',  name: 'Фото',         month: 8.99, year: 89.9, photos: 20, videos: 0,
+        perks: ['<strong>20 снимки</strong> с описания', 'Галерия на цял екран със суайп', 'Автоматично смаляване без загуба на качество'] },
+      { id: 'video', name: 'Фото + Видео', month: 16.99, year: 169.9, photos: 40, videos: 4, featured: true,
+        perks: ['<strong>40 снимки</strong> с описания', '<strong>4 видеа</strong> до 60 сек (720p)', 'Видеата се зареждат чак при пускане', 'Всичко от „Фото“'] },
+      { id: 'pro',   name: 'Про',          month: 25.99, year: 259.9, photos: 60, videos: 12,
+        perks: ['<strong>60 снимки</strong> с описания', '<strong>12 видеа</strong> до 60 сек (720p)', 'За портфолио на фирма, обекти, продукти', 'Всичко от „Фото + Видео“'] },
+    ];
+    const PF_BY_ID = Object.fromEntries(PF_PLANS.map(p => [p.id, p]));
+    const PORTFOLIO_PAID = _params.get('portfolio_checkout') === 'success';
+    const PF_MEDIABUNNY = 'https://cdn.jsdelivr.net/npm/mediabunny@1.61.3/dist/bundles/mediabunny.min.mjs';
+
+    let pfState = null;          // отговорът на get_my_portfolio
+    let pfInterval = 'month';
+    let pfChanging = false;      // показани ли са пакетите за смяна
+    let pfBusy = false;
+    let pfJobs = [];             // опашката за качване
+
+    const fmtEur = v => v.toFixed(2).replace('.', ',').replace(',00', '');
+
+    async function pfAuthFetch(action, payload) {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) { window.location.href = 'login.html'; throw new Error('Няма сесия.'); }
+      let res;
+      try {
+        res = await fetch(`${SUPABASE_FUNCTIONS_URL}/portfolio-checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+          body: JSON.stringify(Object.assign({ action }, payload || {}))
+        });
+      } catch {
+        throw new Error('Плащанията временно не са достъпни. Опитайте по-късно.');
+      }
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok && !body.pending) {
+        const e = new Error(body.error || 'Възникна грешка.');
+        e.code = body.code;
+        throw e;
+      }
+      return body;
+    }
+
+    async function loadPortfolio(profileId) {
+      const section = document.getElementById('portfolioSection');
+      if (!section) return;
+      if (profileId) {
+        document.getElementById('portfolioProfileLink').href =
+          `profile.html?id=${encodeURIComponent(profileId)}`;
+      }
+
+      if (PORTFOLIO_PAID) await confirmPortfolioCheckout();
+
+      const { data, error } = await supabaseClient.rpc('get_my_portfolio');
+      if (error || !data || data.ok === false) {
+        console.warn('Портфолиото не е налично:', error ? error.message : data);
+        section.style.display = 'none';
+        return;
+      }
+      pfState = data;
+      section.style.display = 'block';
+      renderPortfolio();
+      if (PORTFOLIO_PAID || location.hash === '#portfolioSection') {
+        setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+      }
+    }
+
+    async function confirmPortfolioCheckout(attempt = 0) {
+      const sessionId = _params.get('session_id');
+      if (!sessionId) return;
+      try {
+        const body = await pfAuthFetch('verify', { session_id: sessionId });
+        if (body.pending && attempt < 5) {
+          await new Promise(r => setTimeout(r, 1500));
+          return confirmPortfolioCheckout(attempt + 1);
+        }
+        if (body.ok) {
+          setTimeout(() => showNotice({
+            icon: '🖼️',
+            title: 'Портфолиото е активно!',
+            text: `Пакет „${(PF_BY_ID[body.plan] || {}).name || ''}“ е включен. Качете първите си снимки — веднага се появяват във визитката.`
+          }), 400);
+        }
+      } catch (err) {
+        console.error('verify portfolio:', err);
+      }
+    }
+
+    function pfSetInterval(iv) {
+      pfInterval = iv === 'year' ? 'year' : 'month';
+      document.querySelectorAll('#pfToggle button').forEach(b =>
+        b.classList.toggle('active', b.dataset.iv === pfInterval));
+      renderPfPlans();
+    }
+
+    function pfCounts() {
+      const items = (pfState && pfState.items) || [];
+      return {
+        photos: items.filter(i => i.kind === 'image').length,
+        videos: items.filter(i => i.kind === 'video').length,
+      };
+    }
+
+    function renderPortfolio() {
+      const has = !!(pfState && pfState.plan);
+      document.getElementById('pfOffer').style.display = has ? 'none' : 'block';
+      document.getElementById('pfManage').style.display = has ? 'block' : 'none';
+      document.getElementById('pfPlansWrap').style.display = (!has || pfChanging) ? 'block' : 'none';
+      if (has) renderPfManage();
+      renderPfPlans();
+    }
+
+    function renderPfPlans() {
+      const cur = pfState && pfState.plan;
+      const curIv = pfState && pfState.interval;
+      document.getElementById('pfPlans').innerHTML = PF_PLANS.map(p => {
+        const price = pfInterval === 'year' ? p.year : p.month;
+        const per = pfInterval === 'year'
+          ? `≈ ${fmtEur(p.year / 12)} € на месец · спестявате ${fmtEur(p.month * 12 - p.year)} €`
+          : `или ${fmtEur(p.year)} € годишно`;
+        const isCur = cur === p.id && curIv === pfInterval;
+        let btn;
+        if (isCur) {
+          btn = '<button class="theme-btn" disabled>Текущ пакет</button>';
+        } else if (cur && !pfState.manual) {
+          btn = `<button class="theme-btn buy" onclick="pfChangePlan('${p.id}', this)">Премини към „${p.name}“</button>`;
+        } else if (cur && pfState.manual) {
+          btn = '<button class="theme-btn" disabled>Включен от нас</button>';
+        } else {
+          btn = `<button class="theme-btn buy" onclick="pfBuy('${p.id}', this)">Избери „${p.name}“</button>`;
+        }
+        const ribbon = isCur ? '<span class="pf-ribbon">Вашият пакет</span>'
+          : (p.featured ? '<span class="pf-ribbon">Най-избиран</span>' : '');
+        const perks = p.perks.map(x => `<li>${x}</li>`).join('') +
+          (p.videos ? '' : '<li class="no">Без видео</li>');
+        return `
+          <div class="pf-plan${p.featured ? ' featured' : ''}${isCur ? ' current' : ''}">
+            ${ribbon}
+            <div class="pf-plan-name">${p.name}</div>
+            <div class="pf-plan-price">${fmtEur(price)} €<small> / ${pfInterval === 'year' ? 'год.' : 'мес.'}</small></div>
+            <div class="pf-plan-per">${per}</div>
+            <ul>${perks}</ul>
+            ${btn}
+          </div>`;
+      }).join('');
+    }
+
+    function pfMeter(label, used, max) {
+      const pct = max ? Math.min(100, Math.round(used / max * 100)) : 0;
+      return `<div class="pf-meter-top"><span>${label}</span><b>${used} / ${max}</b></div>
+              <div class="pf-meter-bar"><i style="width:${pct}%"></i></div>`;
+    }
+
+    function renderPfManage() {
+      const plan = PF_BY_ID[pfState.plan] || { name: pfState.plan };
+      const lim = pfState.limits || {};
+      const c = pfCounts();
+      const end = pfState.period_end ? new Date(pfState.period_end).toLocaleDateString('bg-BG') : '';
+
+      document.getElementById('pfPlanName').textContent = `Пакет „${plan.name}“`;
+      document.getElementById('pfPlanSub').textContent = pfState.manual
+        ? `Включен от NFC Bulgaria · до ${end}`
+        : pfState.cancel_at_period_end
+          ? `Спира на ${end} — дотогава всичко работи`
+          : `${pfState.interval === 'year' ? 'Годишно' : 'Месечно'} · подновява се на ${end}`;
+
+      document.getElementById('pfMeterPhotos').innerHTML = pfMeter('Снимки', c.photos, lim.photos || 0);
+      const mv = document.getElementById('pfMeterVideos');
+      mv.style.display = lim.videos ? '' : 'none';
+      mv.innerHTML = pfMeter('Видеа', c.videos, lim.videos || 0);
+
+      let actions = '';
+      if (!pfState.manual) {
+        actions += `<button class="pf-link" onclick="pfToggleChange()">${pfChanging ? 'Скрий пакетите' : 'Смени пакета'}</button>`;
+        actions += pfState.cancel_at_period_end
+          ? `<button class="pf-link" onclick="pfCancel(false, this)">Поднови абонамента</button>`
+          : `<button class="pf-link danger" onclick="pfCancel(true, this)">Спри абонамента</button>`;
+      }
+      document.getElementById('pfStatusActions').innerHTML = actions;
+
+      const imgFull = c.photos >= (lim.photos || 0);
+      const vidFull = !lim.videos || c.videos >= lim.videos;
+      document.getElementById('pfAddImage').classList.toggle('locked', imgFull);
+      document.getElementById('pfAddVideo').classList.toggle('locked', vidFull);
+      document.getElementById('pfVideoHint').textContent = !lim.videos
+        ? 'Включено от пакет „Фото + Видео“'
+        : `MP4 / MOV · до ${lim.max_video_sec || 60} сек · остават ${Math.max(0, lim.videos - c.videos)}`;
+
+      renderPfGrid();
+    }
+
+    function renderPfGrid() {
+      const grid = document.getElementById('pfGrid');
+      const items = pfState.items || [];
+      const lim = pfState.limits || {};
+      if (!items.length) {
+        grid.innerHTML = '';
+        grid.insertAdjacentHTML('afterbegin',
+          '<div class="pf-empty" style="grid-column:1/-1">Още няма нищо качено. Започнете с 3–6 от най-добрите си снимки.</div>');
+        return;
+      }
+      let ni = 0, nv = 0;
+      grid.innerHTML = items.map((it, idx) => {
+        const n = it.kind === 'image' ? ++ni : ++nv;
+        const over = it.kind === 'image' ? n > lim.photos : n > lim.videos;
+        const badge = it.kind === 'video'
+          ? `<span class="pf-badge">▶ ${pfDur(it.duration_sec)}</span>` : '';
+        return `
+          <div class="pf-item${over ? ' hidden-over' : ''}" data-id="${it.id}">
+            <div class="pf-thumb">
+              <img src="${escapeHtml(it.thumb_url)}" alt="" loading="lazy" decoding="async">
+              ${badge}
+              ${over ? '<div class="pf-over">Над лимита на пакета — не се показва</div>' : ''}
+            </div>
+            <textarea maxlength="300" placeholder="Описание (по желание)…"
+              onchange="pfSaveCaption('${it.id}', this)">${escapeHtml(it.caption || '')}</textarea>
+            <div class="pf-tools">
+              <button title="Напред" ${idx === 0 ? 'disabled' : ''} onclick="pfMove('${it.id}', -1)">←</button>
+              <button title="Назад" ${idx === items.length - 1 ? 'disabled' : ''} onclick="pfMove('${it.id}', 1)">→</button>
+              <button class="del" title="Изтрий" onclick="pfDelete('${it.id}', this)">🗑</button>
+              <span class="pf-saved">✓ Запазено</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function pfDur(sec) {
+      const s = Math.round(Number(sec) || 0);
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function pfToggleChange() {
+      pfChanging = !pfChanging;
+      if (pfChanging && pfState.interval) pfSetInterval(pfState.interval);
+      renderPortfolio();
+      if (pfChanging) document.getElementById('pfPlansWrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function pfError(title, err) {
+      showNotice({ icon: '🖼️', title, text: err.message || String(err), contact: true,
+                   mailSubject: 'Портфолио във визитката' });
+    }
+
+    async function pfBuy(plan, btn) {
+      if (pfBusy) return;
+      pfBusy = true;
+      const orig = btn.innerText;
+      btn.disabled = true; btn.innerText = 'Пренасочване...';
+      try {
+        const body = await pfAuthFetch('create', { plan, interval: pfInterval });
+        if (!body.url) throw new Error(body.error || 'Плащането не може да започне.');
+        window.location.href = body.url;
+      } catch (err) {
+        pfBusy = false;
+        btn.disabled = false; btn.innerText = orig;
+        pfError('Покупката не може да започне', err);
+      }
+    }
+
+    async function pfChangePlan(plan, btn) {
+      if (pfBusy) return;
+      const p = PF_BY_ID[plan], cur = PF_BY_ID[pfState.plan];
+      const up = p.month > cur.month || (pfInterval === 'year' && pfState.interval === 'month');
+      const msg = up
+        ? `Преминавате към „${p.name}“ (${fmtEur(pfInterval === 'year' ? p.year : p.month)} € / ${pfInterval === 'year' ? 'год.' : 'мес.'}). Картата ви се таксува веднага само с разликата за оставащите дни. Продължаваме?`
+        : `Преминавате към „${p.name}“. Неизползваната сума остава като кредит за следващото плащане.` +
+          (pfCounts().photos > p.photos || pfCounts().videos > p.videos
+            ? ' Файловете над новия лимит остават запазени, но няма да се показват във визитката.' : '') +
+          ' Продължаваме?';
+      if (!confirm(msg)) return;
+      pfBusy = true;
+      const orig = btn.innerText;
+      btn.disabled = true; btn.innerText = 'Сменяме...';
+      try {
+        await pfAuthFetch('change', { plan, interval: pfInterval });
+        pfChanging = false;
+        pfBusy = false;
+        await loadPortfolio();
+      } catch (err) {
+        pfBusy = false;
+        btn.disabled = false; btn.innerText = orig;
+        pfError('Пакетът не можа да се смени', err);
+      }
+    }
+
+    async function pfCancel(cancel, btn) {
+      if (cancel && !confirm('Абонаментът ще спре в края на платения период. Дотогава портфолиото се вижда, после се скрива (файловете остават, ако решите да го подновите). Да спрем ли?')) return;
+      btn.disabled = true;
+      try {
+        await pfAuthFetch(cancel ? 'cancel' : 'resume');
+        await loadPortfolio();
+      } catch (err) {
+        btn.disabled = false;
+        pfError('Не успяхме', err);
+      }
+    }
+
+    // ---------- Описание / подредба / изтриване ----------
+    async function pfSaveCaption(id, el) {
+      const { data, error } = await supabaseClient.rpc('portfolio_set_caption', { p_id: id, p_caption: el.value });
+      if (error || !data || !data.ok) { alert('Описанието не се записа. Опитайте пак.'); return; }
+      const it = pfState.items.find(i => i.id === id);
+      if (it) it.caption = el.value.trim() || null;
+      const s = el.parentElement.querySelector('.pf-saved');
+      if (s) { s.classList.add('show'); setTimeout(() => s.classList.remove('show'), 1500); }
+    }
+
+    async function pfMove(id, delta) {
+      const items = pfState.items;
+      const i = items.findIndex(x => x.id === id);
+      const j = i + delta;
+      if (i < 0 || j < 0 || j >= items.length) return;
+      [items[i], items[j]] = [items[j], items[i]];
+      renderPfGrid();
+      const { error } = await supabaseClient.rpc('portfolio_reorder', { p_ids: items.map(x => x.id) });
+      if (error) alert('Подредбата не се записа: ' + error.message);
+    }
+
+    async function pfDelete(id, btn) {
+      if (!confirm('Да изтрием ли този файл от портфолиото?')) return;
+      btn.disabled = true;
+      const { data, error } = await supabaseClient.rpc('portfolio_delete_item', { p_id: id });
+      if (error || !data || !data.ok) {
+        btn.disabled = false;
+        alert((data && data.message) || (error && error.message) || 'Не се изтри.');
+        return;
+      }
+      const paths = (data.urls || []).filter(Boolean)
+        .map(u => decodeURIComponent(u.split('/object/public/portfolio/')[1] || '')).filter(Boolean);
+      if (paths.length) await supabaseClient.storage.from('portfolio').remove(paths);
+      pfState.items = pfState.items.filter(x => x.id !== id);
+      renderPfManage();
+    }
+
+    // ---------- Качване ----------
+    // Заключен бутон → обяснение вместо празен избор на файл
+    function pfAddClick(e, kind) {
+      const el = document.getElementById(kind === 'image' ? 'pfAddImage' : 'pfAddVideo');
+      if (!el.classList.contains('locked')) return;
+      e.preventDefault();
+      pfPickFiles([new File([], 'x')], kind);
+    }
+
+    function pfPickFiles(fileList, kind) {
+      if (!pfState || !pfState.plan) return;
+      const lim = pfState.limits || {};
+      const c = pfCounts();
+      const queued = pfJobs.filter(j => j.kind === kind && !j.done && !j.err).length;
+      const free = (kind === 'image' ? lim.photos - c.photos : lim.videos - c.videos) - queued;
+
+      if (kind === 'video' && !lim.videos) {
+        pfToggleChange();
+        return;
+      }
+      const files = Array.from(fileList || []);
+      if (!files.length) return;
+      if (free <= 0) {
+        showNotice({ icon: '📦', title: 'Пакетът е пълен',
+          text: kind === 'image'
+            ? `Пакетът ви е до ${lim.photos} снимки. Изтрийте някоя или минете на по-голям пакет.`
+            : `Пакетът ви е до ${lim.videos} видеа. Изтрийте някое или минете на по-голям пакет.` });
+        return;
+      }
+      files.slice(0, free).forEach(f => pfJobs.push({ file: f, kind, id: crypto.randomUUID(), pct: 0, state: 'Чака...' }));
+      if (files.length > free) {
+        showNotice({ icon: '📦', title: 'Добавихме само част',
+          text: `Останаха места за ${free}. Останалите ${files.length - free} не са добавени.` });
+      }
+      renderPfQueue();
+      pfRunQueue();
+    }
+
+    function renderPfQueue() {
+      const q = document.getElementById('pfQueue');
+      q.innerHTML = pfJobs.map(j => `
+        <div class="pf-job${j.err ? ' err' : ''}${j.done ? ' done' : ''}">
+          <span class="pf-job-name">${j.kind === 'video' ? '🎬' : '📸'} ${escapeHtml(j.file.name)}</span>
+          <span class="pf-job-state">${escapeHtml(j.err || j.state)}</span>
+          <span class="pf-job-bar"><i style="width:${Math.round(j.pct * 100)}%"></i></span>
+        </div>`).join('');
+    }
+
+    let pfRunning = false;
+    async function pfRunQueue() {
+      if (pfRunning) return;
+      pfRunning = true;
+      // Едно по едно — телефонът не бива да компресира 10 файла наведнъж
+      for (const job of pfJobs) {
+        if (job.done || job.err) continue;
+        const set = (pct, state) => { job.pct = pct; if (state) job.state = state; renderPfQueue(); };
+        try {
+          const prepared = job.kind === 'image' ? await pfPrepareImage(job.file, set) : await pfPrepareVideo(job.file, set);
+          await pfUploadPrepared(job, prepared, set);
+          job.done = true;
+          set(1, prepared.note || 'Готово ✓');
+        } catch (err) {
+          console.error('portfolio upload:', err);
+          job.err = err.message || 'Грешка при качването.';
+          renderPfQueue();
+        }
+      }
+      pfRunning = false;
+      // Готовите изчезват след малко, грешките остават, за да се прочетат
+      setTimeout(() => { pfJobs = pfJobs.filter(j => !j.done); renderPfQueue(); }, 4000);
+    }
+
+    async function pfUploadPrepared(job, prep, set) {
+      const uid = currentBossUserId;
+      const base = `${uid}/${job.id}`;
+      const bucket = supabaseClient.storage.from('portfolio');
+      const files = [['main', prep.main], ['thumb', prep.thumb]];
+      if (prep.poster) files.push(['poster', prep.poster]);
+      const total = files.reduce((s, [, f]) => s + f.blob.size, 0);
+      let sent = 0;
+      const urls = {};
+      for (const [key, f] of files) {
+        set(0.6 + 0.38 * (sent / total), 'Качване...');
+        const path = `${base}/${key}.${f.ext}`;
+        const { error } = await bucket.upload(path, f.blob, {
+          contentType: f.blob.type, cacheControl: '31536000', upsert: false
+        });
+        if (error) {
+          throw new Error(/row-level security|policy/i.test(error.message)
+            ? 'Пакетът не позволява още файлове.' : 'Качването прекъсна: ' + error.message);
+        }
+        urls[key] = bucket.getPublicUrl(path).data.publicUrl;
+        sent += f.blob.size;
+      }
+      const { data, error } = await supabaseClient.rpc('portfolio_add_item', {
+        p_kind: job.kind,
+        p_url: urls.main,
+        p_thumb_url: urls.thumb,
+        p_poster_url: urls.poster || null,
+        p_caption: null,
+        p_width: prep.width,
+        p_height: prep.height,
+        p_duration_sec: prep.duration || null,
+        p_size_bytes: total
+      });
+      if (error || !data || !data.ok) {
+        await bucket.remove(files.map(([key, f]) => `${base}/${key}.${f.ext}`));
+        throw new Error((data && data.message) || (error && error.message) || 'Не се записа.');
+      }
+      pfState.items.push({
+        id: data.id, kind: job.kind, url: urls.main, thumb_url: urls.thumb, poster_url: urls.poster || null,
+        caption: null, width: prep.width, height: prep.height, duration_sec: prep.duration || null, size_bytes: total
+      });
+      renderPfManage();
+    }
+
+    // --- Снимки: до 1600px WebP (~200 KB) + 600px миниатюра (~40 KB) ---
+    async function pfLoadImage(src) {
+      if (window.createImageBitmap) {
+        try { return await createImageBitmap(src, { imageOrientation: 'from-image' }); } catch (e) { /* надолу */ }
+      }
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Този формат снимка не се поддържа. Опитайте с JPG или PNG.'));
+        img.src = URL.createObjectURL(src);
+      });
+    }
+
+    // Смаляване на стъпки по 2× — по-остро от едно рязко смаляване
+    async function pfEncode(source, maxSide, quality) {
+      const sw = source.videoWidth || source.naturalWidth || source.width;
+      const sh = source.videoHeight || source.naturalHeight || source.height;
+      const scale = Math.min(1, maxSide / Math.max(sw, sh));
+      const tw = Math.max(1, Math.round(sw * scale)), th = Math.max(1, Math.round(sh * scale));
+      let cur = source, cw = sw, ch = sh;
+      while (cw / 2 > tw) {
+        const c = document.createElement('canvas');
+        c.width = Math.round(cw / 2); c.height = Math.round(ch / 2);
+        const x = c.getContext('2d');
+        x.imageSmoothingQuality = 'high';
+        x.drawImage(cur, 0, 0, c.width, c.height);
+        cur = c; cw = c.width; ch = c.height;
+      }
+      const out = document.createElement('canvas');
+      out.width = tw; out.height = th;
+      const ctx = out.getContext('2d');
+      ctx.fillStyle = '#ffffff';   // прозрачен PNG → бял фон, не черен
+      ctx.fillRect(0, 0, tw, th);
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(cur, 0, 0, tw, th);
+      let blob = await new Promise(r => out.toBlob(r, 'image/webp', quality));
+      let ext = 'webp';
+      // Safari невинаги кодира WebP — тогава JPEG
+      if (!blob || blob.type !== 'image/webp') {
+        blob = await new Promise(r => out.toBlob(r, 'image/jpeg', Math.min(0.92, quality + 0.05)));
+        ext = 'jpg';
+      }
+      if (!blob) throw new Error('Снимката не можа да се обработи.');
+      return { blob, ext, width: tw, height: th };
+    }
+
+    async function pfPrepareImage(file, set) {
+      if (file.size > 40 * 1024 * 1024) throw new Error('Снимката е над 40 MB.');
+      set(0.1, 'Оптимизиране...');
+      const img = await pfLoadImage(file);
+      const main = await pfEncode(img, 1600, 0.82);
+      set(0.4, 'Оптимизиране...');
+      const thumb = await pfEncode(img, 600, 0.78);
+      if (img.close) img.close();
+      const saved = Math.max(0, Math.round((1 - (main.blob.size + thumb.blob.size) / file.size) * 100));
+      return { main, thumb, width: main.width, height: main.height,
+               note: saved > 5 ? `Готово ✓ (−${saved}% размер)` : 'Готово ✓' };
+    }
+
+    // --- Видео: 720p H.264 ~1,6 Mbps (≈12 MB за минута) с WebCodecs ---
+    function pfVideoMeta(blob) {
+      return new Promise((resolve, reject) => {
+        const v = document.createElement('video');
+        v.preload = 'auto'; v.muted = true; v.playsInline = true;
+        v.onloadedmetadata = () => resolve({ duration: v.duration, width: v.videoWidth, height: v.videoHeight, el: v });
+        v.onerror = () => reject(new Error('Видеото не може да се прочете от браузъра.'));
+        v.src = URL.createObjectURL(blob);
+      });
+    }
+
+    // Кадър за корица — от вече компресираното видео
+    async function pfVideoPoster(blob, duration) {
+      const meta = await pfVideoMeta(blob);
+      const v = meta.el;
+      const wait = (ev, ms) => new Promise(resolve => {
+        const t = setTimeout(resolve, ms);
+        v.addEventListener(ev, () => { clearTimeout(t); resolve(); }, { once: true });
+      });
+      // Кадърът трябва да е реално декодиран, иначе платното остава празно
+      if (v.readyState < 2) await wait('loadeddata', 6000);
+      v.currentTime = Math.min(1, (duration || meta.duration || 2) / 3);
+      await wait('seeked', 6000);
+      if (v.requestVideoFrameCallback) {
+        await new Promise(resolve => { v.requestVideoFrameCallback(() => resolve()); setTimeout(resolve, 800); });
+      }
+      const poster = await pfEncode(v, 1280, 0.8);
+      const thumb = await pfEncode(v, 600, 0.78);
+      URL.revokeObjectURL(v.src);
+      return { poster, thumb };
+    }
+
+    async function pfPrepareVideo(file, set) {
+      const maxSec = (pfState.limits && pfState.limits.max_video_sec) || 60;
+      set(0.02, 'Подготовка...');
+      let out = null, duration = 0, width = 0, height = 0, note = '';
+
+      let MB = null;
+      if (window.VideoEncoder && window.VideoDecoder) {
+        try { MB = await import(PF_MEDIABUNNY); } catch (e) { console.warn('mediabunny:', e); }
+      }
+
+      if (MB) {
+        try {
+          const input = new MB.Input({ source: new MB.BlobSource(file), formats: MB.ALL_FORMATS });
+          const vt = await input.getPrimaryVideoTrack();
+          if (!vt) throw new Error('Във файла няма видео.');
+          duration = await input.computeDuration();
+          const sw = vt.displayWidth, sh = vt.displayHeight;
+          const scale = Math.min(1, 720 / Math.min(sw, sh));
+          width = Math.round(sw * scale / 2) * 2;
+          height = Math.round(sh * scale / 2) * 2;
+
+          let fps;
+          try {
+            const st = await vt.computePacketStats(120);
+            if (st.averagePacketRate > 31) fps = 30;
+          } catch (e) { /* оставяме оригинала */ }
+
+          const audioCodec = await MB.getFirstEncodableAudioCodec(['aac', 'opus']);
+          const output = new MB.Output({
+            format: new MB.Mp4OutputFormat({ fastStart: 'in-memory' }),
+            target: new MB.BufferTarget()
+          });
+          const conv = await MB.Conversion.init({
+            input, output,
+            video: Object.assign({
+              width, height, fit: 'fill', codec: 'avc',
+              quality: new MB.Quality({ bitrate: 1600000 }),
+              keyFrameInterval: 2, forceTranscode: true
+            }, fps ? { frameRate: fps } : {}),
+            audio: audioCodec
+              ? { codec: audioCodec, quality: new MB.Quality({ bitrate: 96000 }) }
+              : { discard: true },
+            trim: duration > maxSec ? { start: 0, end: maxSec } : undefined
+          });
+          if (!conv.isValid) throw new Error('Неподдържан формат за конвертиране.');
+          conv.onProgress = p => set(0.05 + 0.5 * p, `Компресиране ${Math.round(p * 100)}%`);
+          await conv.execute();
+          out = new Blob([output.target.buffer], { type: 'video/mp4' });
+          if (duration > maxSec) { note = `Готово ✓ (отрязано до ${maxSec} сек)`; duration = maxSec; }
+          // Рядко — вече лек MP4 излиза по-голям след прекодиране
+          if (out.size > file.size && file.type === 'video/mp4' && duration <= maxSec) out = file;
+        } catch (err) {
+          console.warn('Компресията не стана, пробваме оригинала:', err);
+          out = null;
+        }
+      }
+
+      if (!out) {
+        // Без WebCodecs (стари браузъри) — само лек MP4/WebM, както е
+        if (!/^video\/(mp4|webm)$/.test(file.type)) {
+          throw new Error('Този браузър не може да компресира видеото. Опитайте от Chrome / Safari на телефона или с MP4 файл.');
+        }
+        if (file.size > 25 * 1024 * 1024) {
+          throw new Error('Видеото е над 25 MB, а браузърът не може да го компресира. Опитайте от Chrome / Safari.');
+        }
+        const m = await pfVideoMeta(file);
+        URL.revokeObjectURL(m.el.src);
+        if (m.duration > maxSec + 1) throw new Error(`Видеото е ${Math.round(m.duration)} сек — до ${maxSec} сек е.`);
+        out = file; duration = m.duration; width = m.width; height = m.height;
+      }
+
+      set(0.56, 'Корица...');
+      const { poster, thumb } = await pfVideoPoster(out, duration);
+      const ext = out.type === 'video/webm' ? 'webm' : 'mp4';
+      if (!note) note = `Готово ✓ (${(out.size / 1048576).toFixed(1)} MB)`;
+      return {
+        main: { blob: out, ext }, thumb, poster,
+        width: width || poster.width, height: height || poster.height,
+        duration: Math.round(duration * 10) / 10, note
+      };
+    }
+
+    // Пускане на файлове с влачене върху бутоните
+    document.addEventListener('DOMContentLoaded', () => {
+      [['pfAddImage', 'image'], ['pfAddVideo', 'video']].forEach(([id, kind]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag'); });
+        el.addEventListener('dragleave', () => el.classList.remove('drag'));
+        el.addEventListener('drop', e => {
+          e.preventDefault(); el.classList.remove('drag');
+          const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith(kind + '/'));
+          pfPickFiles(files, kind);
+        });
+      });
+    });
+
     let ownedThemes   = [];
     let activeThemeId = 'midnight';
     let themeBusy     = false;

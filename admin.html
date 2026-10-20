@@ -849,6 +849,30 @@
         </div>
       </div>
 
+      <div class="dash-card" id="portfolioAdminCard" style="display:none; margin-bottom:1.5rem">
+        <h3 class="card-title">🖼️ Портфолио във визитките</h3>
+        <p class="card-hint" id="portfolioAdminSummary"></p>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem">
+          <input id="pfGrantProfile" class="form-input" placeholder="id на визитката (напр. DeividDimitrov)" style="flex:2; min-width:200px">
+          <select id="pfGrantPlan" class="form-input" style="flex:1; min-width:140px">
+            <option value="foto">Фото</option><option value="video">Фото + Видео</option><option value="pro">Про</option>
+          </select>
+          <input id="pfGrantMonths" class="form-input" type="number" min="1" value="12" style="width:90px" title="месеца">
+          <button class="btn-action" onclick="grantPortfolio(this)">🎁 Включи ръчно</button>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>От кога</th><th>Кой</th><th>Пакет</th>
+                <th class="num">Цена</th><th class="num">Файлове</th><th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="portfolioAdminBody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="dash-card" id="themeSalesCard" style="display:none; margin-bottom:1.5rem">
         <h3 class="card-title">🎨 Продадени фонове за визитки</h3>
         <p class="card-hint" id="themeSalesSummary"></p>
@@ -1419,6 +1443,10 @@
       // пуснат, картата просто остава скрита.
       const themeRes = await supabaseClient.rpc('admin_theme_sales');
       renderThemeSales(themeRes.error ? null : themeRes.data);
+
+      // Портфолиото живее в portfolio.sql — без него картата е скрита
+      const pfRes = await supabaseClient.rpc('admin_portfolio_overview');
+      renderPortfolioAdmin(pfRes.error ? null : pfRes.data);
     }
 
     // Когато новият SQL още не е пуснат — показваме поне каквото имаме.
@@ -1921,7 +1949,7 @@
       if (!p) return;
       const amount = (p.amount_cents / 100).toFixed(2).replace('.', ',');
       const text = billingText(p.billing) +
-        `\n\nСума: ${amount} € · ${p.plan_interval === 'year' ? 'годишен' : 'месечен'} абонамент Фирмен портал` +
+        `\n\nСума: ${amount} € · ${p.plan_interval === 'year' ? 'годишен' : 'месечен'} абонамент ${String(p.plan || '').startsWith('portfolio_') ? 'Портфолио във визитката' : 'Фирмен портал'}` +
         ` (${fmtDate(p.period_start)} – ${fmtDate(p.period_end)})` +
         `\nПлатено с карта на ${fmtDate(p.paid_at)}`;
       try {
@@ -2013,6 +2041,57 @@
         return window.CardThemes.byId[id].name;
       }
       return id;
+    }
+
+    const PF_PLAN_NAMES = { foto: 'Фото', video: 'Фото + Видео', pro: 'Про' };
+
+    function renderPortfolioAdmin(data) {
+      const card = document.getElementById('portfolioAdminCard');
+      if (!card) return;
+      if (!data || data.ok === false || !Array.isArray(data.subs)) { card.style.display = 'none'; return; }
+      card.style.display = 'block';
+
+      const active = data.subs.filter(s => s.is_active);
+      const mrr = active.filter(s => !s.manual)
+        .reduce((sum, s) => sum + (s.interval === 'year' ? s.price_cents / 12 : s.price_cents), 0);
+      const mb = (Number(data.total_bytes || 0) / 1048576).toFixed(0);
+      document.getElementById('portfolioAdminSummary').textContent =
+        `${num(active.length)} активни · ≈ ${euro(Math.round(mrr))} на месец · ${mb} MB заето в Storage ` +
+        '(безплатният план на Supabase е 1 GB — над ~800 MB е време за Pro).';
+
+      const tbody = document.getElementById('portfolioAdminBody');
+      if (!data.subs.length) { tbody.innerHTML = emptyRow(6, 'Още никой няма портфолио.'); return; }
+      tbody.innerHTML = data.subs.map(s => {
+        const status = !s.is_active
+          ? '<span class="badge badge-staff">изтекъл</span>'
+          : s.cancel_at_period_end
+            ? `<span class="badge badge-warn">спира ${fmtDate(s.current_period_end)}</span>`
+            : `<span class="badge badge-ok">активен до ${fmtDate(s.current_period_end)}</span>`;
+        return `
+        <tr>
+          <td class="muted" style="white-space:nowrap">${fmtDateTime(s.created_at)}</td>
+          <td>${escapeHtml(s.profile_name || '—')}<div class="person-sub">${escapeHtml(s.user_email || s.profile_id || '')}</div></td>
+          <td>${escapeHtml(PF_PLAN_NAMES[s.plan] || s.plan)}<div class="person-sub">${s.interval === 'year' ? 'годишно' : 'месечно'}</div></td>
+          <td class="num">${s.manual ? '<span class="badge badge-staff">подарен</span>' : euro(s.price_cents)}</td>
+          <td class="num">${num(s.photos)} 📸 · ${num(s.videos)} 🎬<div class="person-sub">${(Number(s.bytes || 0) / 1048576).toFixed(1)} MB</div></td>
+          <td>${status}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function grantPortfolio(btn) {
+      const profileId = document.getElementById('pfGrantProfile').value.trim();
+      const plan = document.getElementById('pfGrantPlan').value;
+      const months = parseInt(document.getElementById('pfGrantMonths').value, 10) || 12;
+      if (!profileId) { alert('Въведи id на визитката.'); return; }
+      btn.disabled = true;
+      const { data, error } = await supabaseClient.rpc('admin_grant_portfolio', {
+        p_profile_id: profileId, p_plan: plan, p_months: months
+      });
+      btn.disabled = false;
+      alert((data && data.message) || (error && error.message) || 'Готово');
+      const pfRes = await supabaseClient.rpc('admin_portfolio_overview');
+      renderPortfolioAdmin(pfRes.error ? null : pfRes.data);
     }
 
     function renderThemeSales(data) {

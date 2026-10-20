@@ -59,7 +59,12 @@
       min-height: 100vh;
       padding: 1rem;
       position: relative;
+      /* Светещите петна долу излизат 50px встрани — без това страницата
+         ставаше по-широка от телефона (и галерията с нея). */
+      overflow-x: clip;
     }
+    /* html със свое overflow → body не го предава на прозореца и реже сам */
+    html { overflow-x: hidden; }
 
     /* Mesh background glow */
     body::before {
@@ -775,6 +780,134 @@
       font-weight: 600;
       font-size: 0.88rem;
     }
+
+    /* ---------- Портфолио ----------------------------------------------
+       Мрежата зарежда само миниатюри (~40 KB) с loading="lazy". Голямата
+       снимка и видеото тръгват чак при отваряне в галерията. */
+    .pf-section {
+      display: none;
+      padding: 0 1.5rem 1.6rem;
+    }
+    .pf-section.show { display: block; animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    .pf-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .pf-head h3 {
+      font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700;
+      letter-spacing: 0.02em; color: var(--text);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .pf-head h3::before {
+      content: ''; width: 18px; height: 2px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+    .pf-count { font-size: 0.75rem; color: var(--text-muted); }
+    .pf-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+      border-radius: 18px; overflow: hidden;
+    }
+    .pf-grid.pf-n1 { grid-template-columns: 1fr; }
+    .pf-grid.pf-n2, .pf-grid.pf-n4 { grid-template-columns: repeat(2, 1fr); }
+    .pf-tile {
+      position: relative; aspect-ratio: 1 / 1; overflow: hidden; cursor: pointer;
+      background: var(--surface, rgba(255,255,255,0.04)); border: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pf-grid.pf-n1 .pf-tile { aspect-ratio: 4 / 3; }
+    .pf-grid.pf-n3 .pf-tile:first-child,
+    .pf-grid.pf-n5 .pf-tile:first-child,
+    .pf-grid.pf-n6 .pf-tile:first-child { grid-column: span 2; grid-row: span 2; }
+    .pf-grid.pf-n5 .pf-tile:nth-child(4) { grid-column: span 2; aspect-ratio: auto; }
+    .pf-tile img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      opacity: 0; transform: scale(1.04);
+      transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pf-tile img.ready { opacity: 1; transform: scale(1); }
+    .pf-tile:hover img.ready { transform: scale(1.05); }
+    .pf-tile::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.55));
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .pf-tile.has-cap::after, .pf-tile.is-video::after { opacity: 1; }
+    .pf-play {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 42px; height: 42px; border-radius: 50%; z-index: 2;
+      display: grid; place-items: center;
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.45);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .pf-tile:first-child .pf-play { width: 54px; height: 54px; }
+    .pf-play svg { width: 40%; height: 40%; margin-left: 8%; fill: #fff; }
+    .pf-dur {
+      position: absolute; right: 7px; bottom: 7px; z-index: 2;
+      font-size: 0.62rem; font-weight: 700; color: #fff; letter-spacing: 0.03em;
+      padding: 0.1rem 0.4rem; border-radius: 6px; background: rgba(0,0,0,0.55);
+    }
+    .pf-cap {
+      position: absolute; left: 10px; right: 10px; bottom: 9px; z-index: 2;
+      font-size: 0.72rem; font-weight: 600; color: #fff; text-align: left;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.6); display: none;
+    }
+    .pf-tile:first-child .pf-cap { display: block; }
+    .pf-tile.is-video .pf-cap { right: 52px; }
+    .pf-more {
+      width: 100%; margin-top: 0.7rem; padding: 0.7rem;
+      border-radius: 12px; border: 1px solid var(--border);
+      background: var(--surface, rgba(255,255,255,0.03)); color: var(--text);
+      font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    }
+    .pf-more:hover { border-color: var(--glass-border); color: var(--primary); }
+    .profile-container.is-loading .pf-section,
+    .profile-container.is-error .pf-section { display: none !important; }
+
+    /* Галерия на цял екран */
+    .pf-lb {
+      position: fixed; inset: 0; z-index: 1000; display: none;
+      flex-direction: column; background: rgba(4, 6, 12, 0.96);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      color: #f3f4f6; touch-action: pan-y;
+    }
+    .pf-lb.open { display: flex; animation: pfFade 0.25s ease; }
+    @keyframes pfFade { from { opacity: 0; } to { opacity: 1; } }
+    .pf-lb-top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: max(0.8rem, env(safe-area-inset-top)) 1rem 0.6rem;
+      font-size: 0.8rem; color: rgba(255,255,255,0.7); letter-spacing: 0.05em;
+    }
+    .pf-lb-btn {
+      width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.08);
+      color: #fff; display: grid; place-items: center; font-size: 1.1rem;
+    }
+    .pf-lb-btn:hover { background: rgba(255,255,255,0.16); }
+    .pf-lb-stage {
+      flex: 1; min-height: 0; position: relative;
+      display: flex; align-items: center; justify-content: center; padding: 0 0.6rem;
+    }
+    .pf-lb-stage img, .pf-lb-stage video {
+      max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+      border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    .pf-lb-stage video { width: 100%; background: #000; }
+    .pf-lb-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; }
+    .pf-lb-nav.prev { left: 0.8rem; }
+    .pf-lb-nav.next { right: 0.8rem; }
+    @media (hover: none) { .pf-lb-nav { display: none; } }
+    .pf-lb-cap {
+      padding: 0.9rem 1.2rem max(1rem, env(safe-area-inset-bottom));
+      max-height: 24vh; overflow-y: auto; text-align: center;
+      font-size: 0.9rem; line-height: 1.55; color: rgba(255,255,255,0.88);
+      max-width: 640px; width: 100%; margin: 0 auto; white-space: pre-line;
+    }
+    .pf-lb-cap:empty { padding-bottom: max(0.6rem, env(safe-area-inset-bottom)); }
+    .pf-lb-dots { display: flex; gap: 5px; justify-content: center; padding-top: 0.6rem; }
+    .pf-lb-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); transition: all 0.25s; }
+    .pf-lb-dots i.on { width: 18px; border-radius: 3px; background: var(--primary); }
   </style>
 </head>
 <body>
@@ -918,6 +1051,16 @@
 
     </div>
 
+    <!-- Портфолио (платен пакет) — пълни се от get_portfolio() -->
+    <div class="pf-section" id="pfSection">
+      <div class="pf-head">
+        <h3 id="pfTitle">Портфолио</h3>
+        <span class="pf-count" id="pfCount"></span>
+      </div>
+      <div class="pf-grid" id="pfGrid"></div>
+      <button type="button" class="pf-more" id="pfMore" style="display:none" onclick="pfToggleAll()"></button>
+    </div>
+
     <!-- Lead Capture Section -->
     <div class="lead-section">
       <h3 class="lead-title" id="leadTitle">Изпрати ми твоите контакти</h3>
@@ -948,6 +1091,19 @@
   </div>
 
   <!-- Toast Element -->
+  <div class="pf-lb" id="pfLb" role="dialog" aria-modal="true">
+    <div class="pf-lb-top">
+      <span id="pfLbCounter"></span>
+      <button type="button" class="pf-lb-btn" id="pfLbClose" onclick="pfClose()" aria-label="Затвори">✕</button>
+    </div>
+    <div class="pf-lb-stage" id="pfLbStage">
+      <button type="button" class="pf-lb-btn pf-lb-nav prev" onclick="pfStep(-1)" aria-label="‹">‹</button>
+      <button type="button" class="pf-lb-btn pf-lb-nav next" onclick="pfStep(1)" aria-label="›">›</button>
+    </div>
+    <div class="pf-lb-dots" id="pfLbDots"></div>
+    <div class="pf-lb-cap" id="pfLbCap"></div>
+  </div>
+
   <div id="toast" class="toast">Контакта е запазен успешно!</div>
 
   <!-- Supabase JS CDN -->
@@ -1128,7 +1284,177 @@
 
       // Сканирането се отчита само за реално съществуващ профил
       logScan();
+
+      // Портфолио — след визитката, за да не я бави
+      loadPortfolio();
     }
+
+
+    // ---------- Портфолио ----------
+    // Тръгва след като визитката е видима — никога не я бави.
+    let pfItems = [];
+    let pfShowAll = false;
+    let pfIndex = 0;
+    let pfPushed = false;
+    const PF_FIRST = 6;
+    const PF_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>';
+
+    async function loadPortfolio() {
+      try {
+        const { data, error } = await supabaseClient.rpc('get_portfolio', { p_profile_id: profileId });
+        if (error || !Array.isArray(data) || !data.length) return;
+        pfItems = data;
+        renderPortfolio();
+        document.getElementById('pfSection').classList.add('show');
+      } catch (e) {
+        console.warn('Портфолиото не се зареди:', e);
+      }
+    }
+
+    function pfT(key) {
+      const t = translations[activeLang] || translations.bg;
+      return t[key] || translations.bg[key];
+    }
+
+    function pfDur(sec) {
+      const s = Math.round(Number(sec) || 0);
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function renderPortfolio() {
+      const grid = document.getElementById('pfGrid');
+      if (!grid || !pfItems.length) return;
+      const n = pfItems.length;
+      const shown = pfShowAll ? pfItems : pfItems.slice(0, PF_FIRST);
+      grid.className = 'pf-grid pf-n' + Math.min(n, PF_FIRST);
+      grid.innerHTML = shown.map((it, i) => {
+        const video = it.kind === 'video';
+        const cap = it.caption ? `<span class="pf-cap">${escapeAttr(it.caption)}</span>` : '';
+        return `<button type="button" class="pf-tile${video ? ' is-video' : ''}${it.caption ? ' has-cap' : ''}"
+                  onclick="pfOpen(${i})" aria-label="${escapeAttr(it.caption || pfT('portfolio'))}">
+            <img src="${escapeAttr(it.thumb_url)}" alt="${escapeAttr(it.caption || '')}"
+                 loading="${i < 3 ? 'eager' : 'lazy'}" decoding="async"
+                 onload="this.classList.add('ready')" onerror="this.closest('.pf-tile').style.display='none'">
+            ${video ? `<span class="pf-play">${PF_PLAY}</span><span class="pf-dur">${pfDur(it.duration_sec)}</span>` : ''}
+            ${cap}
+          </button>`;
+      }).join('');
+      // Кешираните снимки не пускат onload в някои браузъри
+      grid.querySelectorAll('img').forEach(img => { if (img.complete && img.naturalWidth) img.classList.add('ready'); });
+
+      const photos = pfItems.filter(i => i.kind === 'image').length;
+      const videos = n - photos;
+      document.getElementById('pfTitle').textContent = pfT('portfolio');
+      document.getElementById('pfCount').textContent =
+        [photos ? `${photos} ${pfT(photos === 1 ? 'photo' : 'photos')}` : '',
+         videos ? `${videos} ${pfT(videos === 1 ? 'video' : 'videos')}` : ''].filter(Boolean).join(' · ');
+      const more = document.getElementById('pfMore');
+      more.style.display = n > PF_FIRST ? 'block' : 'none';
+      more.textContent = pfShowAll ? pfT('showLess') : `${pfT('showAll')} (${n})`;
+    }
+
+    function escapeAttr(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function pfToggleAll() {
+      pfShowAll = !pfShowAll;
+      renderPortfolio();
+      if (!pfShowAll) document.getElementById('pfSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function pfOpen(i) {
+      pfIndex = i;
+      const lb = document.getElementById('pfLb');
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      // „Назад" на телефона затваря галерията, а не визитката
+      if (!pfPushed) { history.pushState({ pfLb: 1 }, ''); pfPushed = true; }
+      pfRender();
+    }
+
+    function pfClose(fromPop) {
+      const lb = document.getElementById('pfLb');
+      if (!lb.classList.contains('open')) return;
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+      pfStopMedia();
+      if (pfPushed && !fromPop) { pfPushed = false; history.back(); }
+      pfPushed = false;
+    }
+    window.addEventListener('popstate', () => { if (pfPushed) { pfPushed = false; pfClose(true); } });
+
+    function pfStopMedia() {
+      document.querySelectorAll('#pfLbStage video').forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); });
+    }
+
+    function pfStep(d) {
+      const n = pfItems.length;
+      pfIndex = (pfIndex + d + n) % n;
+      pfRender(d);
+    }
+
+    function pfRender(dir) {
+      const it = pfItems[pfIndex];
+      const stage = document.getElementById('pfLbStage');
+      pfStopMedia();
+      stage.querySelectorAll('img, video').forEach(el => el.remove());
+      let el;
+      if (it.kind === 'video') {
+        el = document.createElement('video');
+        el.controls = true; el.playsInline = true; el.preload = 'metadata';
+        el.setAttribute('playsinline', '');
+        if (it.poster_url) el.poster = it.poster_url;
+        el.src = it.url;
+        el.play().catch(() => {});
+      } else {
+        el = document.createElement('img');
+        el.alt = it.caption || '';
+        el.decoding = 'async';
+        // Докато дойде голямата, стои миниатюрата — без празен екран
+        el.src = it.thumb_url;
+        const full = new Image();
+        full.onload = () => { if (pfItems[pfIndex] === it) el.src = it.url; };
+        full.src = it.url;
+      }
+      if (dir) { el.style.opacity = '0'; el.style.transform = `translateX(${dir * 24}px)`; }
+      stage.appendChild(el);
+      if (dir) requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'none'; });
+
+      document.getElementById('pfLbCounter').textContent = `${pfIndex + 1} / ${pfItems.length}`;
+      document.getElementById('pfLbCap').textContent = it.caption || '';
+      const dots = document.getElementById('pfLbDots');
+      dots.style.display = pfItems.length > 1 && pfItems.length <= 15 ? 'flex' : 'none';
+      dots.innerHTML = pfItems.map((_, i) => `<i class="${i === pfIndex ? 'on' : ''}"></i>`).join('');
+
+      // Следващата снимка се подгрява, видеата — не (пестим трафик)
+      const next = pfItems[(pfIndex + 1) % pfItems.length];
+      if (next && next.kind === 'image') { const pre = new Image(); pre.src = next.url; }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('pfLb').classList.contains('open')) return;
+      if (e.key === 'Escape') pfClose();
+      if (e.key === 'ArrowRight') pfStep(1);
+      if (e.key === 'ArrowLeft') pfStep(-1);
+    });
+
+    // Суайп наляво/надясно в галерията
+    (function () {
+      let x0 = null, y0 = null;
+      document.addEventListener('touchstart', e => {
+        if (!e.target.closest || !e.target.closest('#pfLbStage')) return;
+        x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+      }, { passive: true });
+      document.addEventListener('touchend', e => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+        x0 = null;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3 && pfItems.length > 1) pfStep(dx < 0 ? 1 : -1);
+        else if (dy > 110 && Math.abs(dy) > Math.abs(dx) * 1.5) pfClose();
+      }, { passive: true });
+    })();
 
     // Render working hours + live status
     function renderWorkingHours(enabled, hoursJson) {
@@ -1590,7 +1916,14 @@
         sendError: "Грешка при изпращане. Опитайте отново.",
         loadingCard: "Зареждане на визитката...",
         notFoundTitle: "Визитката не е намерена",
-        notFoundText: "Този профил не съществува или връзката е непълна. Проверете линка и опитайте отново."
+        notFoundText: "Този профил не съществува или връзката е непълна. Проверете линка и опитайте отново.",
+        portfolio: "Портфолио",
+        photo: "снимка",
+        photos: "снимки",
+        video: "видео",
+        videos: "видеа",
+        showAll: "Виж всички",
+        showLess: "Скрий"
       },
       en: {
         saveContact: "Save Contact",
@@ -1632,7 +1965,14 @@
         sendError: "Error sending contact. Please try again.",
         loadingCard: "Loading card...",
         notFoundTitle: "Card not found",
-        notFoundText: "This profile does not exist or the link is incomplete. Please check the link and try again."
+        notFoundText: "This profile does not exist or the link is incomplete. Please check the link and try again.",
+        portfolio: "Portfolio",
+        photo: "photo",
+        photos: "photos",
+        video: "video",
+        videos: "videos",
+        showAll: "View all",
+        showLess: "Show less"
       },
       de: {
         saveContact: "Kontakt speichern",
@@ -1674,7 +2014,14 @@
         sendError: "Fehler beim Senden. Bitte versuchen Sie es erneut.",
         loadingCard: "Visitenkarte wird geladen...",
         notFoundTitle: "Visitenkarte nicht gefunden",
-        notFoundText: "Dieses Profil existiert nicht oder der Link ist unvollständig. Bitte prüfen Sie den Link und versuchen Sie es erneut."
+        notFoundText: "Dieses Profil existiert nicht oder der Link ist unvollständig. Bitte prüfen Sie den Link und versuchen Sie es erneut.",
+        portfolio: "Portfolio",
+        photo: "Foto",
+        photos: "Fotos",
+        video: "Video",
+        videos: "Videos",
+        showAll: "Alle ansehen",
+        showLess: "Weniger anzeigen"
       },
       ro: {
         saveContact: "Salvare contact",
@@ -1716,7 +2063,14 @@
         sendError: "Eroare la trimitere. Vă rugăm încercați din nou.",
         loadingCard: "Se încarcă cartea de vizită...",
         notFoundTitle: "Cartea de vizită nu a fost găsită",
-        notFoundText: "Acest profil nu există sau linkul este incomplet. Verificați linkul și încercați din nou."
+        notFoundText: "Acest profil nu există sau linkul este incomplet. Verificați linkul și încercați din nou.",
+        portfolio: "Portofoliu",
+        photo: "fotografie",
+        photos: "fotografii",
+        video: "videoclip",
+        videos: "videoclipuri",
+        showAll: "Vezi toate",
+        showLess: "Mai puțin"
       }
     };
 
@@ -1942,6 +2296,7 @@
       if (shareBtnEl) shareBtnEl.setAttribute('aria-label', t.shareAria);
 
       document.documentElement.lang = lang;
+      if (pfItems.length) renderPortfolio();
 
       const leadTitle = document.getElementById('leadTitle');
       if (leadTitle) leadTitle.innerText = t.sendLeads;

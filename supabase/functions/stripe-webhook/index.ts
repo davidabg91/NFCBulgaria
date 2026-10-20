@@ -11,6 +11,7 @@
 //   checkout.session.completed
 //   invoice.paid                      ← месечното подновяване
 //   customer.subscription.deleted     ← отказ
+//   customer.subscription.updated     ← смяна/спиране на портфолио
 //
 // `--no-verify-jwt` е нужен, защото Stripe не носи Supabase токен.
 // Автентичността се доказва с подписа на Stripe по-долу.
@@ -99,6 +100,44 @@ async function activate(opts: {
   await supabase.from('profiles').update({ is_boss: true }).eq('user_id', opts.userId);
 }
 
+// ---------------------------------------------------------------------
+// Портфолио във визитката (metadata.kind = 'portfolio'). Отделно от
+// пакетите на портала — отказ от портфолио НЕ пипа is_boss.
+// ---------------------------------------------------------------------
+const PORTFOLIO_PLANS = ['foto', 'video', 'pro'];
+
+async function savePortfolioSub(subId: string, sessionId?: string | null) {
+  // Презимаме с фиксираната версия на SDK-то — в събитията по-новата API
+  // версия е преместила current_period_end в items.
+  const sub = await stripe.subscriptions.retrieve(subId);
+  const userId = sub.metadata?.supabase_user_id;
+  const plan = sub.metadata?.plan ?? '';
+  if (!userId || !PORTFOLIO_PLANS.includes(plan)) {
+    console.error('Непълни metadata в портфолио абонамент', sub.id);
+    return null;
+  }
+  const item = sub.items.data[0];
+  const { error } = await supabase.from('portfolio_subscriptions').upsert({
+    user_id: userId,
+    profile_id: sub.metadata?.profile_id || null,
+    plan,
+    interval: item?.price?.recurring?.interval === 'year' ? 'year' : 'month',
+    price_cents: item?.price?.unit_amount ?? 0,
+    status: sub.status,
+    cancel_at_period_end: !!sub.cancel_at_period_end,
+    current_period_end: periodEnd(sub.current_period_end),
+    stripe_customer_id: typeof sub.customer === 'string' ? sub.customer : null,
+    stripe_subscription_id: sub.id,
+    ...(sessionId ? { stripe_session_id: sessionId } : {}),
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'stripe_subscription_id' });
+  if (error) {
+    console.error('Неуспешен запис на портфолио абонамент:', error.message);
+    throw error;
+  }
+  return sub;
+}
+
 Deno.serve(async (req) => {
   const signature = req.headers.get('stripe-signature');
   if (!signature) return new Response('Липсва подпис.', { status: 400 });
@@ -118,6 +157,12 @@ Deno.serve(async (req) => {
       // Първо плащане
       case 'checkout.session.completed': {
         const s = event.data.object as Stripe.Checkout.Session;
+        if (s.metadata?.kind === 'portfolio') {
+          if (typeof s.subscription === 'string') await savePortfolioSub(s.subscription, s.id);
+          break;
+        }
+        // Фоновете се отключват от theme-checkout, тук няма какво да правим
+        if (s.metadata?.kind === 'card_theme') break;
         const userId = s.metadata?.supabase_user_id ?? s.client_reference_id;
         const companyId = s.metadata?.company_id;
         const plan = s.metadata?.plan;
@@ -176,6 +221,32 @@ Deno.serve(async (req) => {
         if (!subId) break;
 
         const sub = await stripe.subscriptions.retrieve(subId);
+
+        if (sub.metadata?.kind === 'portfolio') {
+          await savePortfolioSub(sub.id);
+          // И портфолиото влиза в списъка за фактуриране от Revolut
+          if (invObj.id && (invObj.amount_paid ?? 0) > 0) {
+            const paidAt = invObj.status_transitions?.paid_at;
+            const { error: payErr } = await supabase
+              .from('subscription_payments')
+              .upsert({
+                stripe_invoice_id: invObj.id,
+                company_id: sub.metadata?.company_id || null,
+                profile_id: sub.metadata?.profile_id || null,
+                plan: `portfolio_${sub.metadata?.plan}`,
+                interval: sub.items.data[0]?.price?.recurring?.interval === 'year' ? 'year' : 'month',
+                amount_cents: invObj.amount_paid,
+                currency: invObj.currency ?? 'eur',
+                paid_at: paidAt ? new Date(paidAt * 1000).toISOString() : new Date().toISOString(),
+                period_start: new Date(sub.current_period_start * 1000).toISOString(),
+                period_end: new Date(sub.current_period_end * 1000).toISOString(),
+                receipt_url: invObj.hosted_invoice_url ?? null,
+              }, { onConflict: 'stripe_invoice_id', ignoreDuplicates: true });
+            if (payErr) console.error('Неуспешен запис на плащане (портфолио):', payErr.message);
+          }
+          break;
+        }
+
         const userId = sub.metadata?.supabase_user_id;
         const companyId = sub.metadata?.company_id;
         const plan = sub.metadata?.plan;
@@ -218,8 +289,23 @@ Deno.serve(async (req) => {
       }
 
       // Отказан абонамент — порталът се заключва
+      // Смяна на пакет / спиране в края на периода (портфолио)
+      case 'customer.subscription.updated': {
+        const sub = event.data.object as Stripe.Subscription;
+        if (sub.metadata?.kind === 'portfolio') await savePortfolioSub(sub.id);
+        break;
+      }
+
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
+
+        if (sub.metadata?.kind === 'portfolio') {
+          await supabase
+            .from('portfolio_subscriptions')
+            .update({ status: 'canceled', updated_at: new Date().toISOString() })
+            .eq('stripe_subscription_id', sub.id);
+          break;
+        }
 
         await supabase
           .from('team_subscriptions')
