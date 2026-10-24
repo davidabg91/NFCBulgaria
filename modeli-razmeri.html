@@ -87,15 +87,15 @@
     }
     .size-table th,
     .size-table td {
-      padding: 0.7rem 0.6rem;
+      padding: 0.7rem 0.3rem;
       text-align: center;
       border-bottom: 1px solid var(--border);
     }
     .size-table th {
       font-family: var(--font-mono, monospace);
-      font-size: 0.78rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0;
       color: var(--primary);
     }
     .size-table td:first-child {
@@ -136,6 +136,13 @@
       .size-table th { font-size: 0.68rem; letter-spacing: 0; }
       .examples-section .section-title h2 { font-size: 1.7rem; }
       .cta-box { padding: 2.5rem 1.2rem; }
+    }
+    @media (max-width: 380px) {
+      .model-card { padding: 0.8rem; }
+      .size-table { font-size: 0.78rem; }
+      .size-table th,
+      .size-table td { padding: 0.5rem 0.15rem; }
+      .size-table th { font-size: 0.6rem; }
     }
     .examples-grid {
       columns: 3 min(300px, 100%);
