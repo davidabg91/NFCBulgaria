@@ -108,6 +108,34 @@
       color: var(--primary);
       white-space: nowrap;
     }
+    .examples-section { margin: 5rem 0 2rem; }
+    .examples-section .section-title { text-align: center; margin-bottom: 2.5rem; }
+    @media (max-width: 600px) {
+      .examples-section .section-title h2 { font-size: 1.7rem; }
+    }
+    .examples-grid {
+      columns: 3 300px;
+      column-gap: 1.5rem;
+    }
+    .example-card {
+      break-inside: avoid;
+      margin: 0 0 1.5rem;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--glass-bg, rgba(255,255,255,0.03));
+      border: 1px solid var(--border);
+    }
+    .example-card img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .example-card figcaption {
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .example-card figcaption strong { color: #fff; }
     .cta-box {
       text-align: center;
       padding: 3.5rem 2rem;
@@ -255,6 +283,47 @@
       </div>
 
     </div>
+
+    <section class="examples-section" aria-labelledby="examples-title">
+      <div class="section-title" data-aos>
+        <h2 id="examples-title">Примерни <span class="gradient-text">дизайни</span> от наши клиенти</h2>
+        <p>Всяка табела се изработва с персонален дизайн — Вашето лого, цветове и линкове.</p>
+      </div>
+      <div class="examples-grid">
+        <figure class="example-card">
+          <img src="razmeri/primeri/tenorri.webp" alt="Примерна NFC табела за Tenorri — бижута · Google отзиви с NFC и QR" width="531" height="780" loading="lazy" decoding="async">
+          <figcaption><strong>Tenorri</strong> — бижута · Google отзиви с NFC и QR</figcaption>
+        </figure>
+        <figure class="example-card">
+          <img src="razmeri/primeri/modeva.webp" alt="Примерна NFC табела за Modeva — модна къща · Google отзиви с NFC и QR" width="800" height="1200" loading="lazy" decoding="async">
+          <figcaption><strong>Modeva</strong> — модна къща · Google отзиви с NFC и QR</figcaption>
+        </figure>
+        <figure class="example-card">
+          <img src="razmeri/primeri/elkabel-anketa.webp" alt="Примерна NFC табела за ЕЛКАБЕЛ — анкета + Google отзиви, 10 × 15 см" width="1200" height="670" loading="lazy" decoding="async">
+          <figcaption><strong>ЕЛКАБЕЛ</strong> — анкета + Google отзиви, 10 × 15 см</figcaption>
+        </figure>
+        <figure class="example-card">
+          <img src="razmeri/primeri/petrol.webp" alt="Примерна NFC табела за Petrol — бензиностанция · Google отзиви с NFC и QR" width="800" height="1200" loading="lazy" decoding="async">
+          <figcaption><strong>Petrol</strong> — бензиностанция · Google отзиви с NFC и QR</figcaption>
+        </figure>
+        <figure class="example-card">
+          <img src="razmeri/primeri/pigeon-express.webp" alt="Примерна NFC табела за Pigeon Express — проследяване на пратка + Google отзиви" width="960" height="1200" loading="lazy" decoding="async">
+          <figcaption><strong>Pigeon Express</strong> — проследяване на пратка + Google отзиви</figcaption>
+        </figure>
+        <figure class="example-card">
+          <img src="razmeri/primeri/elkabel-durvo.webp" alt="Примерна NFC табела за ЕЛКАБЕЛ — дизайн „дърво и злато“, 10 × 15 см" width="1200" height="655" loading="lazy" decoding="async">
+          <figcaption><strong>ЕЛКАБЕЛ</strong> — дизайн „дърво и злато“, 10 × 15 см</figcaption>
+        </figure>
+        <figure class="example-card">
+          <img src="razmeri/primeri/nedelya-katalog.webp" alt="Примерна NFC табела за Неделя — каталог с торти с NFC и QR" width="1200" height="442" loading="lazy" decoding="async">
+          <figcaption><strong>Неделя</strong> — каталог с торти с NFC и QR</figcaption>
+        </figure>
+        <figure class="example-card">
+          <img src="razmeri/primeri/nedelya-6-dizaina.webp" alt="Примерна NFC табела за Неделя — 6 варианта на дизайн за избор" width="1200" height="670" loading="lazy" decoding="async">
+          <figcaption><strong>Неделя</strong> — 6 варианта на дизайн за избор</figcaption>
+        </figure>
+      </div>
+    </section>
 
     <div class="cta-box" data-aos>
       <h2 style="font-family: var(--font-heading); font-size: 2rem; margin-bottom: 1rem;">Не сте сигурни кой размер е точният?</h2>
