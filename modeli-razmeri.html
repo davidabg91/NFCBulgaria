@@ -160,6 +160,151 @@
       color: var(--text-muted);
     }
     .example-card figcaption strong { color: #fff; }
+    .model-card { display: flex; flex-direction: column; }
+    .order-btn {
+      margin-top: auto;
+      align-self: stretch;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      padding: 0.8rem 1.2rem;
+    }
+    .model-card table, .model-card ul { margin-bottom: 1.4rem; }
+
+    /* ---- Поръчка ---- */
+    .order-dialog {
+      width: min(680px, calc(100% - 2rem));
+      max-height: calc(100dvh - 2rem);
+      padding: 0;
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      background: #0f172a;
+      color: #e2e8f0;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    }
+    .order-dialog::backdrop { background: rgba(2, 6, 23, 0.75); backdrop-filter: blur(4px); }
+    .order-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.1rem 1.5rem;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
+    }
+    .order-head h2 { font-family: var(--font-heading); font-size: 1.3rem; margin: 0; }
+    .order-close {
+      flex: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: #fff;
+      font-size: 1.3rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .order-body { padding: 1.4rem 1.5rem 1.6rem; }
+    .order-step {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.1rem 1.2rem 1.2rem;
+      margin: 0 0 1.1rem;
+    }
+    .order-step legend {
+      padding: 0 0.5rem;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+    }
+    .order-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+    .order-grid .full { grid-column: 1 / -1; }
+    .order-field label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .order-field label .req { color: var(--primary); }
+    .order-field input,
+    .order-field select,
+    .order-field textarea {
+      width: 100%;
+      padding: 0.7rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(15, 23, 42, 0.9);
+      color: #fff;
+      font: inherit;
+      font-size: 16px; /* без авто-зуум на iPhone */
+    }
+    .order-field textarea { min-height: 96px; resize: vertical; }
+    .order-field input:focus,
+    .order-field select:focus,
+    .order-field textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: transparent; }
+    .order-field .hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; }
+    .order-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 1rem;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      background: rgba(161, 232, 175, 0.08);
+      border: 1px solid var(--glass-border);
+    }
+    .order-total strong { font-size: 1.4rem; color: var(--primary); }
+    .order-check {
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-start;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+    .order-check input { width: 18px; height: 18px; margin-top: 0.15rem; accent-color: var(--primary); flex: none; }
+    .order-check a { color: var(--primary); }
+    .invoice-fields { margin-top: 1rem; }
+    .invoice-fields[hidden] { display: none; }
+    .logo-list { list-style: none; margin: 0.5rem 0 0; padding: 0; font-size: 0.85rem; color: var(--text-muted); }
+    .order-error {
+      margin: 0 0 1rem;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fecaca;
+      font-size: 0.92rem;
+    }
+    .order-submit { width: 100%; justify-content: center; border: none; cursor: pointer; font: inherit; font-weight: 700; padding: 0.95rem; }
+    .order-submit:disabled { opacity: 0.6; cursor: wait; }
+    .order-note { font-size: 0.82rem; color: var(--text-muted); text-align: center; margin-top: 0.8rem; line-height: 1.5; }
+    .order-success { text-align: center; padding: 2.5rem 1.5rem 3rem; }
+    .order-success .big { font-size: 3rem; margin-bottom: 0.5rem; }
+    .order-success h3 { font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 0.8rem; }
+    .order-success p { color: var(--text-muted); line-height: 1.6; max-width: 440px; margin: 0 auto 1.5rem; }
+    @media (max-width: 600px) {
+      .order-dialog {
+        width: 100%;
+        max-width: 100%;
+        height: 100dvh;
+        max-height: 100dvh;
+        margin: 0;
+        border-radius: 0;
+        border: none;
+      }
+      .order-head { padding: 0.9rem 1rem; }
+      .order-body { padding: 1rem 1rem 1.4rem; }
+      .order-step { padding: 0.9rem 0.9rem 1rem; }
+      .order-grid { grid-template-columns: 1fr; }
+    }
     .cta-box {
       text-align: center;
       padding: 3.5rem 2rem;
@@ -232,6 +377,7 @@
             <tr><td>A6</td><td>110 мм</td><td>160 мм</td><td>82 мм</td><td class="price">20 €</td></tr>
           </tbody>
         </table>
+        <button type="button" class="btn-primary order-btn" data-model="stela-pro">🛒 Поръчай</button>
       </div>
 
       <!-- Model 2: ZL -->
@@ -249,6 +395,7 @@
             <tr><td>A6</td><td>153 мм</td><td>117 мм</td><td>72 мм</td><td class="price">20 €</td></tr>
           </tbody>
         </table>
+        <button type="button" class="btn-primary order-btn" data-model="panorama-pro">🛒 Поръчай</button>
       </div>
 
       <!-- Model 3: 15 -->
@@ -266,6 +413,7 @@
             <tr><td>A6</td><td>109 мм</td><td>152 мм</td><td>75 мм</td><td class="price">25 €</td></tr>
           </tbody>
         </table>
+        <button type="button" class="btn-primary order-btn" data-model="stela">🛒 Поръчай</button>
       </div>
 
       <!-- Model 4: 17 -->
@@ -283,6 +431,7 @@
             <tr><td>A6</td><td>152 мм</td><td>109 мм</td><td>75 мм</td><td class="price">25 €</td></tr>
           </tbody>
         </table>
+        <button type="button" class="btn-primary order-btn" data-model="panorama">🛒 Поръчай</button>
       </div>
 
       <!-- Model 5: T-shaped desktop stand -->
@@ -304,6 +453,7 @@
           <li>✓ T-образна стабилна конструкция</li>
           <li>✓ Дебела основа за стабилно стоене</li>
         </ul>
+        <button type="button" class="btn-primary order-btn" data-model="kompakt-t">🛒 Поръчай</button>
       </div>
 
     </div>
@@ -359,6 +509,141 @@
 
   </main>
 
+  <!-- Поръчка на табела -->
+  <dialog class="order-dialog" id="orderDialog" aria-labelledby="orderTitle">
+    <div class="order-head">
+      <h2 id="orderTitle">Поръчка на табела</h2>
+      <button type="button" class="order-close" id="orderClose" aria-label="Затвори">×</button>
+    </div>
+    <div class="order-body">
+      <form id="orderForm" novalidate>
+        <div class="order-error" id="orderError" role="alert" hidden></div>
+
+        <fieldset class="order-step">
+          <legend>1. Табела</legend>
+          <div class="order-grid">
+            <div class="order-field full">
+              <label for="oModel">Модел <span class="req">*</span></label>
+              <select id="oModel" required></select>
+            </div>
+            <div class="order-field">
+              <label for="oSize">Размер <span class="req">*</span></label>
+              <select id="oSize" required></select>
+            </div>
+            <div class="order-field">
+              <label for="oQty">Брой <span class="req">*</span></label>
+              <input type="number" id="oQty" min="1" max="1000" value="1" inputmode="numeric" required>
+            </div>
+          </div>
+          <div class="order-total">
+            <span id="oTotalLabel">Общо</span>
+            <strong id="oTotal">—</strong>
+          </div>
+        </fieldset>
+
+        <fieldset class="order-step">
+          <legend>2. Дизайн</legend>
+          <div class="order-grid">
+            <div class="order-field full">
+              <label for="oLink">Към какво да води табелата</label>
+              <input type="text" id="oLink" placeholder="напр. линк към Google отзиви, Instagram, сайт" maxlength="1000">
+              <div class="hint">Ако нямате линка подръка — напишете името на обекта, ще го намерим.</div>
+            </div>
+            <div class="order-field full">
+              <label for="oLogo">Лого (по желание)</label>
+              <input type="file" id="oLogo" accept=".png,.jpg,.jpeg,.webp,.svg,.pdf,image/png,image/jpeg,image/webp,image/svg+xml,application/pdf" multiple>
+              <div class="hint">До 3 файла · PNG, JPG, WEBP, SVG или PDF · до 10 MB всеки</div>
+              <ul class="logo-list" id="oLogoList"></ul>
+            </div>
+            <div class="order-field full">
+              <label for="oNotes">Как искате да изглежда дизайнът</label>
+              <textarea id="oNotes" maxlength="4000" placeholder="Цветове, текст върху табелата, стил, пример който харесвате от галерията..."></textarea>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="order-step">
+          <legend>3. Данни за контакт</legend>
+          <div class="order-grid">
+            <div class="order-field full">
+              <label for="oName">Име и фамилия <span class="req">*</span></label>
+              <input type="text" id="oName" autocomplete="name" maxlength="200" required>
+            </div>
+            <div class="order-field">
+              <label for="oPhone">Телефон <span class="req">*</span></label>
+              <input type="tel" id="oPhone" autocomplete="tel" placeholder="+359 88 000 0000" maxlength="50" required>
+            </div>
+            <div class="order-field">
+              <label for="oEmail">Имейл <span class="req">*</span></label>
+              <input type="email" id="oEmail" autocomplete="email" maxlength="200" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="order-step">
+          <legend>4. Доставка</legend>
+          <div class="order-grid">
+            <div class="order-field">
+              <label for="oCity">Град <span class="req">*</span></label>
+              <input type="text" id="oCity" autocomplete="address-level2" maxlength="200" required>
+            </div>
+            <div class="order-field">
+              <label for="oAddress">Адрес или офис на куриер <span class="req">*</span></label>
+              <input type="text" id="oAddress" autocomplete="street-address" placeholder="напр. офис Еконт Център" maxlength="500" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="order-step">
+          <legend>5. Фактура</legend>
+          <label class="order-check">
+            <input type="checkbox" id="oInvoice">
+            <span>Искам фактура на фирма</span>
+          </label>
+          <div class="invoice-fields" id="invoiceFields" hidden>
+            <div class="order-grid">
+              <div class="order-field full">
+                <label for="oCompany">Име на фирмата <span class="req">*</span></label>
+                <input type="text" id="oCompany" autocomplete="organization" maxlength="300">
+              </div>
+              <div class="order-field">
+                <label for="oEik">ЕИК / Булстат <span class="req">*</span></label>
+                <input type="text" id="oEik" inputmode="numeric" maxlength="30">
+              </div>
+              <div class="order-field">
+                <label for="oVat">ДДС номер</label>
+                <input type="text" id="oVat" placeholder="ако е регистрирана" maxlength="30">
+              </div>
+              <div class="order-field">
+                <label for="oMol">МОЛ</label>
+                <input type="text" id="oMol" maxlength="200">
+              </div>
+              <div class="order-field">
+                <label for="oInvAddress">Адрес на регистрация</label>
+                <input type="text" id="oInvAddress" maxlength="500">
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <label class="order-check" style="margin: 0.4rem 0 1.2rem;">
+          <input type="checkbox" id="oTerms" required>
+          <span>Съгласен/на съм с <a href="terms.html" target="_blank" rel="noopener">Общите условия</a> и <a href="privacy.html" target="_blank" rel="noopener">Политиката за поверителност</a> <span class="req" style="color:var(--primary)">*</span></span>
+        </label>
+
+        <button type="submit" class="btn-primary order-submit" id="orderSubmit">Изпрати поръчката</button>
+        <p class="order-note">Нищо не плащате сега. Ще Ви изпратим проект на дизайна за одобрение и едва след това изработваме табелата. Доставката се заплаща по тарифата на куриера.</p>
+      </form>
+
+      <div class="order-success" id="orderSuccess" hidden>
+        <div class="big">✅</div>
+        <h3 id="orderSuccessTitle">Поръчката е приета!</h3>
+        <p>Благодарим Ви! Ще се свържем с Вас до 1 работен ден с проект на дизайна за одобрение.</p>
+        <button type="button" class="btn-primary" id="orderDone" style="border:none;cursor:pointer;font:inherit;font-weight:700;">Затвори</button>
+      </div>
+    </div>
+  </dialog>
+
   <footer>
     <div class="container">
       <div class="logo" style="margin-bottom: 1rem;">
@@ -379,5 +664,226 @@
   <!-- Превод BG / EN / RO -->
   <script src="i18n-data.js?v=20260916"></script>
   <script src="i18n.js?v=20260824"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script>
+    (function () {
+      // Цени за единичен брой — същите като в таблиците горе и в sign_unit_price() в базата
+      const SIGN_MODELS = {
+        'stela-pro':    { name: 'Стела Про',    prices: { A4: 25, A5: 23, A6: 20 } },
+        'panorama-pro': { name: 'Панорама Про', prices: { A4: 25, A5: 23, A6: 20 } },
+        'stela':        { name: 'Стела',        prices: { A4: 30, A5: 28, A6: 25 } },
+        'panorama':     { name: 'Панорама',     prices: { A4: 30, A5: 28, A6: 25 } },
+        'kompakt-t':    { name: 'Компакт T',    prices: { A6: 17, A5: 20 } }
+      };
+      const SUPABASE_URL = 'https://upjwsqfrblxzhyuxeumj.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_xVxRb3L5aI-61IaZgh2LSA_dnmpjREB';
+      const WEB3FORMS_KEY = '5baff5af-db3e-4088-9352-1381b4a700ec';
+      const MAX_LOGOS = 3;
+      const MAX_LOGO_BYTES = 10 * 1024 * 1024;
+      const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml', 'application/pdf'];
+
+      const $ = (id) => document.getElementById(id);
+      const dialog = $('orderDialog');
+      const form = $('orderForm');
+      const modelSel = $('oModel');
+      const sizeSel = $('oSize');
+      const qtyInput = $('oQty');
+      let db = null;
+
+      const eur = (n) => n.toFixed(2).replace('.00', '') + ' €';
+      const qtyValue = () => Math.max(1, Math.min(1000, parseInt(qtyInput.value, 10) || 1));
+
+      modelSel.innerHTML = Object.entries(SIGN_MODELS)
+        .map(([slug, m]) => `<option value="${slug}">${m.name}</option>`).join('');
+
+      function fillSizes(keep) {
+        const m = SIGN_MODELS[modelSel.value];
+        sizeSel.innerHTML = Object.entries(m.prices)
+          .map(([size, price]) => `<option value="${size}">${size} — ${eur(price)}</option>`).join('');
+        if (keep && m.prices[keep]) sizeSel.value = keep;
+        updateTotal();
+      }
+
+      function updateTotal() {
+        const price = SIGN_MODELS[modelSel.value].prices[sizeSel.value];
+        const qty = qtyValue();
+        $('oTotalLabel').textContent = qty > 1 ? `Общо (${qty} × ${eur(price)})` : 'Общо';
+        $('oTotal').textContent = eur(price * qty);
+      }
+
+      modelSel.addEventListener('change', () => fillSizes(sizeSel.value));
+      sizeSel.addEventListener('change', updateTotal);
+      qtyInput.addEventListener('input', updateTotal);
+
+      $('oInvoice').addEventListener('change', (e) => {
+        $('invoiceFields').hidden = !e.target.checked;
+        $('oCompany').required = e.target.checked;
+        $('oEik').required = e.target.checked;
+      });
+
+      $('oLogo').addEventListener('change', () => {
+        const list = $('oLogoList');
+        list.innerHTML = '';
+        [...$('oLogo').files].forEach(f => {
+          const li = document.createElement('li');
+          li.textContent = `📎 ${f.name} · ${(f.size / 1024 / 1024).toFixed(1)} MB`;
+          list.appendChild(li);
+        });
+      });
+
+      function openOrder(slug) {
+        form.hidden = false;
+        $('orderSuccess').hidden = true;
+        $('orderError').hidden = true;
+        modelSel.value = slug in SIGN_MODELS ? slug : 'stela-pro';
+        fillSizes('A5');
+        dialog.showModal();
+        dialog.scrollTop = 0;
+      }
+
+      document.querySelectorAll('.order-btn').forEach(btn =>
+        btn.addEventListener('click', () => openOrder(btn.dataset.model)));
+      $('orderClose').addEventListener('click', () => dialog.close());
+      $('orderDone').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+
+      function showError(msg, field) {
+        const box = $('orderError');
+        box.textContent = msg;
+        box.hidden = false;
+        (field || box).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (field) field.focus({ preventScroll: true });
+        return false;
+      }
+
+      function validate() {
+        const required = [
+          ['oName', 'Моля, въведете име.'],
+          ['oPhone', 'Моля, въведете телефон.'],
+          ['oEmail', 'Моля, въведете имейл.'],
+          ['oCity', 'Моля, въведете град за доставка.'],
+          ['oAddress', 'Моля, въведете адрес или офис на куриер.']
+        ];
+        if ($('oInvoice').checked) {
+          required.push(['oCompany', 'Моля, въведете име на фирмата за фактурата.']);
+          required.push(['oEik', 'Моля, въведете ЕИК за фактурата.']);
+        }
+        for (const [id, msg] of required) {
+          if (!$(id).value.trim()) return showError(msg, $(id));
+        }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('oEmail').value.trim())) {
+          return showError('Имейлът не изглежда правилен.', $('oEmail'));
+        }
+        const files = [...$('oLogo').files];
+        if (files.length > MAX_LOGOS) return showError(`Може да качите до ${MAX_LOGOS} файла.`, $('oLogo'));
+        for (const f of files) {
+          if (f.size > MAX_LOGO_BYTES) return showError(`„${f.name}“ е по-голям от 10 MB.`, $('oLogo'));
+          if (!LOGO_TYPES.includes(f.type)) return showError(`„${f.name}“ не е PNG, JPG, WEBP, SVG или PDF.`, $('oLogo'));
+        }
+        if (!$('oTerms').checked) return showError('Моля, потвърдете, че сте съгласни с Общите условия.', $('oTerms'));
+        return true;
+      }
+
+      async function uploadLogos() {
+        const files = [...$('oLogo').files];
+        const folder = crypto.randomUUID ? crypto.randomUUID()
+          : Date.now() + '-' + Math.random().toString(36).slice(2);
+        const paths = [];
+        for (const [i, f] of files.entries()) {
+          const ext = (f.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin';
+          const path = `${folder}/logo-${i + 1}.${ext}`;
+          const { error } = await db.storage.from('sign-logos').upload(path, f, { contentType: f.type, upsert: false });
+          if (error) throw new Error('Логото не се качи: ' + error.message);
+          paths.push(path);
+        }
+        return paths;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        $('orderError').hidden = true;
+        if (!validate()) return;
+
+        const btn = $('orderSubmit');
+        btn.disabled = true;
+        btn.textContent = 'Изпраща се...';
+
+        try {
+          if (!db) db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          const logoPaths = await uploadLogos();
+          const wantsInvoice = $('oInvoice').checked;
+          const order = {
+            model: modelSel.value,
+            size: sizeSel.value,
+            quantity: qtyValue(),
+            customer_name: $('oName').value.trim(),
+            customer_phone: $('oPhone').value.trim(),
+            customer_email: $('oEmail').value.trim(),
+            delivery_city: $('oCity').value.trim(),
+            delivery_address: $('oAddress').value.trim(),
+            target_link: $('oLink').value.trim(),
+            design_notes: $('oNotes').value.trim(),
+            logo_paths: logoPaths,
+            wants_invoice: wantsInvoice,
+            invoice_company: $('oCompany').value.trim(),
+            invoice_eik: $('oEik').value.trim(),
+            invoice_vat: $('oVat').value.trim(),
+            invoice_mol: $('oMol').value.trim(),
+            invoice_address: $('oInvAddress').value.trim()
+          };
+
+          const { data: orderId, error } = await db.rpc('submit_sign_order', { p: order });
+          if (error) throw new Error(error.message);
+
+          // Известие по имейл до офиса — ако се провали, поръчката пак си е в базата
+          const m = SIGN_MODELS[order.model];
+          const price = m.prices[order.size];
+          const logoUrls = logoPaths.map(p => `${SUPABASE_URL}/storage/v1/object/public/sign-logos/${p}`);
+          fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+              access_key: WEB3FORMS_KEY,
+              subject: `Нова поръчка на табела №${orderId} — ${m.name} ${order.size} × ${order.quantity}`,
+              from_name: 'NFC Bulgaria — поръчки',
+              replyto: order.customer_email,
+              'Поръчка №': orderId,
+              'Модел': m.name,
+              'Размер': order.size,
+              'Брой': order.quantity,
+              'Сума': eur(price * order.quantity),
+              'Име': order.customer_name,
+              'Телефон': order.customer_phone,
+              'Имейл': order.customer_email,
+              'Доставка': `${order.delivery_city}, ${order.delivery_address}`,
+              'Линк за табелата': order.target_link || '—',
+              'Желания за дизайна': order.design_notes || '—',
+              'Лого': logoUrls.length ? logoUrls.join('\n') : 'няма качено',
+              'Фактура': wantsInvoice
+                ? `${order.invoice_company}, ЕИК ${order.invoice_eik}` +
+                  (order.invoice_vat ? `, ДДС ${order.invoice_vat}` : '') +
+                  (order.invoice_mol ? `, МОЛ ${order.invoice_mol}` : '') +
+                  (order.invoice_address ? `, ${order.invoice_address}` : '')
+                : 'не'
+            })
+          }).catch(() => {});
+
+          $('orderSuccessTitle').textContent = `Поръчка №${orderId} е приета!`;
+          form.reset();
+          $('oLogoList').innerHTML = '';
+          $('invoiceFields').hidden = true;
+          form.hidden = true;
+          $('orderSuccess').hidden = false;
+          dialog.scrollTop = 0;
+        } catch (err) {
+          showError('Поръчката не можа да се изпрати. ' + (err.message || '') +
+            ' Опитайте отново или ни пишете на office@nfcbulgaria.com.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Изпрати поръчката';
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

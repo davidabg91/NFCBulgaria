@@ -597,6 +597,7 @@
       <button class="tab" data-tab="cards">📇 Визитки</button>
       <button class="tab" data-tab="companies">🏢 Фирми и екипи</button>
       <button class="tab" data-tab="leads">📥 Събрани контакти</button>
+      <button class="tab" data-tab="signorders">🪧 Поръчки табели <span id="signOrdersNew"></span></button>
       <button class="tab" data-tab="payments">💳 Плащания</button>
       <button class="tab" data-tab="activity">🕓 Кой какво променя</button>
       <button class="tab" data-tab="manage">⚙️ Управление</button>
@@ -781,6 +782,48 @@
               </tr>
             </thead>
             <tbody id="leadsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ПОРЪЧКИ НА ТАБЕЛИ ============ -->
+    <section class="panel" id="panel-signorders">
+      <div class="section-head">
+        <div>
+          <h2>Поръчки на табели</h2>
+          <p>Поръчките от бутона „Поръчай“ в страницата „Модели и размери“ — с логата, желанията за дизайна и данните за фактура.</p>
+        </div>
+        <button class="btn-ghost" onclick="loadSignOrders()">↻ Обнови</button>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="signOrdersSearch" class="search-input" placeholder="Търси по клиент, телефон, фирма, модел...">
+        <select id="signOrdersStatusFilter" class="select-input">
+          <option value="">Всички статуси</option>
+          <option value="new">🆕 Нови</option>
+          <option value="in_progress">🛠 В работа</option>
+          <option value="done">✅ Изпълнени</option>
+          <option value="cancelled">✖ Отказани</option>
+        </select>
+        <span class="result-count" id="signOrdersCount"></span>
+      </div>
+
+      <div class="dash-card" style="padding:1rem">
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>№ / Кога</th>
+                <th>Табела</th>
+                <th>Клиент</th>
+                <th>Доставка</th>
+                <th>Дизайн</th>
+                <th>Фактура</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="signOrdersTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -1129,6 +1172,7 @@
     let overviewRows    = [];   // admin_profiles_overview()
     let companiesRows   = [];   // admin_companies_overview()
     let leadsRows       = [];   // admin_recent_leads()
+    let signOrdersRows  = [];   // admin_list_sign_orders()
     let activityRows    = [];   // admin_activity_feed()
     let paymentsData    = null; // admin_payments_overview()
     let companyBossMap  = new Map(); // company_id → имената на шефовете
@@ -1190,12 +1234,15 @@
       document.getElementById('cardsCompanyFilter').addEventListener('change', renderCardsTable);
       document.getElementById('cardsUsageFilter').addEventListener('change', renderCardsTable);
       document.getElementById('leadsSearch').addEventListener('input', renderLeadsTable);
+      document.getElementById('signOrdersSearch').addEventListener('input', renderSignOrdersTable);
+      document.getElementById('signOrdersStatusFilter').addEventListener('change', renderSignOrdersTable);
       document.getElementById('activitySearch').addEventListener('input', renderActivityTable);
     }
 
     async function refreshAll() {
       await loadProfilesList();   // основното — работи винаги
       await loadInsights();       // разширеното — иска admin-insights.sql
+      await loadSignOrders();     // поръчки на табели — иска sign-orders.sql
     }
 
     // ---------------------------------------------------------------
@@ -1866,6 +1913,92 @@
           <td>${l.client_email ? `<a class="btn-action" href="mailto:${escapeHtml(l.client_email)}">${escapeHtml(l.client_email)}</a>` : '<span class="muted">—</span>'}</td>
           <td class="muted">${escapeHtml(l.client_message || '—')}</td>
         </tr>`).join('');
+    }
+
+    // ---------------------------------------------------------------
+    // Таб „Поръчки табели“
+    // ---------------------------------------------------------------
+    const SIGN_MODEL_NAMES = {
+      'stela-pro': 'Стела Про', 'panorama-pro': 'Панорама Про',
+      'stela': 'Стела', 'panorama': 'Панорама', 'kompakt-t': 'Компакт T'
+    };
+    const SIGN_STATUSES = {
+      new: '🆕 Нова', in_progress: '🛠 В работа', done: '✅ Изпълнена', cancelled: '✖ Отказана'
+    };
+
+    async function loadSignOrders() {
+      const { data, error } = await supabaseClient.rpc('admin_list_sign_orders', { p_limit: 500 });
+      signOrdersRows = error ? [] : (data || []);
+      const fresh = signOrdersRows.filter(o => o.status === 'new').length;
+      document.getElementById('signOrdersNew').innerHTML =
+        fresh ? `<span class="badge badge-warn">${fresh}</span>` : '';
+      renderSignOrdersTable();
+    }
+
+    function renderSignOrdersTable() {
+      const q = document.getElementById('signOrdersSearch').value.trim().toLowerCase();
+      const st = document.getElementById('signOrdersStatusFilter').value;
+      const rows = signOrdersRows.filter(o => (!st || o.status === st) && (!q || [
+        o.id, o.customer_name, o.customer_phone, o.customer_email, o.invoice_company,
+        o.invoice_eik, o.delivery_city, SIGN_MODEL_NAMES[o.model], o.size, o.design_notes
+      ].some(v => String(v || '').toLowerCase().includes(q))));
+
+      document.getElementById('signOrdersCount').textContent =
+        `${rows.length} от ${signOrdersRows.length} поръчки`;
+
+      const tbody = document.getElementById('signOrdersTableBody');
+      if (!rows.length) {
+        tbody.innerHTML = emptyRow(7, signOrdersRows.length ? 'Няма съвпадения.' : 'Още няма поръчки на табели.');
+        return;
+      }
+
+      const logoUrl = p => `${SUPABASE_URL}/storage/v1/object/public/sign-logos/${p.split('/').map(encodeURIComponent).join('/')}`;
+      const linkOrText = v => /^https?:\/\//i.test(v)
+        ? `<a class="btn-action" href="${escapeHtml(v)}" target="_blank" rel="noopener">🔗 линк</a>`
+        : escapeHtml(v);
+
+      tbody.innerHTML = rows.map(o => `
+        <tr>
+          <td style="white-space:nowrap"><strong>№${o.id}</strong><br><span class="muted">${fmtDateTime(o.created_at)}</span></td>
+          <td style="white-space:nowrap">
+            <strong>${escapeHtml(SIGN_MODEL_NAMES[o.model] || o.model)}</strong> ${escapeHtml(o.size)} × ${o.quantity}<br>
+            <span style="color:var(--primary);font-weight:700">${Number(o.total_price).toFixed(2)} €</span>
+          </td>
+          <td>
+            <strong>${escapeHtml(o.customer_name)}</strong><br>
+            <a class="btn-action" href="tel:${escapeHtml(String(o.customer_phone).replace(/[^\d+]/g, ''))}">${escapeHtml(o.customer_phone)}</a>
+            <a class="btn-action" href="mailto:${escapeHtml(o.customer_email)}">${escapeHtml(o.customer_email)}</a>
+          </td>
+          <td class="muted">${escapeHtml(o.delivery_city || '—')}<br>${escapeHtml(o.delivery_address || '')}</td>
+          <td style="min-width:220px">
+            ${o.target_link ? `<div>Води към: ${linkOrText(o.target_link)}</div>` : ''}
+            ${(o.logo_paths || []).map((p, i) => `<a class="btn-action" href="${logoUrl(p)}" target="_blank" rel="noopener">🖼 Лого ${i + 1}</a>`).join(' ')}
+            ${o.design_notes ? `<div class="muted" style="margin-top:0.3rem;white-space:pre-wrap">${escapeHtml(o.design_notes)}</div>` : ''}
+            ${!o.target_link && !(o.logo_paths || []).length && !o.design_notes ? '<span class="muted">—</span>' : ''}
+          </td>
+          <td class="muted">${o.wants_invoice
+            ? `<strong style="color:#fff">${escapeHtml(o.invoice_company)}</strong><br>ЕИК ${escapeHtml(o.invoice_eik)}` +
+              (o.invoice_vat ? `<br>ДДС ${escapeHtml(o.invoice_vat)}` : '') +
+              (o.invoice_mol ? `<br>МОЛ ${escapeHtml(o.invoice_mol)}` : '') +
+              (o.invoice_address ? `<br>${escapeHtml(o.invoice_address)}` : '')
+            : 'не'}</td>
+          <td>
+            <select class="select-input" onchange="setSignOrderStatus(${o.id}, this.value)">
+              ${Object.entries(SIGN_STATUSES).map(([k, label]) =>
+                `<option value="${k}" ${o.status === k ? 'selected' : ''}>${label}</option>`).join('')}
+            </select>
+          </td>
+        </tr>`).join('');
+    }
+
+    async function setSignOrderStatus(id, status) {
+      const { error } = await supabaseClient.rpc('admin_update_sign_order', { p_id: id, p_status: status });
+      if (error) { alert('Статусът не се запази: ' + error.message); return; }
+      const row = signOrdersRows.find(o => o.id === id);
+      if (row) row.status = status;
+      const fresh = signOrdersRows.filter(o => o.status === 'new').length;
+      document.getElementById('signOrdersNew').innerHTML =
+        fresh ? `<span class="badge badge-warn">${fresh}</span>` : '';
     }
 
     function exportLeadsCsv() {
